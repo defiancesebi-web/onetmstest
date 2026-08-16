@@ -4,11 +4,21 @@
 
 ONE x TMS este un produs SaaS comercial (nu un sistem custom pentru o singură
 firmă) destinat transportatorilor rutieri de marfă (FTL/LTL), inspirat din
-TMS-uri existente pe piață (Routena, fireTMS). Este construit incremental,
-modul cu modul, de un dezvoltator la nivel de începător, asistat integral de
-Claude Code, la un ritm de 3-5 ore/săptămână.
+TMS-uri existente pe piață (Routena, fireTMS, Impargo). Este construit
+incremental, modul cu modul, de un dezvoltator la nivel de începător,
+asistat integral de Claude Code, la un ritm de 3-5 ore/săptămână.
+
+### Fazare clienți (context, nu parte din acest spec)
+
+- **Faza 1**: transportatori rutieri (firme cu flotă proprie)
+- **Faza 2** (după ce faza 1 e stabilă): case de expediție / forwarderi
+  (firme care intermediază transport, fără flotă proprie sau cu flotă mixtă)
 
 ### Roadmap general (context, nu parte din acest spec)
+
+Ținta de beta = module 1-7, toate livrate ca **aplicație web, responsive**
+(utilizabilă de pe telefon/tabletă direct din browser — inclusiv de
+dispeceri și șoferi, ca soluție tranzitorie până la aplicațiile native).
 
 1. **Fundament SaaS** — acest document
 2. Comenzi de transport (Orders/Loads)
@@ -18,8 +28,17 @@ Claude Code, la un ritm de 3-5 ore/săptămână.
 6. Tracking simplu (status manual)
 7. Rapoarte de bază
 
-Ținta de beta = module 1-7. Module ulterioare (post-beta): e-Factura/ANAF,
-GPS live, tahograf, portal client, AI-fill din documente.
+**Post-beta**, sub-proiecte separate, fiecare cu propriul spec:
+
+- **Aplicații mobile native** (Expo / React Native) pentru șofer și
+  dispecer — motivat de nevoia de GPS live în fundal (tracking continuu
+  fără ca aplicația să stea deschisă), notificări push și acces la
+  cameră pentru POD/CMR, funcționalități pe care web-ul responsive nu le
+  poate oferi la același nivel. Pornește după ce modulele 1-7 rulează cu
+  clienți reali și se știe clar ce workflow-uri au nevoie de aplicație
+  dedicată.
+- e-Factura/ANAF, GPS live (telematică flotă), tahograf, portal client,
+  AI-fill din documente
 
 ## Scopul acestui modul
 
