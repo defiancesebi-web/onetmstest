@@ -1,9 +1,21 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { authConfig } from "@/auth.config";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth/password";
 import { checkLoginAllowed } from "@/lib/auth/checkLoginAllowed";
+
+// Auth.js collapses a null from authorize() into one generic error, which would
+// hide *why* a valid password was refused. These carry the reason through as a
+// code the login page maps back to an explicit message. Only thrown after the
+// password already verified, so they reveal nothing to someone guessing emails.
+export class AccountDisabledError extends CredentialsSignin {
+  code = "account_disabled";
+}
+
+export class CompanySuspendedError extends CredentialsSignin {
+  code = "company_suspended";
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -28,7 +40,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!passwordOk) return null;
 
         const allowed = checkLoginAllowed(user, user.company);
-        if (!allowed.ok) return null;
+        if (!allowed.ok) {
+          throw user.status === "DISABLED"
+            ? new AccountDisabledError()
+            : new CompanySuspendedError();
+        }
 
         return {
           id: user.id,
