@@ -2,7 +2,7 @@
 
 import { auth } from "@/auth";
 import { createInvitation, InvalidInvitationError } from "@/lib/data/invitations";
-import { sendInviteEmail } from "@/lib/email/sendInvite";
+import { sendInviteEmail, InviteEmailError } from "@/lib/email/sendInvite";
 import { getCompanyForSession } from "@/lib/data/companies";
 import { revalidatePath } from "next/cache";
 import type { InvitationRole } from "@/lib/generated/prisma/enums";
@@ -26,6 +26,13 @@ export async function inviteUserAction(_prevState: { error: string | null }, for
   } catch (error) {
     if (error instanceof InvalidInvitationError) {
       return { error: error.message };
+    }
+    if (error instanceof InviteEmailError) {
+      // The invitation row exists and its link stays valid; only delivery failed.
+      revalidatePath("/dashboard/echipa");
+      return {
+        error: `Invitația a fost creată, dar emailul nu a putut fi trimis (${error.message}). Trimite-i manual linkul de invitație.`,
+      };
     }
     throw error;
   }
