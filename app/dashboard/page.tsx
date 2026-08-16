@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { getCompanyForSession } from "@/lib/data/companies";
+import { PageHeader } from "@/components/page-header";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -10,11 +11,11 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Bine ai venit, {session!.user.name}</h1>
+      <PageHeader title={`Bine ai venit, ${session!.user.name}`} description={company?.name} />
       {company?.status === "TRIAL" && (
-        <p className="mt-2 text-amber-600">
+        <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
           Firma ta este în așteptare de activare. Vei fi contactat în curând.
-        </p>
+        </div>
       )}
     </div>
   );

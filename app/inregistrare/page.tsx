@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { registerAction } from "./actions";
+import { AuthCard } from "@/components/auth-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -9,8 +11,7 @@ export default function RegisterPage() {
   const [state, formAction, pending] = useActionState(registerAction, { error: null });
 
   return (
-    <div className="mx-auto mt-16 max-w-sm space-y-4">
-      <h1 className="text-2xl font-semibold">Înregistrează firma ta</h1>
+    <AuthCard title="Înregistrează firma ta">
       <form action={formAction} className="space-y-4">
         <Input name="companyName" placeholder="Numele firmei" required />
         <Input name="cui" placeholder="CUI" required />
@@ -22,6 +23,12 @@ export default function RegisterPage() {
           {pending ? "Se creează firma..." : "Creează cont"}
         </Button>
       </form>
-    </div>
+      <p className="text-muted-foreground text-sm">
+        Ai deja cont?{" "}
+        <Link href="/login" className="underline">
+          Autentifică-te
+        </Link>
+      </p>
+    </AuthCard>
   );
 }

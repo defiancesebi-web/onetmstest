@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { loginAction } from "./actions";
+import { AuthCard } from "@/components/auth-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -9,8 +11,7 @@ export default function LoginPage() {
   const [state, formAction, pending] = useActionState(loginAction, { error: null });
 
   return (
-    <div className="mx-auto mt-24 max-w-sm space-y-4">
-      <h1 className="text-2xl font-semibold">Autentificare</h1>
+    <AuthCard title="Autentificare">
       <form action={formAction} className="space-y-4">
         <Input name="email" type="email" placeholder="Email" required />
         <Input name="password" type="password" placeholder="Parolă" required />
@@ -19,6 +20,12 @@ export default function LoginPage() {
           {pending ? "Se autentifică..." : "Intră în cont"}
         </Button>
       </form>
-    </div>
+      <p className="text-muted-foreground text-sm">
+        Nu ai cont?{" "}
+        <Link href="/inregistrare" className="underline">
+          Înregistrează-ți firma
+        </Link>
+      </p>
+    </AuthCard>
   );
 }

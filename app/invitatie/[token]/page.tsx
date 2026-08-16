@@ -2,8 +2,9 @@
 
 import { use, useActionState } from "react";
 import { acceptInvitationAction } from "./actions";
-import { Input } from "@/components/ui/input";
+import { AuthCard } from "@/components/auth-card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function AcceptInvitationPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = use(params);
@@ -11,8 +12,7 @@ export default function AcceptInvitationPage({ params }: { params: Promise<{ tok
   const [state, formAction, pending] = useActionState(boundAction, { error: null });
 
   return (
-    <div className="mx-auto mt-24 max-w-sm space-y-4">
-      <h1 className="text-2xl font-semibold">Finalizează contul</h1>
+    <AuthCard title="Finalizează contul">
       <form action={formAction} className="space-y-4">
         <Input name="name" placeholder="Numele tău" required />
         <Input name="password" type="password" placeholder="Alege o parolă" required minLength={8} />
@@ -21,6 +21,6 @@ export default function AcceptInvitationPage({ params }: { params: Promise<{ tok
           {pending ? "Se creează contul..." : "Creează cont"}
         </Button>
       </form>
-    </div>
+    </AuthCard>
   );
 }

@@ -1,8 +1,11 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getUsersForCompany } from "@/lib/data/users";
 import { TenantAccessError } from "@/lib/tenancy";
+import { PageHeader } from "@/components/page-header";
+import { Badge } from "@/components/ui/badge";
 
 export default async function CompanyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -23,19 +26,47 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
   if (!company) notFound();
 
   return (
-    <div className="mx-auto max-w-2xl p-8">
-      <h1 className="text-2xl font-semibold">{company.name}</h1>
-      <p className="text-muted-foreground">
-        CUI: {company.cui} · Status: {company.status}
-      </p>
-      <h2 className="mb-2 mt-6 text-lg font-medium">Utilizatori</h2>
-      <ul className="space-y-1">
-        {users.map((u) => (
-          <li key={u.id}>
-            {u.name} — {u.email} ({u.role})
-          </li>
-        ))}
-      </ul>
+    <div className="max-w-3xl">
+      <Link href="/admin" className="text-muted-foreground mb-4 inline-block text-sm underline">
+        ← Înapoi la firme
+      </Link>
+
+      <PageHeader
+        title={company.name}
+        description={
+          <>
+            CUI: {company.cui} · Status: <Badge>{company.status}</Badge>
+          </>
+        }
+      />
+
+      <h2 className="mb-3 text-sm font-medium">Utilizatori</h2>
+      <div className="overflow-x-auto rounded-lg border">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-muted/50">
+            <tr className="border-b">
+              <th className="px-4 py-2 font-medium">Nume</th>
+              <th className="px-4 py-2 font-medium">Email</th>
+              <th className="px-4 py-2 font-medium">Rol</th>
+              <th className="px-4 py-2 font-medium">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((u) => (
+              <tr key={u.id} className="border-b last:border-0">
+                <td className="px-4 py-2">{u.name}</td>
+                <td className="text-muted-foreground px-4 py-2">{u.email}</td>
+                <td className="px-4 py-2">
+                  {u.role === "COMPANY_ADMIN" ? "Admin firmă" : "Utilizator"}
+                </td>
+                <td className="px-4 py-2">
+                  <Badge>{u.status}</Badge>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
