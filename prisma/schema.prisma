@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CompanyStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  COMPANY_ADMIN
+  COMPANY_USER
+}
+
+enum UserStatus {
+  ACTIVE
+  INVITED
+  DISABLED
+}
+
+enum InvitationRole {
+  COMPANY_ADMIN
+  COMPANY_USER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+}
+
+model Company {
+  id        String        @id @default(cuid())
+  name      String
+  cui       String
+  status    CompanyStatus @default(TRIAL)
+  createdAt DateTime      @default(now())
+
+  users       User[]
+  invitations Invitation[]
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  name         String
+  role         UserRole
+  companyId    String?
+  jobTitle     String?
+  status       UserStatus @default(ACTIVE)
+  createdAt    DateTime   @default(now())
+
+  company Company? @relation(fields: [companyId], references: [id])
+}
+
+model Invitation {
+  id        String           @id @default(cuid())
+  email     String
+  companyId String
+  role      InvitationRole
+  token     String           @unique
+  expiresAt DateTime
+  status    InvitationStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+}
