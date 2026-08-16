@@ -1,12 +1,12 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import { authConfig } from "@/auth.config";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth/password";
 import { checkLoginAllowed } from "@/lib/auth/checkLoginAllowed";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: "jwt" },
-  pages: { signIn: "/login" },
+  ...authConfig,
   providers: [
     Credentials({
       credentials: {
@@ -40,19 +40,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.role = user.role;
-        token.companyId = user.companyId;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      session.user.id = token.sub as string;
-      session.user.role = token.role;
-      session.user.companyId = token.companyId;
-      return session;
-    },
-  },
 });
