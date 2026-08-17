@@ -13,6 +13,7 @@ type NavItem = {
 
 const COMPANY_NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/dashboard/clienti", label: "Clienți" },
   { href: "/dashboard/echipa", label: "Echipă", roles: ["COMPANY_ADMIN"] },
 ];
 
