@@ -36,7 +36,7 @@ un atestat expirat înseamnă amendă, camion imobilizat și cursă pierdută.
 | id | String (cuid) | |
 | companyId | String | tenant — obligatoriu pe toate interogările |
 | registrationNumber | String | număr de înmatriculare |
-| type | enum `VehicleType` | `TRACTOR_UNIT`, `SEMI_TRAILER`, `RIGID_TRUCK` |
+| type | enum `VehicleType` | `TRACTOR_UNIT`, `SEMI_TRAILER`, `RIGID_TRUCK`, `VAN_3_5T` |
 | make | String? | marca |
 | model | String? | |
 | manufactureYear | Int? | |
@@ -53,7 +53,13 @@ Index: `(companyId, isActive)` pentru listare.
 
 Capul tractor și semiremorca sunt **înregistrări separate**, fiecare cu
 documentele ei, pentru că fiecare are ITP și RCA proprii și remorcile se mută
-între capete tractoare. `RIGID_TRUCK` acoperă camioanele fără remorcă.
+între capete tractoare. `RIGID_TRUCK` acoperă camioanele fără remorcă,
+`VAN_3_5T` dubele de 3,5 tone.
+
+Duba nu este un caz special în model: are aceleași câmpuri și acceptă aceleași
+tipuri de documente ca restul flotei. Distincția contează la afișare și, mai
+târziu, la alocare în Dispecerat — o dubă și un cap tractor nu se potrivesc
+acelorași comenzi.
 
 ### Driver (șofer)
 
@@ -113,7 +119,7 @@ Validarea se face în stratul de acces la date, iar testele o acoperă.
 ### Enum-uri
 
 ```
-VehicleType: TRACTOR_UNIT, SEMI_TRAILER, RIGID_TRUCK
+VehicleType: TRACTOR_UNIT, SEMI_TRAILER, RIGID_TRUCK, VAN_3_5T
 
 DocumentType (vehicule): ITP, RCA, CASCO, ROVINIETA, TAHOGRAF,
                          COPIE_CONFORMA, ASIGURARE_CMR
