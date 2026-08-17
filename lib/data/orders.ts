@@ -1,8 +1,9 @@
 import { Prisma } from "@/lib/generated/prisma/client";
-import type { Currency, StopType } from "@/lib/generated/prisma/enums";
+import type { Currency, OrderStatus, StopType } from "@/lib/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 import { assertCompanyAccess, type SessionUser } from "@/lib/tenancy";
 import { getEurRate } from "@/lib/bnr";
+import { assertTransitionAllowed } from "@/lib/orderStatus";
 
 export class InvalidOrderError extends Error {
   constructor(message: string) {
@@ -15,6 +16,13 @@ export class OrderNumberingError extends Error {
   constructor() {
     super("Nu s-a putut aloca un număr de comandă. Încearcă din nou.");
     this.name = "OrderNumberingError";
+  }
+}
+
+export class OrderNotFoundError extends Error {
+  constructor() {
+    super("Comanda nu a fost găsită.");
+    this.name = "OrderNotFoundError";
   }
 }
 
@@ -205,4 +213,132 @@ export async function createOrder(
   }
 
   throw new OrderNumberingError();
+}
+
+export type OrderListItem = Prisma.OrderGetPayload<{
+  include: { client: { select: { name: true } } };
+}>;
+
+export type OrderWithStopsAndClient = Prisma.OrderGetPayload<{
+  include: { stops: true; client: true };
+}>;
+
+export type UpdateOrderInput = {
+  clientReference?: string;
+  cargoDescription?: string;
+  cargoWeightKg?: string | null;
+  cargoPackaging?: string | null;
+  salePrice?: string;
+  estimatedCostRon?: string | null;
+  paymentTermDays?: number;
+  notes?: string | null;
+};
+
+export async function listOrders(
+  session: SessionUser,
+  companyId: string,
+  options: { status?: OrderStatus; search?: string; clientId?: string } = {}
+): Promise<OrderListItem[]> {
+  assertCompanyAccess(session, companyId);
+
+  const search = options.search?.trim();
+
+  return prisma.order.findMany({
+    where: {
+      companyId,
+      ...(options.status ? { status: options.status } : {}),
+      ...(options.clientId ? { clientId: options.clientId } : {}),
+      ...(search
+        ? {
+            OR: [
+              { orderNumber: { contains: search, mode: "insensitive" } },
+              { clientReference: { contains: search, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    },
+    include: { client: { select: { name: true } } },
+    orderBy: [{ year: "desc" }, { sequence: "desc" }],
+  });
+}
+
+export async function getOrderById(
+  session: SessionUser,
+  orderId: string
+): Promise<OrderWithStopsAndClient | null> {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: { stops: { orderBy: { sequence: "asc" } }, client: true },
+  });
+  if (!order) return null;
+  // Null rather than throw, so pages render 404 without revealing existence.
+  if (session.role !== "SUPER_ADMIN" && order.companyId !== session.companyId) {
+    return null;
+  }
+  return order;
+}
+
+async function assertOwnOrder(session: SessionUser, orderId: string) {
+  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  if (!order) throw new OrderNotFoundError();
+  assertCompanyAccess(session, order.companyId);
+  return order;
+}
+
+export async function updateOrderStatus(
+  session: SessionUser,
+  orderId: string,
+  to: OrderStatus
+) {
+  const order = await assertOwnOrder(session, orderId);
+  assertTransitionAllowed(order.status, to);
+
+  return prisma.order.update({
+    where: { id: orderId },
+    data: {
+      status: to,
+      ...(to === "DOCUMENTS_RECEIVED" && !order.documentsReceivedAt
+        ? { documentsReceivedAt: new Date() }
+        : {}),
+    },
+  });
+}
+
+export async function updateOrderDetails(
+  session: SessionUser,
+  orderId: string,
+  input: UpdateOrderInput
+) {
+  const order = await assertOwnOrder(session, orderId);
+
+  // The rate is frozen at creation: a later price edit is converted with the
+  // stored rate, never a fresh one.
+  const salePriceRon =
+    input.salePrice !== undefined
+      ? new Prisma.Decimal(input.salePrice).mul(order.exchangeRate).toDecimalPlaces(2)
+      : undefined;
+
+  return prisma.order.update({
+    where: { id: orderId },
+    data: {
+      ...input,
+      ...(salePriceRon ? { salePriceRon } : {}),
+    },
+  });
+}
+
+export function calculateMargin(order: {
+  salePriceRon: Prisma.Decimal | string;
+  estimatedCostRon: Prisma.Decimal | string | null;
+}): { marginRon: string; marginPercent: string } | null {
+  if (order.estimatedCostRon === null) return null;
+
+  const sale = new Prisma.Decimal(order.salePriceRon);
+  const cost = new Prisma.Decimal(order.estimatedCostRon);
+  const margin = sale.minus(cost);
+  const percent = sale.isZero()
+    ? new Prisma.Decimal(0)
+    : margin.div(sale).mul(100).toDecimalPlaces(1);
+
+  return { marginRon: margin.toString(), marginPercent: percent.toString() };
 }
