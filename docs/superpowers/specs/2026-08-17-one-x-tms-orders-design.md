@@ -147,7 +147,9 @@ recalculează cu acel curs.
 - Pentru `RON`: `exchangeRate = 1.0000`, `exchangeRateDate` = data creării, fără
   apel extern.
 - Pentru `EUR`: cursul se ia din fluxul public BNR
-  (`https://www.bnr.ro/nbrfxrates.xml`), gratuit și fără cheie de acces.
+  (`https://curs.bnr.ro/nbrfxrates.xml`), gratuit și fără cheie de acces.
+  Atenție: adresa veche `www.bnr.ro/nbrfxrates.xml` redirecționează acum către
+  pagina principală și nu mai livrează XML-ul.
 
 BNR publică doar în zilele lucrătoare. În weekend și de sărbători se folosește
 ultimul curs publicat, iar `exchangeRateDate` reflectă ziua acelui curs, nu ziua

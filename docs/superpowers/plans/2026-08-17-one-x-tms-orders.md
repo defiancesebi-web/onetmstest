@@ -1201,7 +1201,9 @@ Expected: FAIL — `lib/bnr.ts` nu există.
 Write `lib/bnr.ts`:
 
 ```ts
-export const BNR_RATES_URL = "https://www.bnr.ro/nbrfxrates.xml";
+// The feed lives on the curs.bnr.ro host; www.bnr.ro now 302-redirects to the
+// homepage, so pointing this back at www silently breaks every EUR order.
+export const BNR_RATES_URL = "https://curs.bnr.ro/nbrfxrates.xml";
 
 export class ExchangeRateUnavailableError extends Error {
   constructor(message = "Cursul BNR nu este disponibil momentan.") {
