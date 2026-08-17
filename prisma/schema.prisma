@@ -46,6 +46,7 @@ model Company {
   users       User[]
   invitations Invitation[]
   clients     Client[]
+  orders      Order[]
 }
 
 model User {
@@ -93,6 +94,81 @@ model Client {
   updatedAt       DateTime @updatedAt
 
   company Company @relation(fields: [companyId], references: [id])
+  orders  Order[]
 
   @@index([companyId, name])
+}
+
+enum OrderStatus {
+  NEW
+  CONFIRMED
+  IN_PROGRESS
+  DELIVERED
+  DOCUMENTS_RECEIVED
+  INVOICED
+  CANCELLED
+}
+
+enum Currency {
+  RON
+  EUR
+}
+
+enum StopType {
+  LOADING
+  UNLOADING
+}
+
+model Order {
+  id                  String      @id @default(cuid())
+  companyId           String
+  year                Int
+  sequence            Int
+  orderNumber         String
+  clientId            String
+  clientReference     String
+  status              OrderStatus @default(NEW)
+  cargoDescription    String
+  cargoWeightKg       Decimal?    @db.Decimal(10, 3)
+  cargoPackaging      String?
+  salePrice           Decimal     @db.Decimal(12, 2)
+  currency            Currency
+  exchangeRate        Decimal     @db.Decimal(10, 4)
+  exchangeRateDate    DateTime    @db.Date
+  salePriceRon        Decimal     @db.Decimal(12, 2)
+  estimatedCostRon    Decimal?    @db.Decimal(12, 2)
+  paymentTermDays     Int
+  documentsReceivedAt DateTime?
+  notes               String?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  company Company     @relation(fields: [companyId], references: [id])
+  client  Client      @relation(fields: [clientId], references: [id])
+  stops   OrderStop[]
+
+  @@unique([companyId, year, sequence])
+  @@unique([companyId, orderNumber])
+  @@index([companyId, status])
+}
+
+model OrderStop {
+  id            String   @id @default(cuid())
+  orderId       String
+  sequence      Int
+  type          StopType
+  locationName  String?
+  address       String
+  city          String
+  country       String   @default("România")
+  scheduledDate DateTime @db.Date
+  timeFrom      String?
+  timeTo        String?
+  contactName   String?
+  contactPhone  String?
+  notes         String?
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, sequence])
 }
