@@ -831,11 +831,19 @@ Inside `model Driver`, after the `company` relation line:
 Run: `npx prisma migrate dev --name add_document`
 Expected: migration applies, `Document` table created.
 
-- [ ] **Step 3: Adaugă constrângerea „exact un proprietar" în migrare**
+- [ ] **Step 3: Adaugă constrângerea „exact un proprietar" ca migrare separată**
 
 The data layer validates this, but a database constraint means no future code path — a script, a manual query, a later module — can create a document owned by both or neither.
 
-Open the file `prisma/migrations/<timestamp>_add_document/migration.sql` that was just generated and append this at the end:
+Prisma's schema language cannot express a CHECK constraint, so it goes in hand-written SQL. It must be its **own new migration**, never an edit to the one just applied: Prisma stores a checksum of every applied migration, and editing one makes every later `prisma migrate dev` fail with "migration was modified after it was applied" — which would block Module 4 with an error that looks unrelated.
+
+Create an empty migration:
+
+```bash
+npx prisma migrate dev --create-only --name document_owner_check
+```
+
+Open the generated `prisma/migrations/<timestamp>_document_owner_check/migration.sql`, which is empty, and put exactly this in it:
 
 ```sql
 ALTER TABLE "Document" ADD CONSTRAINT "Document_exactly_one_owner"
@@ -843,13 +851,13 @@ ALTER TABLE "Document" ADD CONSTRAINT "Document_exactly_one_owner"
       OR ("vehicleId" IS NULL AND "driverId" IS NOT NULL));
 ```
 
-The migration has already been applied, so run the statement against the development database directly to bring it in line. Save this as a temporary file `apply-check.sql` in the project root, containing exactly the SQL above, then run:
+Then apply it:
 
 ```bash
-npx prisma db execute --file apply-check.sql --schema prisma/schema.prisma
+npx prisma migrate dev
 ```
 
-Delete `apply-check.sql` afterwards. `prisma migrate deploy` will apply the edited migration file in full on the test and production databases, which have not seen it yet.
+Expected: the new migration applies cleanly.
 
 - [ ] **Step 4: Aplică migrarea pe baza de test**
 
