@@ -9,10 +9,12 @@ import {
   updateOrderDetails,
   InvalidOrderError,
   OrderNumberingError,
+  OrderNotFoundError,
   type CreateStopInput,
 } from "@/lib/data/orders";
 import { ExchangeRateUnavailableError } from "@/lib/bnr";
 import { InvalidStatusTransitionError } from "@/lib/orderStatus";
+import { TenantAccessError } from "@/lib/tenancy";
 import type { Currency, OrderStatus } from "@/lib/generated/prisma/enums";
 
 export type OrderFormState = {
@@ -129,20 +131,33 @@ export async function updateOrderDetailsAction(
   const session = await auth();
   if (!session?.user.companyId) throw new Error("Neautentificat");
 
-  await updateOrderDetails(
-    { role: session.user.role, companyId: session.user.companyId },
-    orderId,
-    {
-      clientReference: formData.get("clientReference") as string,
-      cargoDescription: formData.get("cargoDescription") as string,
-      cargoWeightKg: (formData.get("cargoWeightKg") as string) || null,
-      cargoPackaging: (formData.get("cargoPackaging") as string) || null,
-      salePrice: formData.get("salePrice") as string,
-      estimatedCostRon: (formData.get("estimatedCostRon") as string) || null,
-      paymentTermDays: Number(formData.get("paymentTermDays") || 45),
-      notes: (formData.get("notes") as string) || null,
+  try {
+    await updateOrderDetails(
+      { role: session.user.role, companyId: session.user.companyId },
+      orderId,
+      {
+        clientReference: formData.get("clientReference") as string,
+        cargoDescription: formData.get("cargoDescription") as string,
+        cargoWeightKg: (formData.get("cargoWeightKg") as string) || null,
+        cargoPackaging: (formData.get("cargoPackaging") as string) || null,
+        salePrice: formData.get("salePrice") as string,
+        estimatedCostRon: (formData.get("estimatedCostRon") as string) || null,
+        paymentTermDays: Number(formData.get("paymentTermDays") || 45),
+        notes: (formData.get("notes") as string) || null,
+      }
+    );
+  } catch (error) {
+    if (error instanceof OrderNotFoundError) {
+      return { error: error.message, needsManualRate: false };
     }
-  );
+    if (error instanceof TenantAccessError) {
+      return { error: "Nu ai acces la această comandă.", needsManualRate: false };
+    }
+    if (error instanceof Error && error.message.startsWith("[DecimalError]")) {
+      return { error: "Prețul de vânzare introdus nu este valid.", needsManualRate: false };
+    }
+    throw error;
+  }
 
   revalidatePath(`/dashboard/comenzi/${orderId}`);
   return { error: null, needsManualRate: false };
