@@ -1,4 +1,7 @@
-export const BNR_RATES_URL = "https://www.bnr.ro/nbrfxrates.xml";
+// The feed lives on the curs.bnr.ro host, not www.bnr.ro — www.bnr.ro now
+// 302-redirects requests for this path to the BNR homepage. Do not "fix"
+// this back to www.bnr.ro; that host no longer serves the XML document.
+export const BNR_RATES_URL = "https://curs.bnr.ro/nbrfxrates.xml";
 
 export class ExchangeRateUnavailableError extends Error {
   constructor(message = "Cursul BNR nu este disponibil momentan.") {
