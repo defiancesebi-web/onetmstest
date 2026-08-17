@@ -47,6 +47,8 @@ model Company {
   invitations Invitation[]
   clients     Client[]
   orders      Order[]
+  vehicles    Vehicle[]
+  drivers     Driver[]
 }
 
 model User {
@@ -171,4 +173,50 @@ model OrderStop {
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@unique([orderId, sequence])
+}
+
+enum VehicleType {
+  TRACTOR_UNIT
+  SEMI_TRAILER
+  RIGID_TRUCK
+  VAN_3_5T
+}
+
+model Vehicle {
+  id                 String      @id @default(cuid())
+  companyId          String
+  registrationNumber String
+  type               VehicleType
+  make               String?
+  model              String?
+  manufactureYear    Int?
+  vin                String?
+  isActive           Boolean     @default(true)
+  notes              String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, registrationNumber])
+  @@index([companyId, isActive])
+}
+
+model Driver {
+  id         String    @id @default(cuid())
+  companyId  String
+  firstName  String
+  lastName   String
+  phone      String?
+  email      String?
+  personalId String?
+  hiredAt    DateTime? @db.Date
+  isActive   Boolean   @default(true)
+  notes      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId, lastName])
 }
