@@ -1,7 +1,15 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { resetDatabase } from "../helpers/db";
-import { createOrder, InvalidOrderError, formatOrderNumber } from "@/lib/data/orders";
+import {
+  createOrder,
+  InvalidOrderError,
+  OrderNumberingError,
+  formatOrderNumber,
+  currentOrderYear,
+  MAX_NUMBERING_ATTEMPTS,
+} from "@/lib/data/orders";
 import { TenantAccessError } from "@/lib/tenancy";
 
 async function makeCompanyWithClient(companyName: string, cui: string) {
@@ -67,7 +75,7 @@ describe("createOrder", () => {
     const order = await createOrder(session, orderInput(company.id, client.id));
 
     expect(order.status).toBe("NEW");
-    expect(order.orderNumber).toBe(`${new Date().getFullYear()}-0001`);
+    expect(order.orderNumber).toBe(`${currentOrderYear()}-0001`);
     expect(order.stops).toHaveLength(2);
     expect(order.stops[0].sequence).toBe(1);
     expect(order.stops[0].type).toBe("LOADING");
@@ -105,6 +113,39 @@ describe("createOrder", () => {
 
     const numbers = results.map((o) => o.orderNumber);
     expect(new Set(numbers).size).toBe(3);
+
+    // Not just unique — contiguous. A gap-producing regression (e.g. skipping a
+    // number on a lost race instead of retrying it) would pass a uniqueness-only
+    // check but fail this one.
+    const sequences = results.map((o) => o.sequence).sort((a, b) => a - b);
+    expect(sequences).toEqual([1, 2, 3]);
+  });
+
+  it("epuizează bugetul de reîncercări și aruncă OrderNumberingError", async () => {
+    const { company, client, session } = await makeCompanyWithClient("Firma A", "RO1");
+
+    // Stub $transaction so every attempt fails with the exact error a real
+    // unique-constraint collision on (companyId, year, sequence) would raise.
+    // This pins the retry loop's contract deterministically — how many times it
+    // attempts, and that it fails closed with the Romanian product error —
+    // without depending on wall-clock timing or real database contention.
+    const collision = new Prisma.PrismaClientKnownRequestError(
+      "Unique constraint failed on the fields: (`companyId`,`year`,`sequence`)",
+      { code: "P2002", clientVersion: "test" }
+    );
+    const transactionSpy = vi
+      .spyOn(prisma, "$transaction")
+      .mockRejectedValue(collision);
+
+    try {
+      await expect(
+        createOrder(session, orderInput(company.id, client.id))
+      ).rejects.toThrow(OrderNumberingError);
+
+      expect(transactionSpy).toHaveBeenCalledTimes(MAX_NUMBERING_ATTEMPTS);
+    } finally {
+      transactionSpy.mockRestore();
+    }
   });
 
   it("pentru RON folosește cursul 1 și nu apelează BNR", async () => {

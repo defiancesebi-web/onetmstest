@@ -79,14 +79,29 @@ async function resolveRate(input: CreateOrderInput): Promise<{ rate: string; dat
   return { rate, date: new Date(date) };
 }
 
-// Postgres serializes concurrent inserts that collide on the same unique key: the
-// losers block on the winner's row lock, then fail together with P2002 once the
-// winner commits, and retry together against the now-visible max. Each such round
-// removes exactly one contender, so N callers racing for the same (companyId, year)
-// need at most N attempts to all resolve deterministically — this is not a
-// probabilistic retry budget. 8 comfortably covers realistic dispatcher concurrency
-// for one company.
-const MAX_NUMBERING_ATTEMPTS = 8;
+/**
+ * Year-scoped sequential numbering is a Romanian accounting requirement, so the
+ * year boundary must follow Romanian local time, not the server's. A server
+ * running in UTC (e.g. Vercel) would otherwise stamp an order created between
+ * 00:00 and 02:00/03:00 Bucharest time on 1 January with the previous year.
+ * Exported so tests compute the expected year the same way, rather than
+ * duplicating (and potentially drifting from) this logic.
+ */
+export function currentOrderYear(date: Date = new Date()): number {
+  return Number(
+    new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Bucharest", year: "numeric" }).format(
+      date
+    )
+  );
+}
+
+// The transaction-scoped advisory lock below serializes numbering per
+// (companyId, year), so under normal operation at most one caller at a time
+// computes+inserts a sequence and P2002 should not occur from legitimate
+// concurrency anymore. This retry budget is a defensive backstop, not the
+// primary correctness mechanism — the two unique constraints on Order remain
+// the real guard against a duplicate number ever being persisted.
+export const MAX_NUMBERING_ATTEMPTS = 3;
 
 export async function createOrder(
   session: SessionUser,
@@ -107,13 +122,20 @@ export async function createOrder(
   const exchangeRate = new Prisma.Decimal(rate);
   const salePrice = new Prisma.Decimal(input.salePrice);
   const salePriceRon = salePrice.mul(exchangeRate).toDecimalPlaces(2);
-  const year = new Date().getFullYear();
+  const year = currentOrderYear();
 
-  // The unique constraint on (companyId, year, sequence) is the real guard against
-  // two concurrent creates claiming one number; a lost race retries once.
   for (let attempt = 0; attempt < MAX_NUMBERING_ATTEMPTS; attempt++) {
     try {
       return await prisma.$transaction(async (tx) => {
+        // Transaction-scoped advisory lock, released automatically on commit or
+        // rollback. Serializes number allocation per (companyId, year) across every
+        // connection and every process talking to this database, so concurrent
+        // callers queue here instead of racing the aggregate-then-insert below.
+        // Without this, N concurrent callers can chain into N rounds of
+        // collide-then-retry, each holding a transaction (and a pooled connection)
+        // open long enough to exhaust the pool wait/transaction timeouts (P2024/P2028).
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`${input.companyId}:${year}`}))`;
+
         const highest = await tx.order.aggregate({
           where: { companyId: input.companyId, year },
           _max: { sequence: true },
@@ -166,6 +188,18 @@ export async function createOrder(
         continue;
       }
       if (isNumberCollision) throw new OrderNumberingError();
+
+      // P2024 (pool wait timed out) and P2028 (transaction API error, e.g. the
+      // interactive transaction itself timed out) can surface under heavy
+      // contention or a starved connection pool. Neither is safe to retry blindly
+      // — the resource that's exhausted won't recover by immediately trying
+      // again — so translate straight to the Romanian product error instead of
+      // letting a raw, English Prisma error reach the user.
+      const isResourceExhaustion =
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        (error.code === "P2024" || error.code === "P2028");
+      if (isResourceExhaustion) throw new OrderNumberingError();
+
       throw error;
     }
   }
