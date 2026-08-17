@@ -1726,7 +1726,10 @@ async function resolveRate(input: CreateOrderInput): Promise<{ rate: string; dat
   return { rate, date: new Date(date) };
 }
 
-const MAX_NUMBERING_ATTEMPTS = 2;
+// Postgres serializes colliding unique-key inserts into rounds that eliminate
+// one contender each, so N racing callers can need up to N attempts. A value of
+// 2 cannot cover even 3-way contention — the concurrency test below fails on it.
+const MAX_NUMBERING_ATTEMPTS = 8;
 
 export async function createOrder(
   session: SessionUser,
