@@ -88,15 +88,32 @@ DATABASE_URL=$(grep DATABASE_URL .env.test | cut -d'"' -f2) npx prisma migrate d
 
 Expected: `All migrations have been successfully applied.`
 
-- [ ] **Step 4: Regenerează clientul Prisma și verifică tipurile**
+- [ ] **Step 4: Extinde curățarea bazei de test**
 
-Run: `npx prisma generate && npx tsc --noEmit`
-Expected: no output from `tsc` (success).
+`resetDatabase` deletes companies, and `Client` rows reference them. Without
+this change, the very first test that creates a client fails on a foreign-key
+violation when the next test tries to clear companies.
 
-- [ ] **Step 5: Commit**
+Modify `tests/helpers/db.ts` — replace the body of `resetDatabase`:
+
+```ts
+export async function resetDatabase() {
+  await prisma.client.deleteMany();
+  await prisma.invitation.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.company.deleteMany();
+}
+```
+
+- [ ] **Step 5: Regenerează clientul Prisma, verifică tipurile și testele**
+
+Run: `npx prisma generate && npx tsc --noEmit && npm test`
+Expected: `tsc` silent, existing tests still PASS.
+
+- [ ] **Step 6: Commit**
 
 ```bash
-git add prisma/
+git add prisma/ tests/helpers/db.ts
 git commit -m "feat: add Client model"
 ```
 
@@ -1031,7 +1048,8 @@ Expected: `All migrations have been successfully applied.`
 
 - [ ] **Step 4: Extinde curățarea bazei de test**
 
-`resetDatabase` must delete the new tables too, or later tests leak rows into each other. Foreign keys require orders to go before clients, and clients before companies.
+Orders reference clients, so they must be deleted first. Task 1 already added
+the `client.deleteMany()` line; this adds the two order tables above it.
 
 Modify `tests/helpers/db.ts` — replace the body of `resetDatabase`:
 
@@ -3023,16 +3041,14 @@ export default async function ComandaDetailPage({
         </ol>
       </section>
 
-      {order.notes && (
-        <section className="mt-8">
-          <h2 className="mb-2 text-sm font-medium">Observații</h2>
-          <p className="text-sm">{order.notes}</p>
-        </section>
-      )}
     </div>
   );
 }
 ```
+
+Note: `order.notes` is intentionally not rendered here. Task 12 adds the edit
+form, which both shows and edits that field — rendering it twice would let the
+two copies drift apart.
 
 - [ ] **Step 3: Arată comenzile clientului pe fișa lui**
 
@@ -3271,19 +3287,6 @@ And append this section immediately before the closing `</div>` of the page:
           }}
         />
       </section>
-```
-
-Also remove the standalone `notes` section added in Task 11 — the edit form now
-shows and edits the same field, and two places showing one value drift apart.
-Delete this block from the page:
-
-```tsx
-      {order.notes && (
-        <section className="mt-8">
-          <h2 className="mb-2 text-sm font-medium">Observații</h2>
-          <p className="text-sm">{order.notes}</p>
-        </section>
-      )}
 ```
 
 - [ ] **Step 3: Verifică tipurile și testele**
