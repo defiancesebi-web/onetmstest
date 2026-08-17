@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +19,34 @@ type Values = {
   notes?: string | null;
 };
 
+type FormFields = {
+  name: string;
+  cui: string;
+  address: string;
+  city: string;
+  country: string;
+  paymentTermDays: number;
+  contactName: string;
+  contactPhone: string;
+  contactEmail: string;
+  notes: string;
+};
+
+function toFormFields(values?: Values): FormFields {
+  return {
+    name: values?.name ?? "",
+    cui: values?.cui ?? "",
+    address: values?.address ?? "",
+    city: values?.city ?? "",
+    country: values?.country ?? "România",
+    paymentTermDays: values?.paymentTermDays ?? 45,
+    contactName: values?.contactName ?? "",
+    contactPhone: values?.contactPhone ?? "",
+    contactEmail: values?.contactEmail ?? "",
+    notes: values?.notes ?? "",
+  };
+}
+
 export function ClientForm({
   action,
   values,
@@ -32,29 +60,69 @@ export function ClientForm({
     error: null,
     duplicateWarning: null,
   });
+  // Controlled state, not `defaultValue`: React resets uncontrolled form
+  // fields to their initial value after every action submission (even one
+  // that just re-renders a warning), which would wipe what the user typed
+  // right when the duplicate-CUI flow asks them to submit again. Keeping
+  // the fields in state and always rendering `value={fields.x}` means
+  // React's own reset can't win — the next render reapplies our state.
+  const [fields, setFields] = useState<FormFields>(() => toFormFields(values));
+
+  function update<K extends keyof FormFields>(key: K, value: FormFields[K]) {
+    setFields((prev) => ({ ...prev, [key]: value }));
+  }
 
   return (
     <form action={formAction} className="max-w-xl space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="name">Nume firmă</Label>
-          <Input id="name" name="name" defaultValue={values?.name} required />
+          <Input
+            id="name"
+            name="name"
+            value={fields.name}
+            onChange={(e) => update("name", e.target.value)}
+            required
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="cui">CUI</Label>
-          <Input id="cui" name="cui" defaultValue={values?.cui} required />
+          <Input
+            id="cui"
+            name="cui"
+            value={fields.cui}
+            onChange={(e) => update("cui", e.target.value)}
+            required
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="address">Adresă</Label>
-          <Input id="address" name="address" defaultValue={values?.address} required />
+          <Input
+            id="address"
+            name="address"
+            value={fields.address}
+            onChange={(e) => update("address", e.target.value)}
+            required
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="city">Oraș</Label>
-          <Input id="city" name="city" defaultValue={values?.city} required />
+          <Input
+            id="city"
+            name="city"
+            value={fields.city}
+            onChange={(e) => update("city", e.target.value)}
+            required
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="country">Țară</Label>
-          <Input id="country" name="country" defaultValue={values?.country ?? "România"} />
+          <Input
+            id="country"
+            name="country"
+            value={fields.country}
+            onChange={(e) => update("country", e.target.value)}
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="paymentTermDays">Termen de plată (zile)</Label>
@@ -63,16 +131,27 @@ export function ClientForm({
             name="paymentTermDays"
             type="number"
             min={0}
-            defaultValue={values?.paymentTermDays ?? 45}
+            value={fields.paymentTermDays}
+            onChange={(e) => update("paymentTermDays", Number(e.target.value))}
           />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="contactName">Persoană de contact</Label>
-          <Input id="contactName" name="contactName" defaultValue={values?.contactName ?? ""} />
+          <Input
+            id="contactName"
+            name="contactName"
+            value={fields.contactName}
+            onChange={(e) => update("contactName", e.target.value)}
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="contactPhone">Telefon</Label>
-          <Input id="contactPhone" name="contactPhone" defaultValue={values?.contactPhone ?? ""} />
+          <Input
+            id="contactPhone"
+            name="contactPhone"
+            value={fields.contactPhone}
+            onChange={(e) => update("contactPhone", e.target.value)}
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="contactEmail">Email</Label>
@@ -80,12 +159,18 @@ export function ClientForm({
             id="contactEmail"
             name="contactEmail"
             type="email"
-            defaultValue={values?.contactEmail ?? ""}
+            value={fields.contactEmail}
+            onChange={(e) => update("contactEmail", e.target.value)}
           />
         </div>
         <div className="space-y-1.5 sm:col-span-2">
           <Label htmlFor="notes">Observații</Label>
-          <Input id="notes" name="notes" defaultValue={values?.notes ?? ""} />
+          <Input
+            id="notes"
+            name="notes"
+            value={fields.notes}
+            onChange={(e) => update("notes", e.target.value)}
+          />
         </div>
       </div>
 
