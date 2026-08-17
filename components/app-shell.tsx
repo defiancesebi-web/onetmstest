@@ -15,6 +15,8 @@ const COMPANY_NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/dashboard/comenzi", label: "Comenzi" },
   { href: "/dashboard/clienti", label: "Clienți" },
+  { href: "/dashboard/flota", label: "Flotă" },
+  { href: "/dashboard/soferi", label: "Șoferi" },
   { href: "/dashboard/echipa", label: "Echipă", roles: ["COMPANY_ADMIN"] },
 ];
 
