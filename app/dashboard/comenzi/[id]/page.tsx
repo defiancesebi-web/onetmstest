@@ -6,6 +6,7 @@ import { ORDER_STATUS_LABELS, STOP_TYPE_LABELS } from "@/lib/orderStatus";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { StatusActions } from "./status-actions";
+import { OrderEditForm } from "./edit-form";
 
 function formatDate(value: Date) {
   return new Intl.DateTimeFormat("ro-RO", { dateStyle: "medium" }).format(value);
@@ -125,6 +126,23 @@ export default async function ComandaDetailPage({
         </ol>
       </section>
 
+      <section className="mt-10 border-t pt-8">
+        <h2 className="mb-3 text-sm font-medium">Modifică datele comenzii</h2>
+        <OrderEditForm
+          orderId={order.id}
+          values={{
+            clientReference: order.clientReference,
+            cargoDescription: order.cargoDescription,
+            cargoWeightKg: order.cargoWeightKg?.toString() ?? null,
+            cargoPackaging: order.cargoPackaging,
+            salePrice: order.salePrice.toString(),
+            currency: order.currency,
+            estimatedCostRon: order.estimatedCostRon?.toString() ?? null,
+            paymentTermDays: order.paymentTermDays,
+            notes: order.notes,
+          }}
+        />
+      </section>
     </div>
   );
 }
