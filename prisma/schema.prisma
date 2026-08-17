@@ -45,6 +45,7 @@ model Company {
 
   users       User[]
   invitations Invitation[]
+  clients     Client[]
 }
 
 model User {
@@ -72,4 +73,26 @@ model Invitation {
   createdAt DateTime         @default(now())
 
   company Company @relation(fields: [companyId], references: [id])
+}
+
+model Client {
+  id              String   @id @default(cuid())
+  companyId       String
+  name            String
+  cui             String
+  address         String
+  city            String
+  country         String   @default("România")
+  contactName     String?
+  contactPhone    String?
+  contactEmail    String?
+  paymentTermDays Int      @default(45)
+  isActive        Boolean  @default(true)
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId, name])
 }
