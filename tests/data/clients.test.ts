@@ -8,6 +8,7 @@ import {
   updateClient,
   setClientActive,
   DuplicateCuiError,
+  ClientNotFoundError,
 } from "@/lib/data/clients";
 import { TenantAccessError } from "@/lib/tenancy";
 
@@ -188,5 +189,42 @@ describe("updateClient", () => {
         name: "Furat",
       })
     ).rejects.toThrow(TenantAccessError);
+  });
+
+  it("respinge modificarea unui client inexistent cu o eroare în română", async () => {
+    const company = await makeCompany("Firma A", "RO1");
+    const session = { role: "COMPANY_ADMIN" as const, companyId: company.id };
+
+    await expect(
+      updateClient(session, "id-inexistent", { name: "Oricine" })
+    ).rejects.toThrow(ClientNotFoundError);
+  });
+});
+
+describe("setClientActive", () => {
+  beforeEach(async () => {
+    await resetDatabase();
+  });
+
+  it("respinge dezactivarea unui client din altă firmă", async () => {
+    const companyA = await makeCompany("Firma A", "RO1");
+    const companyB = await makeCompany("Firma B", "RO2");
+    const clientB = await createClient(
+      { role: "COMPANY_ADMIN", companyId: companyB.id },
+      { ...baseInput, companyId: companyB.id }
+    );
+
+    await expect(
+      setClientActive({ role: "COMPANY_ADMIN", companyId: companyA.id }, clientB.id, false)
+    ).rejects.toThrow(TenantAccessError);
+  });
+
+  it("respinge dezactivarea unui client inexistent cu o eroare în română", async () => {
+    const company = await makeCompany("Firma A", "RO1");
+    const session = { role: "COMPANY_ADMIN" as const, companyId: company.id };
+
+    await expect(
+      setClientActive(session, "id-inexistent", false)
+    ).rejects.toThrow(ClientNotFoundError);
   });
 });

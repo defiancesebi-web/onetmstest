@@ -11,6 +11,13 @@ export class DuplicateCuiError extends Error {
   }
 }
 
+export class ClientNotFoundError extends Error {
+  constructor() {
+    super("Clientul nu a fost găsit.");
+    this.name = "ClientNotFoundError";
+  }
+}
+
 export type CreateClientInput = {
   companyId: string;
   name: string;
@@ -105,7 +112,8 @@ export async function createClient(session: SessionUser, input: CreateClientInpu
 }
 
 async function assertOwnClient(session: SessionUser, clientId: string) {
-  const client = await prisma.client.findUniqueOrThrow({ where: { id: clientId } });
+  const client = await prisma.client.findUnique({ where: { id: clientId } });
+  if (!client) throw new ClientNotFoundError();
   assertCompanyAccess(session, client.companyId);
   return client;
 }
