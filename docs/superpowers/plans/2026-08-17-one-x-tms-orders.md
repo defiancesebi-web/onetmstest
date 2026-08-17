@@ -3139,6 +3139,13 @@ git commit -m "feat: add order detail page and client order history"
 
 ## Task 12: Editarea comenzii
 
+> **Before writing this form:** React 19 resets a `<form action>` after every
+> action call, so uncontrolled inputs with `defaultValue` lose whatever the user
+> typed whenever the action returns an error instead of redirecting. This bit
+> both `ClientForm` (Task 3) and the new-order form (Task 10), and both were
+> converted to controlled inputs backed by React state. Write this form
+> controlled from the start, and verify a failed submit in the browser.
+
 **Files:**
 - Create: `app/dashboard/comenzi/[id]/edit-form.tsx`
 - Modify: `app/dashboard/comenzi/[id]/page.tsx`
