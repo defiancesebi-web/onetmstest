@@ -41,8 +41,24 @@ export function OrderForm({
   );
 
   const [stops, setStops] = useState<Stop[]>([emptyStop("LOADING"), emptyStop("UNLOADING")]);
-  const [paymentTermDays, setPaymentTermDays] = useState(clients[0]?.paymentTermDays ?? 45);
+
+  // Every scalar field below is controlled by React state — not just the
+  // stops list — so that a failed submit (e.g. the "must have an unloading
+  // stop" validation error) only ever costs the user the missing piece, not
+  // everything else they already typed. React 19 resets a `<form action>`'s
+  // native fields after every action call; a plain uncontrolled <input>
+  // would lose its value on that reset even though the DOM node survives.
+  const [clientId, setClientId] = useState(clients[0]?.id ?? "");
+  const [clientReference, setClientReference] = useState("");
+  const [cargoDescription, setCargoDescription] = useState("");
+  const [cargoWeightKg, setCargoWeightKg] = useState("");
+  const [cargoPackaging, setCargoPackaging] = useState("");
+  const [salePrice, setSalePrice] = useState("");
   const [currency, setCurrency] = useState("RON");
+  const [estimatedCostRon, setEstimatedCostRon] = useState("");
+  const [paymentTermDays, setPaymentTermDays] = useState(clients[0]?.paymentTermDays ?? 45);
+  const [manualExchangeRate, setManualExchangeRate] = useState("");
+  const [notes, setNotes] = useState("");
 
   function updateStop(index: number, patch: Partial<Stop>) {
     setStops((current) => current.map((s, i) => (i === index ? { ...s, ...patch } : s)));
@@ -62,8 +78,10 @@ export function OrderForm({
               id="clientId"
               name="clientId"
               required
+              value={clientId}
               className="w-full rounded-lg border px-2 py-2 text-sm"
               onChange={(e) => {
+                setClientId(e.target.value);
                 const client = clients.find((c) => c.id === e.target.value);
                 if (client) setPaymentTermDays(client.paymentTermDays);
               }}
@@ -77,19 +95,45 @@ export function OrderForm({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="clientReference">Referința clientului</Label>
-            <Input id="clientReference" name="clientReference" required />
+            <Input
+              id="clientReference"
+              name="clientReference"
+              required
+              value={clientReference}
+              onChange={(e) => setClientReference(e.target.value)}
+            />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="cargoDescription">Descrierea mărfii</Label>
-            <Input id="cargoDescription" name="cargoDescription" required />
+            <Input
+              id="cargoDescription"
+              name="cargoDescription"
+              required
+              value={cargoDescription}
+              onChange={(e) => setCargoDescription(e.target.value)}
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="cargoWeightKg">Greutate (kg)</Label>
-            <Input id="cargoWeightKg" name="cargoWeightKg" type="number" step="0.001" min="0" />
+            <Input
+              id="cargoWeightKg"
+              name="cargoWeightKg"
+              type="number"
+              step="0.001"
+              min="0"
+              value={cargoWeightKg}
+              onChange={(e) => setCargoWeightKg(e.target.value)}
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="cargoPackaging">Ambalaj</Label>
-            <Input id="cargoPackaging" name="cargoPackaging" placeholder="paleți, vrac..." />
+            <Input
+              id="cargoPackaging"
+              name="cargoPackaging"
+              placeholder="paleți, vrac..."
+              value={cargoPackaging}
+              onChange={(e) => setCargoPackaging(e.target.value)}
+            />
           </div>
         </div>
       </section>
@@ -185,7 +229,16 @@ export function OrderForm({
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="salePrice">Preț de vânzare</Label>
-            <Input id="salePrice" name="salePrice" type="number" step="0.01" min="0" required />
+            <Input
+              id="salePrice"
+              name="salePrice"
+              type="number"
+              step="0.01"
+              min="0"
+              required
+              value={salePrice}
+              onChange={(e) => setSalePrice(e.target.value)}
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="currency">Valută</Label>
@@ -202,7 +255,15 @@ export function OrderForm({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="estimatedCostRon">Cost estimat (RON)</Label>
-            <Input id="estimatedCostRon" name="estimatedCostRon" type="number" step="0.01" min="0" />
+            <Input
+              id="estimatedCostRon"
+              name="estimatedCostRon"
+              type="number"
+              step="0.01"
+              min="0"
+              value={estimatedCostRon}
+              onChange={(e) => setEstimatedCostRon(e.target.value)}
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="paymentTermDays">Termen de plată (zile)</Label>
@@ -225,6 +286,8 @@ export function OrderForm({
                 step="0.0001"
                 min="0"
                 required
+                value={manualExchangeRate}
+                onChange={(e) => setManualExchangeRate(e.target.value)}
               />
             </div>
           )}
@@ -233,7 +296,7 @@ export function OrderForm({
 
       <div className="space-y-1.5">
         <Label htmlFor="notes">Observații</Label>
-        <Input id="notes" name="notes" />
+        <Input id="notes" name="notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
       </div>
 
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}
