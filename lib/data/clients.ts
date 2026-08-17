@@ -78,7 +78,10 @@ export async function getClientById(session: SessionUser, clientId: string) {
   if (!client) return null;
   // Returns null rather than throwing so pages can render a 404 without
   // distinguishing "does not exist" from "belongs to another company".
-  if (session.role !== "SUPER_ADMIN" && client.companyId !== session.companyId) {
+  // Scoped strictly by companyId, no SUPER_ADMIN bypass: routeGuard redirects
+  // SUPER_ADMIN away from every /dashboard route, and the spec is explicit
+  // that SUPER_ADMIN must not reach companies' operational data.
+  if (client.companyId !== session.companyId) {
     return null;
   }
   return client;

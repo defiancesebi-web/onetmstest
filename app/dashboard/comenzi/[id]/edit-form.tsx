@@ -25,7 +25,13 @@ type FormFields = {
   cargoPackaging: string;
   salePrice: string;
   estimatedCostRon: string;
-  paymentTermDays: number;
+  // Kept as a string, not a number: `Number("")` is 0, so an intermediate
+  // Number() conversion on every keystroke would collapse a field the user
+  // just cleared (to retype it) into 0 before they finish typing — silently
+  // writing a 0-day payment term. Staying a string lets the field go empty;
+  // the server's `Number(formData.get("paymentTermDays") || 45)` treats an
+  // empty submission as "use the default", not as zero.
+  paymentTermDays: string;
   notes: string;
 };
 
@@ -37,7 +43,7 @@ function toFormFields(values: Values): FormFields {
     cargoPackaging: values.cargoPackaging ?? "",
     salePrice: values.salePrice,
     estimatedCostRon: values.estimatedCostRon ?? "",
-    paymentTermDays: values.paymentTermDays,
+    paymentTermDays: String(values.paymentTermDays),
     notes: values.notes ?? "",
   };
 }
@@ -80,7 +86,7 @@ export function OrderEditForm({ orderId, values }: { orderId: string; values: Va
           type="number"
           min={0}
           value={fields.paymentTermDays}
-          onChange={(e) => update("paymentTermDays", Number(e.target.value))}
+          onChange={(e) => update("paymentTermDays", e.target.value)}
         />
       </div>
       <div className="space-y-1.5 sm:col-span-2">

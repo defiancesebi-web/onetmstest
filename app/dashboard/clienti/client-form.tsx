@@ -25,7 +25,13 @@ type FormFields = {
   address: string;
   city: string;
   country: string;
-  paymentTermDays: number;
+  // Kept as a string, not a number: `Number("")` is 0, so an intermediate
+  // Number() conversion on every keystroke would collapse a field the user
+  // just cleared (to retype it) into 0 before they finish typing — silently
+  // writing a 0-day payment term. Staying a string lets the field go empty;
+  // the server's `Number(formData.get("paymentTermDays") || 45)` treats an
+  // empty submission as "use the default", not as zero.
+  paymentTermDays: string;
   contactName: string;
   contactPhone: string;
   contactEmail: string;
@@ -39,7 +45,7 @@ function toFormFields(values?: Values): FormFields {
     address: values?.address ?? "",
     city: values?.city ?? "",
     country: values?.country ?? "România",
-    paymentTermDays: values?.paymentTermDays ?? 45,
+    paymentTermDays: String(values?.paymentTermDays ?? 45),
     contactName: values?.contactName ?? "",
     contactPhone: values?.contactPhone ?? "",
     contactEmail: values?.contactEmail ?? "",
@@ -132,7 +138,7 @@ export function ClientForm({
             type="number"
             min={0}
             value={fields.paymentTermDays}
-            onChange={(e) => update("paymentTermDays", Number(e.target.value))}
+            onChange={(e) => update("paymentTermDays", e.target.value)}
           />
         </div>
         <div className="space-y-1.5">

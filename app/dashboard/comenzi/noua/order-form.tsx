@@ -5,6 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createOrderAction, type OrderFormState } from "../actions";
+import { STOP_TYPE_LABELS } from "@/lib/orderStatus";
+import { multiplyAndRoundToTwoDecimals } from "@/lib/money";
+
+function formatRateDate(isoDate: string): string {
+  // isoDate is a bare "YYYY-MM-DD" with no time component, so it must be
+  // read back in UTC — otherwise a browser west of Bucharest would parse
+  // midnight UTC as the previous day's evening and display the wrong date.
+  return new Intl.DateTimeFormat("ro-RO", { dateStyle: "medium", timeZone: "UTC" }).format(
+    new Date(isoDate)
+  );
+}
 
 type Stop = {
   type: "LOADING" | "UNLOADING";
@@ -32,8 +43,11 @@ function emptyStop(type: Stop["type"]): Stop {
 
 export function OrderForm({
   clients,
+  eurRate,
 }: {
   clients: { id: string; name: string; paymentTermDays: number }[];
+  /** Fetched server-side on page load; null means BNR was unreachable. */
+  eurRate: { rate: string; date: string } | null;
 }) {
   const [state, formAction, pending] = useActionState<OrderFormState, FormData>(
     createOrderAction,
@@ -56,9 +70,28 @@ export function OrderForm({
   const [salePrice, setSalePrice] = useState("");
   const [currency, setCurrency] = useState("RON");
   const [estimatedCostRon, setEstimatedCostRon] = useState("");
-  const [paymentTermDays, setPaymentTermDays] = useState(clients[0]?.paymentTermDays ?? 45);
+  // Kept as a string, not a number: `Number("")` is 0, so an intermediate
+  // Number() conversion on every keystroke would collapse a field the user
+  // just cleared (to retype it) into 0 before they finish typing — silently
+  // writing a 0-day payment term. Staying a string lets the field go empty;
+  // the server's `Number(formData.get("paymentTermDays") || 45)` treats an
+  // empty submission as "use the default", not as zero.
+  const [paymentTermDays, setPaymentTermDays] = useState(
+    String(clients[0]?.paymentTermDays ?? 45)
+  );
   const [manualExchangeRate, setManualExchangeRate] = useState("");
   const [notes, setNotes] = useState("");
+
+  // BNR unreachable at page load → ask for a manual rate right away, not
+  // only after a failed submit. A failed submit (e.g. the cached rate
+  // expired between page load and save) can still flip this on via
+  // state.needsManualRate.
+  const showManualRateField = currency === "EUR" && (eurRate === null || state.needsManualRate);
+  const effectiveRate = manualExchangeRate || eurRate?.rate;
+  const ronPreview =
+    currency === "EUR" && salePrice && effectiveRate
+      ? multiplyAndRoundToTwoDecimals(salePrice, effectiveRate)
+      : null;
 
   function updateStop(index: number, patch: Partial<Stop>) {
     setStops((current) => current.map((s, i) => (i === index ? { ...s, ...patch } : s)));
@@ -83,7 +116,7 @@ export function OrderForm({
               onChange={(e) => {
                 setClientId(e.target.value);
                 const client = clients.find((c) => c.id === e.target.value);
-                if (client) setPaymentTermDays(client.paymentTermDays);
+                if (client) setPaymentTermDays(String(client.paymentTermDays));
               }}
             >
               {clients.map((client) => (
@@ -165,7 +198,7 @@ export function OrderForm({
           <div key={index} className="space-y-3 rounded-lg border p-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">
-                {index + 1}. {stop.type === "LOADING" ? "Încărcare" : "Descărcare"}
+                {index + 1}. {STOP_TYPE_LABELS[stop.type]}
               </span>
               {stops.length > 2 && (
                 <Button
@@ -273,10 +306,10 @@ export function OrderForm({
               type="number"
               min={0}
               value={paymentTermDays}
-              onChange={(e) => setPaymentTermDays(Number(e.target.value))}
+              onChange={(e) => setPaymentTermDays(e.target.value)}
             />
           </div>
-          {state.needsManualRate && currency === "EUR" && (
+          {showManualRateField && (
             <div className="space-y-1.5 sm:col-span-2">
               <Label htmlFor="manualExchangeRate">Curs EUR → RON (manual)</Label>
               <Input
@@ -289,6 +322,19 @@ export function OrderForm({
                 value={manualExchangeRate}
                 onChange={(e) => setManualExchangeRate(e.target.value)}
               />
+              <p className="text-muted-foreground text-xs">
+                Cursul BNR nu este disponibil momentan. Introdu manual cursul EUR → RON.
+              </p>
+            </div>
+          )}
+          {currency === "EUR" && (
+            <div className="text-muted-foreground space-y-1 text-xs sm:col-span-2">
+              {!showManualRateField && eurRate && (
+                <p>
+                  Curs BNR: {eurRate.rate} RON din {formatRateDate(eurRate.date)}
+                </p>
+              )}
+              {ronPreview && <p>Echivalent în RON: {ronPreview} RON</p>}
             </div>
           )}
         </div>

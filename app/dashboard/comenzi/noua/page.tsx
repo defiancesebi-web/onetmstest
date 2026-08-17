@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { listClients } from "@/lib/data/clients";
+import { getEurRate } from "@/lib/bnr";
 import { PageHeader } from "@/components/page-header";
 import { buttonVariants } from "@/components/ui/button";
 import { OrderForm } from "./order-form";
@@ -11,6 +12,20 @@ export default async function ComandaNouaPage() {
     { role: session!.user.role, companyId: session!.user.companyId },
     session!.user.companyId!
   );
+
+  // Fetched up front so the form can show the EUR rate and RON equivalent
+  // before the user saves, per spec flow step 4 — not only after creation.
+  // If BNR is unreachable, null tells the form to ask for a manual rate
+  // proactively instead of waiting for a failed submit. Skipped when there
+  // are no active clients, since the form isn't rendered in that case.
+  let eurRate: { rate: string; date: string } | null = null;
+  if (clients.length > 0) {
+    try {
+      eurRate = await getEurRate();
+    } catch {
+      eurRate = null;
+    }
+  }
 
   return (
     <div>
@@ -35,6 +50,7 @@ export default async function ComandaNouaPage() {
             name: c.name,
             paymentTermDays: c.paymentTermDays,
           }))}
+          eurRate={eurRate}
         />
       )}
     </div>

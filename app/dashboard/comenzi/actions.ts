@@ -100,7 +100,24 @@ export async function createOrderAction(
   redirect("/dashboard/comenzi");
 }
 
-export async function updateOrderStatusAction(orderId: string, to: OrderStatus) {
+export type StatusActionState = { error: string | null };
+
+// Called directly from a client onClick (not bound to a <form action>): the
+// cancel button needs a confirm() gate before it submits anything, and every
+// transition needs its error message to survive the automatic page refresh
+// that follows a server action call. A per-button useActionState/form was
+// tried first, but ALLOWED_TRANSITIONS[order.status] necessarily excludes
+// whatever target just failed — that's what "failed" means — so the button
+// carrying the freshly-set error is exactly the one that disappears (its key
+// stops existing in the next button list) the instant the refreshed status
+// prop arrives, and React discards its local state before ever painting it.
+// Calling the action directly and keeping the error in the parent
+// StatusActions component (which isn't remounted by a status-prop change)
+// keeps the message on screen across that refresh.
+export async function updateOrderStatusAction(
+  orderId: string,
+  to: OrderStatus
+): Promise<StatusActionState> {
   const session = await auth();
   if (!session?.user.companyId) throw new Error("Neautentificat");
 
@@ -112,15 +129,18 @@ export async function updateOrderStatusAction(orderId: string, to: OrderStatus) 
     );
   } catch (error) {
     if (error instanceof InvalidStatusTransitionError) {
-      // Buttons only offer allowed transitions, so this means a stale page.
+      // Buttons only offer allowed transitions, so this means a stale page:
+      // another dispatcher already moved the order. Refresh it and tell the
+      // user why nothing happened, instead of failing silently.
       revalidatePath(`/dashboard/comenzi/${orderId}`);
-      return;
+      return { error: error.message };
     }
     throw error;
   }
 
   revalidatePath(`/dashboard/comenzi/${orderId}`);
   revalidatePath("/dashboard/comenzi");
+  return { error: null };
 }
 
 export async function updateOrderDetailsAction(
@@ -147,11 +167,11 @@ export async function updateOrderDetailsAction(
       }
     );
   } catch (error) {
-    if (error instanceof OrderNotFoundError) {
-      return { error: error.message, needsManualRate: false };
-    }
-    if (error instanceof TenantAccessError) {
-      return { error: "Nu ai acces la această comandă.", needsManualRate: false };
+    // Cross-tenant access must be indistinguishable from non-existence — same
+    // message as OrderNotFoundError — so a user of one carrier can't probe
+    // another carrier's order ids and learn which ones are real.
+    if (error instanceof OrderNotFoundError || error instanceof TenantAccessError) {
+      return { error: "Comanda nu a fost găsită.", needsManualRate: false };
     }
     if (error instanceof Error && error.message.startsWith("[DecimalError]")) {
       return { error: "Prețul de vânzare introdus nu este valid.", needsManualRate: false };
@@ -160,5 +180,6 @@ export async function updateOrderDetailsAction(
   }
 
   revalidatePath(`/dashboard/comenzi/${orderId}`);
+  revalidatePath("/dashboard/comenzi");
   return { error: null, needsManualRate: false };
 }

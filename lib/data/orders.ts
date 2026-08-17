@@ -272,7 +272,10 @@ export async function getOrderById(
   });
   if (!order) return null;
   // Null rather than throw, so pages render 404 without revealing existence.
-  if (session.role !== "SUPER_ADMIN" && order.companyId !== session.companyId) {
+  // Scoped strictly by companyId, no SUPER_ADMIN bypass: routeGuard redirects
+  // SUPER_ADMIN away from every /dashboard route, and the spec is explicit
+  // that SUPER_ADMIN must not reach companies' operational data.
+  if (order.companyId !== session.companyId) {
     return null;
   }
   return order;
