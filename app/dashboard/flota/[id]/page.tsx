@@ -2,9 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { getVehicleById } from "@/lib/data/vehicles";
-import { VEHICLE_TYPE_LABELS } from "@/lib/documentStatus";
+import { listDocumentsForVehicle } from "@/lib/data/documents";
+import { VEHICLE_TYPE_LABELS, documentStatus, VEHICLE_DOCUMENT_TYPES, toDateKey } from "@/lib/documentStatus";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
+import { DocumentsSection } from "@/components/documents-section";
 import { VehicleForm } from "../vehicle-form";
 import { updateVehicleAction, setVehicleActiveAction } from "../actions";
 
@@ -21,6 +23,20 @@ export default async function VehicleDetailPage({
     id
   );
   if (!vehicle) notFound();
+
+  const documents = (
+    await listDocumentsForVehicle(
+      { role: session!.user.role, companyId: session!.user.companyId },
+      vehicle.id
+    )
+  ).map((document) => ({
+    id: document.id,
+    type: document.type,
+    number: document.number,
+    issuedAt: document.issuedAt ? toDateKey(document.issuedAt) : null,
+    expiresAt: toDateKey(document.expiresAt),
+    status: documentStatus(document.expiresAt),
+  }));
 
   const boundUpdate = updateVehicleAction.bind(null, vehicle.id);
   const boundToggle = setVehicleActiveAction.bind(null, vehicle.id, !vehicle.isActive);
@@ -44,6 +60,14 @@ export default async function VehicleDetailPage({
       />
 
       <VehicleForm action={boundUpdate} values={vehicle} submitLabel="Salvează modificările" />
+
+      <DocumentsSection
+        ownerKind="vehicle"
+        ownerId={vehicle.id}
+        ownerPath={`/dashboard/flota/${vehicle.id}`}
+        availableTypes={VEHICLE_DOCUMENT_TYPES}
+        documents={documents}
+      />
     </div>
   );
 }
