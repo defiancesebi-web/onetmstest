@@ -49,6 +49,7 @@ model Company {
   orders      Order[]
   vehicles    Vehicle[]
   drivers     Driver[]
+  documents   Document[]
 }
 
 model User {
@@ -197,6 +198,7 @@ model Vehicle {
   updatedAt          DateTime    @updatedAt
 
   company Company @relation(fields: [companyId], references: [id])
+  documents Document[]
 
   @@unique([companyId, registrationNumber])
   @@index([companyId, isActive])
@@ -217,6 +219,42 @@ model Driver {
   updatedAt  DateTime  @updatedAt
 
   company Company @relation(fields: [companyId], references: [id])
+  documents Document[]
 
   @@index([companyId, lastName])
+}
+
+enum DocumentType {
+  ITP
+  RCA
+  CASCO
+  ROVINIETA
+  TAHOGRAF
+  COPIE_CONFORMA
+  ASIGURARE_CMR
+  PERMIS_CONDUCERE
+  ATESTAT_PROFESIONAL
+  CARD_TAHOGRAF
+  AVIZ_MEDICAL
+  AVIZ_PSIHOLOGIC
+}
+
+model Document {
+  id        String       @id @default(cuid())
+  companyId String
+  vehicleId String?
+  driverId  String?
+  type      DocumentType
+  number    String?
+  issuedAt  DateTime?    @db.Date
+  expiresAt DateTime     @db.Date
+  notes     String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  company Company  @relation(fields: [companyId], references: [id])
+  vehicle Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  driver  Driver?  @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, expiresAt])
 }
