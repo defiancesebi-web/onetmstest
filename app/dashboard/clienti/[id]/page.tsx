@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { getClientById } from "@/lib/data/clients";
+import { listOrders } from "@/lib/data/orders";
+import { ORDER_STATUS_LABELS } from "@/lib/orderStatus";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +23,12 @@ export default async function ClientDetailPage({
     id
   );
   if (!client) notFound();
+
+  const orders = await listOrders(
+    { role: session!.user.role, companyId: session!.user.companyId },
+    session!.user.companyId!,
+    { clientId: client.id }
+  );
 
   const boundUpdate = updateClientAction.bind(null, client.id);
   const boundToggle = setClientActiveAction.bind(null, client.id, !client.isActive);
@@ -48,6 +56,44 @@ export default async function ClientDetailPage({
       />
 
       <ClientForm action={boundUpdate} values={client} submitLabel="Salvează modificările" />
+
+      <section className="mt-10">
+        <h2 className="mb-3 text-sm font-medium">Comenzile acestui client</h2>
+        {orders.length === 0 ? (
+          <p className="text-muted-foreground text-sm">Nicio comandă încă.</p>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-muted/50">
+                <tr className="border-b">
+                  <th className="px-4 py-2 font-medium">Număr</th>
+                  <th className="px-4 py-2 font-medium">Referință</th>
+                  <th className="px-4 py-2 font-medium">Preț</th>
+                  <th className="px-4 py-2 font-medium">Stare</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map((order) => (
+                  <tr key={order.id} className="border-b last:border-0">
+                    <td className="px-4 py-2">
+                      <Link href={`/dashboard/comenzi/${order.id}`} className="underline">
+                        {order.orderNumber}
+                      </Link>
+                    </td>
+                    <td className="text-muted-foreground px-4 py-2">{order.clientReference}</td>
+                    <td className="px-4 py-2">
+                      {order.salePrice.toString()} {order.currency}
+                    </td>
+                    <td className="px-4 py-2">
+                      <Badge>{ORDER_STATUS_LABELS[order.status]}</Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
