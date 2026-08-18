@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -82,6 +82,23 @@ export function OrderForm({
   const [manualExchangeRate, setManualExchangeRate] = useState("");
   const [notes, setNotes] = useState("");
 
+  // React 19's post-action form reset touches <select> DOM nodes directly.
+  // Text inputs self-heal via their internal value tracker, but a <select>
+  // does not, so a rejected submit (e.g. "must have an unloading stop", or
+  // BNR being unreachable) can leave a dropdown showing its first option even
+  // though the corresponding state is still correct. Resync both explicitly
+  // whenever the action settles — see vehicle-form.tsx / documents-section.tsx
+  // for the same pattern, and the currency case for why it matters: a stale
+  // RON selection here would silently persist the wrong money.
+  const clientSelectRef = useRef<HTMLSelectElement>(null);
+  const currencySelectRef = useRef<HTMLSelectElement>(null);
+  useEffect(() => {
+    if (clientSelectRef.current) clientSelectRef.current.value = clientId;
+  }, [state, clientId]);
+  useEffect(() => {
+    if (currencySelectRef.current) currencySelectRef.current.value = currency;
+  }, [state, currency]);
+
   // BNR unreachable at page load → ask for a manual rate right away, not
   // only after a failed submit. A failed submit (e.g. the cached rate
   // expired between page load and save) can still flip this on via
@@ -108,6 +125,7 @@ export function OrderForm({
           <div className="space-y-1.5">
             <Label htmlFor="clientId">Client</Label>
             <select
+              ref={clientSelectRef}
               id="clientId"
               name="clientId"
               required
@@ -276,6 +294,7 @@ export function OrderForm({
           <div className="space-y-1.5">
             <Label htmlFor="currency">Valută</Label>
             <select
+              ref={currencySelectRef}
               id="currency"
               name="currency"
               value={currency}

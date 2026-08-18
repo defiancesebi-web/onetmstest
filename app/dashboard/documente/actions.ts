@@ -19,7 +19,12 @@ function parseDate(value: FormDataEntryValue | null): Date | null {
   if (!text) return null;
   // A date input gives "YYYY-MM-DD"; anchoring at UTC midnight keeps the stored
   // calendar day identical to what the user picked.
-  return new Date(`${text}T00:00:00Z`);
+  const parsed = new Date(`${text}T00:00:00Z`);
+  // An unparsable string produces an Invalid Date object, which is truthy —
+  // `if (!expiresAt)` below would let it through to Prisma, which throws a
+  // raw error to the generic error page instead of the Romanian message.
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed;
 }
 
 function ownerPath(formData: FormData) {

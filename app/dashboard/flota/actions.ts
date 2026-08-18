@@ -81,11 +81,23 @@ export async function setVehicleActiveAction(vehicleId: string, isActive: boolea
   const session = await auth();
   if (!session?.user.companyId) throw new Error("Neautentificat");
 
-  await setVehicleActive(
-    { role: session.user.role, companyId: session.user.companyId },
-    vehicleId,
-    isActive
-  );
+  try {
+    await setVehicleActive(
+      { role: session.user.role, companyId: session.user.companyId },
+      vehicleId,
+      isActive
+    );
+  } catch (error) {
+    // A stale row (already deleted, or another company's id) hits this; treat
+    // it the same as "nothing to do" instead of throwing to the error page —
+    // this action has no error channel (plain <form action>, no useActionState).
+    if (error instanceof VehicleNotFoundError || error instanceof TenantAccessError) {
+      revalidatePath(`/dashboard/flota/${vehicleId}`);
+      revalidatePath("/dashboard/flota");
+      return;
+    }
+    throw error;
+  }
 
   revalidatePath(`/dashboard/flota/${vehicleId}`);
   revalidatePath("/dashboard/flota");

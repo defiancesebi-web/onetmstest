@@ -161,10 +161,10 @@ export function DocumentsSection({
         />
 
         <div className="space-y-1.5">
-          <Label htmlFor="type">Tip document</Label>
+          <Label htmlFor="documentType">Tip document</Label>
           <select
             ref={typeSelectRef}
-            id="type"
+            id="documentType"
             name="type"
             value={type}
             onChange={(e) => setType(e.target.value as DocumentType)}

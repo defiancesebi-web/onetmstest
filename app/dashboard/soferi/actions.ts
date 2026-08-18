@@ -73,11 +73,23 @@ export async function setDriverActiveAction(driverId: string, isActive: boolean)
   const session = await auth();
   if (!session?.user.companyId) throw new Error("Neautentificat");
 
-  await setDriverActive(
-    { role: session.user.role, companyId: session.user.companyId },
-    driverId,
-    isActive
-  );
+  try {
+    await setDriverActive(
+      { role: session.user.role, companyId: session.user.companyId },
+      driverId,
+      isActive
+    );
+  } catch (error) {
+    // A stale row (already deleted, or another company's id) hits this; treat
+    // it the same as "nothing to do" instead of throwing to the error page —
+    // this action has no error channel (plain <form action>, no useActionState).
+    if (error instanceof DriverNotFoundError || error instanceof TenantAccessError) {
+      revalidatePath(`/dashboard/soferi/${driverId}`);
+      revalidatePath("/dashboard/soferi");
+      return;
+    }
+    throw error;
+  }
 
   revalidatePath(`/dashboard/soferi/${driverId}`);
   revalidatePath("/dashboard/soferi");
