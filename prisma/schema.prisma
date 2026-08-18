@@ -63,7 +63,23 @@ model User {
   status       UserStatus @default(ACTIVE)
   createdAt    DateTime   @default(now())
 
-  company Company? @relation(fields: [companyId], references: [id])
+  company             Company?             @relation(fields: [companyId], references: [id])
+  passwordResetTokens PasswordResetToken[]
+}
+
+/// Single-use, short-lived. `usedAt` records consumption rather than deleting
+/// the row, so a reused link can be told apart from one that never existed.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Invitation {

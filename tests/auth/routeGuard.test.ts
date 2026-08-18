@@ -29,4 +29,16 @@ describe("decideRedirect", () => {
   it("nu afectează rute publice", () => {
     expect(decideRedirect("/login", null)).toBeNull();
   });
+
+  it("cere autentificare pentru pagina de parolă", () => {
+    expect(decideRedirect("/parola", null)).toBe("/login");
+  });
+
+  it("lasă orice rol autentificat pe pagina de parolă", () => {
+    // Especially SUPER_ADMIN, who is redirected away from /dashboard and would
+    // otherwise have no way to change their own password.
+    expect(decideRedirect("/parola", { role: "SUPER_ADMIN" })).toBeNull();
+    expect(decideRedirect("/parola", { role: "COMPANY_ADMIN" })).toBeNull();
+    expect(decideRedirect("/parola", { role: "COMPANY_USER" })).toBeNull();
+  });
 });

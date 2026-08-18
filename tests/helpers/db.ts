@@ -8,6 +8,7 @@ export async function resetDatabase() {
   await prisma.driver.deleteMany();
   await prisma.client.deleteMany();
   await prisma.invitation.deleteMany();
+  await prisma.passwordResetToken.deleteMany();
   await prisma.user.deleteMany();
   await prisma.company.deleteMany();
 }

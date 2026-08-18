@@ -21,6 +21,11 @@ export default function LoginPage() {
         </Button>
       </form>
       <p className="text-muted-foreground text-sm">
+        <Link href="/parola-uitata" className="underline">
+          Mi-am uitat parola
+        </Link>
+      </p>
+      <p className="text-muted-foreground text-sm">
         Nu ai cont?{" "}
         <Link href="/inregistrare" className="underline">
           Înregistrează-ți firma

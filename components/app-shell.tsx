@@ -62,6 +62,11 @@ export async function AppShell({
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-end gap-3 border-b px-6 py-3">
           <span className="text-muted-foreground text-sm">{session!.user.name}</span>
+          {/* An account page, not a module — so it lives here rather than in the
+              sidebar, and is reachable from both the company and admin areas. */}
+          <Link href="/parola" className="text-muted-foreground text-sm underline">
+            Schimbă parola
+          </Link>
           <form action={logoutAction}>
             <Button type="submit" variant="outline" size="sm">
               Delogare
