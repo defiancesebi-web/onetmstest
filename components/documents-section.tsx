@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DocumentStatusBadge } from "@/components/document-status-badge";
-import { DOCUMENT_TYPE_LABELS, type DocumentStatus } from "@/lib/documentStatus";
+import { DOCUMENT_TYPE_LABELS, formatDateKey, type DocumentStatus } from "@/lib/documentStatus";
 import type { DocumentType } from "@/lib/generated/prisma/enums";
 import {
   createDocumentAction,
@@ -22,11 +22,6 @@ export type DocumentRow = {
   expiresAt: string;
   status: DocumentStatus;
 };
-
-function formatDate(iso: string) {
-  const [year, month, day] = iso.split("-");
-  return `${day}.${month}.${year}`;
-}
 
 /**
  * Renewal in place, one row at a time. Its own component so each row keeps its
@@ -125,7 +120,7 @@ export function DocumentsSection({
                 <tr key={document.id} className="border-b last:border-0">
                   <td className="px-4 py-2">{DOCUMENT_TYPE_LABELS[document.type]}</td>
                   <td className="text-muted-foreground px-4 py-2">{document.number ?? "—"}</td>
-                  <td className="px-4 py-2">{formatDate(document.expiresAt)}</td>
+                  <td className="px-4 py-2">{formatDateKey(document.expiresAt)}</td>
                   <td className="px-4 py-2">
                     <DocumentStatusBadge status={document.status} />
                   </td>

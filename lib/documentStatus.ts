@@ -17,6 +17,12 @@ export function toDateKey(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+/** Renders a "YYYY-MM-DD" date key the way Romanian users expect: "DD.MM.YYYY". */
+export function formatDateKey(dateKey: string): string {
+  const [year, month, day] = dateKey.split("-");
+  return `${day}.${month}.${year}`;
+}
+
 /**
  * "Today" is a Romanian calendar day, not the server's. Vercel runs UTC, so
  * between midnight and 03:00 Bucharest time the two disagree — and a document

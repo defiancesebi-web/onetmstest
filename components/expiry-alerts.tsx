@@ -3,6 +3,7 @@ import { DocumentStatusBadge } from "@/components/document-status-badge";
 import {
   DOCUMENT_TYPE_LABELS,
   EXPIRY_WARNING_DAYS,
+  formatDateKey,
   type DocumentStatus,
 } from "@/lib/documentStatus";
 import type { DocumentType } from "@/lib/generated/prisma/enums";
@@ -15,11 +16,6 @@ export type ExpiryAlertRow = {
   ownerLabel: string;
   ownerHref: string;
 };
-
-function formatDate(iso: string) {
-  const [year, month, day] = iso.split("-");
-  return `${day}.${month}.${year}`;
-}
 
 export function ExpiryAlerts({ rows }: { rows: ExpiryAlertRow[] }) {
   return (
@@ -51,7 +47,7 @@ export function ExpiryAlerts({ rows }: { rows: ExpiryAlertRow[] }) {
                       {row.ownerLabel}
                     </Link>
                   </td>
-                  <td className="px-4 py-2">{formatDate(row.expiresAt)}</td>
+                  <td className="px-4 py-2">{formatDateKey(row.expiresAt)}</td>
                   <td className="px-4 py-2">
                     <DocumentStatusBadge status={row.status} />
                   </td>
