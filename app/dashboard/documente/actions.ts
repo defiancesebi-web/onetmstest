@@ -105,10 +105,21 @@ export async function deleteDocumentAction(documentId: string, ownerPathValue: s
   const session = await auth();
   if (!session?.user.companyId) throw new Error("Neautentificat");
 
-  await deleteDocument(
-    { role: session.user.role, companyId: session.user.companyId },
-    documentId
-  );
+  try {
+    await deleteDocument(
+      { role: session.user.role, companyId: session.user.companyId },
+      documentId
+    );
+  } catch (error) {
+    // A double-click or a row left over from someone else's delete hits this;
+    // treat it the same as "already gone" instead of throwing to the error page.
+    if (error instanceof DocumentNotFoundError || error instanceof TenantAccessError) {
+      revalidatePath(ownerPathValue);
+      revalidatePath("/dashboard");
+      return;
+    }
+    throw error;
+  }
 
   revalidatePath(ownerPathValue);
   revalidatePath("/dashboard");
