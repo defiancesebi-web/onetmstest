@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,6 +59,16 @@ export function VehicleForm({
     setFields((prev) => ({ ...prev, [key]: value }));
   }
 
+  // React 19's post-action form reset touches the <select> DOM node directly.
+  // Text inputs self-heal via their internal value tracker, but a <select>
+  // does not, so a rejected submit (e.g. a duplicate registration number) can
+  // leave the dropdown showing the default option even though `fields.type`
+  // itself is still correct. Resync it explicitly whenever the action settles.
+  const typeSelectRef = useRef<HTMLSelectElement>(null);
+  useEffect(() => {
+    if (typeSelectRef.current) typeSelectRef.current.value = fields.type;
+  }, [state, fields.type]);
+
   return (
     <form action={formAction} className="grid max-w-2xl gap-4 sm:grid-cols-2">
       <div className="space-y-1.5">
@@ -74,6 +84,7 @@ export function VehicleForm({
       <div className="space-y-1.5">
         <Label htmlFor="type">Tip</Label>
         <select
+          ref={typeSelectRef}
           id="type"
           name="type"
           value={fields.type}
