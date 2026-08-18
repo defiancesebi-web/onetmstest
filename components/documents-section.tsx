@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -90,6 +90,16 @@ export function DocumentsSection({
   const [issuedAt, setIssuedAt] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
 
+  // React 19's post-action form reset touches the <select> DOM node directly.
+  // Text/date inputs self-heal via their internal value tracker, but a <select>
+  // does not, so a rejected submit can leave the dropdown showing the wrong
+  // option even though `type` state itself is still correct. Resync it
+  // explicitly whenever the action settles.
+  const typeSelectRef = useRef<HTMLSelectElement>(null);
+  useEffect(() => {
+    if (typeSelectRef.current) typeSelectRef.current.value = type;
+  }, [state, type]);
+
   return (
     <section className="mt-10">
       <h2 className="mb-3 text-sm font-medium">Documente</h2>
@@ -158,6 +168,7 @@ export function DocumentsSection({
         <div className="space-y-1.5">
           <Label htmlFor="type">Tip document</Label>
           <select
+            ref={typeSelectRef}
             id="type"
             name="type"
             value={type}
