@@ -50,6 +50,7 @@ model Company {
   vehicles    Vehicle[]
   drivers     Driver[]
   documents   Document[]
+  trips       Trip[]
 }
 
 model User {
@@ -158,17 +159,20 @@ model Order {
   estimatedCostRon    Decimal?    @db.Decimal(12, 2)
   paymentTermDays     Int
   documentsReceivedAt DateTime?
+  tripId              String?
   notes               String?
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 
   company Company     @relation(fields: [companyId], references: [id])
   client  Client      @relation(fields: [clientId], references: [id])
+  trip    Trip?       @relation(fields: [tripId], references: [id])
   stops   OrderStop[]
 
   @@unique([companyId, year, sequence])
   @@unique([companyId, orderNumber])
   @@index([companyId, status])
+  @@index([companyId, tripId])
 }
 
 model OrderStop {
@@ -215,6 +219,8 @@ model Vehicle {
 
   company Company @relation(fields: [companyId], references: [id])
   documents Document[]
+  tripsAsTractorUnit Trip[] @relation("TripTractorUnit")
+  tripsAsTrailer     Trip[] @relation("TripTrailer")
 
   @@unique([companyId, registrationNumber])
   @@index([companyId, isActive])
@@ -236,6 +242,8 @@ model Driver {
 
   company Company @relation(fields: [companyId], references: [id])
   documents Document[]
+  tripsAsPrimaryDriver Trip[] @relation("TripPrimaryDriver")
+  tripsAsSecondDriver  Trip[] @relation("TripSecondDriver")
 
   @@index([companyId, lastName])
 }
@@ -273,4 +281,45 @@ model Document {
   driver  Driver?  @relation(fields: [driverId], references: [id], onDelete: Cascade)
 
   @@index([companyId, expiresAt])
+}
+
+enum TripStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model Trip {
+  id                  String     @id @default(cuid())
+  companyId           String
+  year                Int
+  sequence            Int
+  tripNumber          String
+  tractorUnitId       String?
+  trailerId           String?
+  primaryDriverId     String?
+  secondDriverId      String?
+  startsAt            DateTime   @db.Date
+  endsAt              DateTime   @db.Date
+  /// Once the dispatcher edits the dates by hand, attaching an order must stop
+  /// silently overwriting them — that would erase a manually added return day,
+  /// which is exactly the date overlap detection reads.
+  datesEditedManually Boolean    @default(false)
+  status              TripStatus @default(PLANNED)
+  notes               String?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  company     Company  @relation(fields: [companyId], references: [id])
+  tractorUnit Vehicle? @relation("TripTractorUnit", fields: [tractorUnitId], references: [id])
+  trailer     Vehicle? @relation("TripTrailer", fields: [trailerId], references: [id])
+  primaryDriver Driver? @relation("TripPrimaryDriver", fields: [primaryDriverId], references: [id])
+  secondDriver  Driver? @relation("TripSecondDriver", fields: [secondDriverId], references: [id])
+  orders      Order[]
+
+  @@unique([companyId, year, sequence])
+  @@unique([companyId, tripNumber])
+  @@index([companyId, status])
+  @@index([companyId, startsAt])
 }
