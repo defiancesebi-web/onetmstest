@@ -303,6 +303,11 @@ export async function updateOrderStatus(
       ...(to === "DOCUMENTS_RECEIVED" && !order.documentsReceivedAt
         ? { documentsReceivedAt: new Date() }
         : {}),
+      // A cancelled order must not keep occupying a truck: it leaves the trip
+      // as soon as it is cancelled, from wherever the cancellation came. This
+      // lives here (rather than trips.ts reaching in) because trips.ts already
+      // imports from orders.ts, and the reverse import would be circular.
+      ...(to === "CANCELLED" ? { tripId: null } : {}),
     },
   });
 }

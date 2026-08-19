@@ -2,7 +2,12 @@ import { Prisma } from "@/lib/generated/prisma/client";
 import type { TripStatus } from "@/lib/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 import { assertCompanyAccess, type SessionUser } from "@/lib/tenancy";
-import { formatTripNumber, datesOverlap, TRIP_EDITABLE_STATUSES } from "@/lib/tripStatus";
+import {
+  formatTripNumber,
+  datesOverlap,
+  TRIP_EDITABLE_STATUSES,
+  assertTripTransitionAllowed,
+} from "@/lib/tripStatus";
 // Reused rather than duplicated: the helper is order-flavoured in name only —
 // it returns the current calendar year in Europe/Bucharest, which is what trip
 // numbering needs too.
@@ -471,5 +476,42 @@ export async function listUnplannedOrders(
     where: { companyId, tripId: null, status: "CONFIRMED" },
     include: { client: { select: { name: true } }, stops: { orderBy: { sequence: "asc" } } },
     orderBy: { createdAt: "asc" },
+  });
+}
+
+/**
+ * Propagation only ever advances an order along its own path. `updateMany` with
+ * a status filter is what enforces that: an order that has already moved past
+ * the expected state simply does not match, so a completed trip cannot pull an
+ * invoiced order back to delivered.
+ */
+export async function updateTripStatus(
+  session: SessionUser,
+  tripId: string,
+  to: TripStatus
+) {
+  const trip = await assertOwnTrip(session, tripId);
+  assertTripTransitionAllowed(trip.status, to);
+
+  return prisma.$transaction(async (tx) => {
+    if (to === "IN_PROGRESS") {
+      await tx.order.updateMany({
+        where: { tripId, status: "CONFIRMED" },
+        data: { status: "IN_PROGRESS" },
+      });
+    }
+    if (to === "COMPLETED") {
+      await tx.order.updateMany({
+        where: { tripId, status: "IN_PROGRESS" },
+        data: { status: "DELIVERED" },
+      });
+    }
+    if (to === "CANCELLED") {
+      // The orders themselves are untouched — they go back to the unplanned
+      // list and can be put on another truck.
+      await tx.order.updateMany({ where: { tripId }, data: { tripId: null } });
+    }
+
+    return tx.trip.update({ where: { id: tripId }, data: { status: to } });
   });
 }
