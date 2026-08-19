@@ -2,7 +2,7 @@ import { Prisma } from "@/lib/generated/prisma/client";
 import type { TripStatus } from "@/lib/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 import { assertCompanyAccess, type SessionUser } from "@/lib/tenancy";
-import { formatTripNumber, datesOverlap } from "@/lib/tripStatus";
+import { formatTripNumber, datesOverlap, TRIP_EDITABLE_STATUSES } from "@/lib/tripStatus";
 // Reused rather than duplicated: the helper is order-flavoured in name only —
 // it returns the current calendar year in Europe/Bucharest, which is what trip
 // numbering needs too.
@@ -370,5 +370,98 @@ export async function updateTripDates(
   return prisma.trip.update({
     where: { id: tripId },
     data: { startsAt, endsAt, datesEditedManually: true },
+  });
+}
+
+export type UnplannedOrder = Prisma.OrderGetPayload<{
+  include: { client: { select: { name: true } }; stops: true };
+}>;
+
+/**
+ * Recomputes the trip's window from its orders' stops, unless the dispatcher
+ * has taken the dates over by hand. Called inside the same transaction as the
+ * attach/detach, so the window is never observed out of step with its orders.
+ */
+async function recalcTripDates(
+  tx: Prisma.TransactionClient,
+  tripId: string
+): Promise<void> {
+  const trip = await tx.trip.findUniqueOrThrow({ where: { id: tripId } });
+  if (trip.datesEditedManually) return;
+
+  const stops = await tx.orderStop.findMany({
+    where: { order: { tripId } },
+    select: { type: true, scheduledDate: true },
+  });
+  if (stops.length === 0) return;
+
+  const loadings = stops.filter((s) => s.type === "LOADING").map((s) => s.scheduledDate.getTime());
+  const unloadings = stops
+    .filter((s) => s.type === "UNLOADING")
+    .map((s) => s.scheduledDate.getTime());
+
+  // Every order carries at least one of each, guaranteed by order creation, so
+  // these arrays are non-empty whenever any stop exists.
+  const startsAt = new Date(Math.min(...loadings));
+  const endsAt = new Date(Math.max(...unloadings));
+
+  await tx.trip.update({ where: { id: tripId }, data: { startsAt, endsAt } });
+}
+
+export async function attachOrderToTrip(
+  session: SessionUser,
+  tripId: string,
+  orderId: string
+): Promise<void> {
+  const trip = await assertOwnTrip(session, tripId);
+
+  if (!(TRIP_EDITABLE_STATUSES as readonly string[]).includes(trip.status)) {
+    throw new InvalidTripError("Cursa este încheiată sau anulată și nu mai poate fi modificată.");
+  }
+
+  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  if (!order || order.companyId !== trip.companyId) {
+    throw new InvalidTripError("Comanda selectată nu aparține firmei tale.");
+  }
+  if (order.status !== "CONFIRMED") {
+    throw new InvalidTripError("Doar comenzile confirmate pot fi planificate.");
+  }
+  if (order.tripId) {
+    throw new InvalidTripError("Comanda este deja atașată unei curse.");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.order.update({ where: { id: orderId }, data: { tripId } });
+    await recalcTripDates(tx, tripId);
+  });
+}
+
+export async function detachOrderFromTrip(
+  session: SessionUser,
+  orderId: string
+): Promise<void> {
+  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  if (!order) throw new TripNotFoundError();
+  assertCompanyAccess(session, order.companyId);
+
+  const tripId = order.tripId;
+  if (!tripId) return;
+
+  await prisma.$transaction(async (tx) => {
+    await tx.order.update({ where: { id: orderId }, data: { tripId: null } });
+    await recalcTripDates(tx, tripId);
+  });
+}
+
+export async function listUnplannedOrders(
+  session: SessionUser,
+  companyId: string
+): Promise<UnplannedOrder[]> {
+  assertCompanyAccess(session, companyId);
+
+  return prisma.order.findMany({
+    where: { companyId, tripId: null, status: "CONFIRMED" },
+    include: { client: { select: { name: true } }, stops: { orderBy: { sequence: "asc" } } },
+    orderBy: { createdAt: "asc" },
   });
 }
