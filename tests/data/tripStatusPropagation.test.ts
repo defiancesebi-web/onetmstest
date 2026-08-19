@@ -122,4 +122,40 @@ describe("anularea unei comenzi o desprinde din cursă", () => {
     expect(fresh.status).toBe("CANCELLED");
     expect(fresh.tripId).toBeNull();
   });
+
+  it("nu desprinde comanda anulată dacă cursa este deja încheiată", async () => {
+    const { session, trip, order } = await setupWithOrder("Firma A", "RO1");
+    await updateTripStatus(session, trip.id, "IN_PROGRESS");
+    await updateTripStatus(session, trip.id, "COMPLETED");
+    // Order is now DELIVERED, still attached to the now-COMPLETED trip.
+
+    await updateOrderStatus(session, order.id, "CANCELLED");
+
+    const fresh = await prisma.order.findUniqueOrThrow({ where: { id: order.id } });
+    expect(fresh.status).toBe("CANCELLED");
+    expect(fresh.tripId).toBe(trip.id);
+  });
+});
+
+describe("propagarea la pornirea cursei ignoră comenzile anulate", () => {
+  beforeEach(async () => {
+    await resetDatabase();
+  });
+
+  it("nu atinge o comandă anulată rămasă atașată cursei când aceasta pornește", async () => {
+    const { session, trip, order } = await setupWithOrder("Firma A", "RO1");
+    // Simulates the state the new detach guard can now leave behind: a
+    // CANCELLED order still carrying the trip's id. Written directly rather
+    // than through updateOrderStatus because the trip here is PLANNED
+    // (editable), so the guarded path would detach it — this test is about
+    // the IN_PROGRESS propagation's own filter, not about how such a row
+    // could arise.
+    await prisma.order.update({ where: { id: order.id }, data: { status: "CANCELLED" } });
+
+    await updateTripStatus(session, trip.id, "IN_PROGRESS");
+
+    const fresh = await prisma.order.findUniqueOrThrow({ where: { id: order.id } });
+    expect(fresh.status).toBe("CANCELLED");
+    expect(fresh.tripId).toBe(trip.id);
+  });
 });

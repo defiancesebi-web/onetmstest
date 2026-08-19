@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { assertCompanyAccess, type SessionUser } from "@/lib/tenancy";
 import { getEurRate } from "@/lib/bnr";
 import { assertTransitionAllowed } from "@/lib/orderStatus";
+import { TRIP_EDITABLE_STATUSES } from "@/lib/tripStatus";
 
 export class InvalidOrderError extends Error {
   constructor(message: string) {
@@ -296,19 +297,36 @@ export async function updateOrderStatus(
   const order = await assertOwnOrder(session, orderId);
   assertTransitionAllowed(order.status, to);
 
-  return prisma.order.update({
-    where: { id: orderId },
-    data: {
-      status: to,
-      ...(to === "DOCUMENTS_RECEIVED" && !order.documentsReceivedAt
-        ? { documentsReceivedAt: new Date() }
-        : {}),
-      // A cancelled order must not keep occupying a truck: it leaves the trip
-      // as soon as it is cancelled, from wherever the cancellation came. This
-      // lives here (rather than trips.ts reaching in) because trips.ts already
-      // imports from orders.ts, and the reverse import would be circular.
-      ...(to === "CANCELLED" ? { tripId: null } : {}),
-    },
+  return prisma.$transaction(async (tx) => {
+    // An open (PLANNED/IN_PROGRESS) trip releases a cancelled order back to
+    // the unplanned list. A closed (COMPLETED/CANCELLED) trip keeps it,
+    // because a completed trip's contents are the record the cost module
+    // will rest on — cancelling the order must never silently rewrite that
+    // history. The order's own cancellation is never blocked either way: its
+    // lifecycle is independent of the truck's, and refusing the cancellation
+    // would trap a mis-entered order forever. This lives here (rather than
+    // trips.ts reaching in) because trips.ts already imports from orders.ts,
+    // and the reverse import would be circular.
+    let detachFromTrip = false;
+    if (to === "CANCELLED" && order.tripId) {
+      const trip = await tx.trip.findUnique({
+        where: { id: order.tripId },
+        select: { status: true },
+      });
+      detachFromTrip =
+        trip !== null && (TRIP_EDITABLE_STATUSES as readonly string[]).includes(trip.status);
+    }
+
+    return tx.order.update({
+      where: { id: orderId },
+      data: {
+        status: to,
+        ...(to === "DOCUMENTS_RECEIVED" && !order.documentsReceivedAt
+          ? { documentsReceivedAt: new Date() }
+          : {}),
+        ...(detachFromTrip ? { tripId: null } : {}),
+      },
+    });
   });
 }
 
