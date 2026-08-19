@@ -5,6 +5,7 @@ import { getOrderById, calculateMargin } from "@/lib/data/orders";
 import { ORDER_STATUS_LABELS, STOP_TYPE_LABELS } from "@/lib/orderStatus";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { StatusActions } from "./status-actions";
 import { OrderEditForm } from "./edit-form";
 
@@ -142,6 +143,30 @@ export default async function ComandaDetailPage({
             notes: order.notes,
           }}
         />
+      </section>
+
+      <section className="mt-10 border-t pt-8">
+        <h2 className="mb-3 text-sm font-medium">Planificare</h2>
+        {order.tripId ? (
+          <p className="text-sm">
+            Comanda este pe cursa{" "}
+            <Link href={`/dashboard/curse/${order.tripId}`} className="underline">
+              vezi cursa
+            </Link>
+            .
+          </p>
+        ) : order.status === "CONFIRMED" ? (
+          <Link
+            href={`/dashboard/curse/noua?comanda=${order.id}`}
+            className={buttonVariants({ variant: "outline" })}
+          >
+            Planifică pe o cursă
+          </Link>
+        ) : (
+          <p className="text-muted-foreground text-sm">
+            Comanda poate fi planificată după ce este confirmată.
+          </p>
+        )}
       </section>
     </div>
   );
