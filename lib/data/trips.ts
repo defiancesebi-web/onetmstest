@@ -1,7 +1,8 @@
 import { Prisma } from "@/lib/generated/prisma/client";
+import type { TripStatus } from "@/lib/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 import { assertCompanyAccess, type SessionUser } from "@/lib/tenancy";
-import { formatTripNumber } from "@/lib/tripStatus";
+import { formatTripNumber, datesOverlap } from "@/lib/tripStatus";
 // Reused rather than duplicated: the helper is order-flavoured in name only —
 // it returns the current calendar year in Europe/Bucharest, which is what trip
 // numbering needs too.
@@ -164,4 +165,206 @@ export async function createTrip(session: SessionUser, input: CreateTripInput) {
   }
 
   throw new TripNumberingError();
+}
+
+export type TripListItem = Prisma.TripGetPayload<{
+  include: {
+    tractorUnit: { select: { registrationNumber: true } };
+    trailer: { select: { registrationNumber: true } };
+    primaryDriver: { select: { firstName: true; lastName: true } };
+    secondDriver: { select: { firstName: true; lastName: true } };
+    orders: { select: { id: true; orderNumber: true } };
+  };
+}>;
+
+export type TripWithEverything = Prisma.TripGetPayload<{
+  include: {
+    tractorUnit: true;
+    trailer: true;
+    primaryDriver: true;
+    secondDriver: true;
+    orders: { include: { client: { select: { name: true } }; stops: true } };
+  };
+}>;
+
+export type ConflictQuery = TripResourceInput & {
+  startsAt: Date;
+  endsAt: Date;
+  excludeTripId?: string;
+};
+
+export type ResourceConflict = {
+  tripId: string;
+  tripNumber: string;
+  resource: "tractorUnit" | "trailer" | "primaryDriver" | "secondDriver";
+  resourceLabel: string;
+};
+
+const TRIP_LIST_INCLUDE = {
+  tractorUnit: { select: { registrationNumber: true } },
+  trailer: { select: { registrationNumber: true } },
+  primaryDriver: { select: { firstName: true, lastName: true } },
+  secondDriver: { select: { firstName: true, lastName: true } },
+  orders: { select: { id: true, orderNumber: true } },
+} as const;
+
+export async function listTrips(
+  session: SessionUser,
+  companyId: string,
+  options: { status?: TripStatus } = {}
+): Promise<TripListItem[]> {
+  assertCompanyAccess(session, companyId);
+
+  return prisma.trip.findMany({
+    where: { companyId, ...(options.status ? { status: options.status } : {}) },
+    include: TRIP_LIST_INCLUDE,
+    orderBy: [{ year: "desc" }, { sequence: "desc" }],
+  });
+}
+
+export async function getTripById(
+  session: SessionUser,
+  tripId: string
+): Promise<TripWithEverything | null> {
+  const trip = await prisma.trip.findUnique({
+    where: { id: tripId },
+    include: {
+      tractorUnit: true,
+      trailer: true,
+      primaryDriver: true,
+      secondDriver: true,
+      orders: { include: { client: { select: { name: true } }, stops: true } },
+    },
+  });
+  if (!trip) return null;
+  // Null rather than throw, so pages render 404 without revealing existence.
+  if (trip.companyId !== session.companyId) return null;
+  return trip;
+}
+
+async function assertOwnTrip(session: SessionUser, tripId: string) {
+  const trip = await prisma.trip.findUnique({ where: { id: tripId } });
+  if (!trip) throw new TripNotFoundError();
+  assertCompanyAccess(session, trip.companyId);
+  return trip;
+}
+
+/**
+ * Returns every clash rather than the first, so the dispatcher sees the whole
+ * picture in one warning instead of fixing one and discovering the next.
+ * A driver occupies the person in either seat, so both slots are checked
+ * against both slots.
+ */
+export async function findResourceConflicts(
+  session: SessionUser,
+  companyId: string,
+  input: ConflictQuery
+): Promise<ResourceConflict[]> {
+  assertCompanyAccess(session, companyId);
+
+  const candidates = await prisma.trip.findMany({
+    where: {
+      companyId,
+      status: { not: "CANCELLED" },
+      ...(input.excludeTripId ? { id: { not: input.excludeTripId } } : {}),
+    },
+    include: TRIP_LIST_INCLUDE,
+  });
+
+  const conflicts: ResourceConflict[] = [];
+
+  for (const trip of candidates) {
+    if (!datesOverlap(input.startsAt, input.endsAt, trip.startsAt, trip.endsAt)) continue;
+
+    if (input.tractorUnitId && trip.tractorUnitId === input.tractorUnitId) {
+      conflicts.push({
+        tripId: trip.id,
+        tripNumber: trip.tripNumber,
+        resource: "tractorUnit",
+        resourceLabel: trip.tractorUnit?.registrationNumber ?? "vehicul",
+      });
+    }
+    if (input.trailerId && trip.trailerId === input.trailerId) {
+      conflicts.push({
+        tripId: trip.id,
+        tripNumber: trip.tripNumber,
+        resource: "trailer",
+        resourceLabel: trip.trailer?.registrationNumber ?? "semiremorcă",
+      });
+    }
+
+    const busyDrivers = [trip.primaryDriverId, trip.secondDriverId].filter(Boolean);
+    const driverLabel = (id: string) =>
+      trip.primaryDriverId === id
+        ? `${trip.primaryDriver?.lastName ?? ""} ${trip.primaryDriver?.firstName ?? ""}`.trim()
+        : `${trip.secondDriver?.lastName ?? ""} ${trip.secondDriver?.firstName ?? ""}`.trim();
+
+    if (input.primaryDriverId && busyDrivers.includes(input.primaryDriverId)) {
+      conflicts.push({
+        tripId: trip.id,
+        tripNumber: trip.tripNumber,
+        resource: "primaryDriver",
+        resourceLabel: driverLabel(input.primaryDriverId) || "șofer",
+      });
+    }
+    if (input.secondDriverId && busyDrivers.includes(input.secondDriverId)) {
+      conflicts.push({
+        tripId: trip.id,
+        tripNumber: trip.tripNumber,
+        resource: "secondDriver",
+        resourceLabel: driverLabel(input.secondDriverId) || "șofer",
+      });
+    }
+  }
+
+  return conflicts;
+}
+
+export async function updateTripResources(
+  session: SessionUser,
+  tripId: string,
+  input: TripResourceInput
+) {
+  const trip = await assertOwnTrip(session, tripId);
+
+  // Only newly-assigned resources are validated. A truck sold after the trip was
+  // planned must not make that trip uneditable — you still need to fix its dates
+  // or swap the driver, and rejecting the unchanged truck would block everything.
+  const changed: TripResourceInput = {
+    tractorUnitId:
+      input.tractorUnitId !== trip.tractorUnitId ? input.tractorUnitId : null,
+    trailerId: input.trailerId !== trip.trailerId ? input.trailerId : null,
+    primaryDriverId:
+      input.primaryDriverId !== trip.primaryDriverId ? input.primaryDriverId : null,
+    secondDriverId:
+      input.secondDriverId !== trip.secondDriverId ? input.secondDriverId : null,
+  };
+  await assertResourcesUsable(trip.companyId, changed);
+
+  return prisma.trip.update({
+    where: { id: tripId },
+    data: {
+      tractorUnitId: input.tractorUnitId ?? null,
+      trailerId: input.trailerId ?? null,
+      primaryDriverId: input.primaryDriverId ?? null,
+      secondDriverId: input.secondDriverId ?? null,
+    },
+  });
+}
+
+export async function updateTripDates(
+  session: SessionUser,
+  tripId: string,
+  startsAt: Date,
+  endsAt: Date
+) {
+  await assertOwnTrip(session, tripId);
+  assertDateRangeValid(startsAt, endsAt);
+
+  // Setting the flag is the point: from here on, attaching an order must not
+  // silently overwrite what the dispatcher chose.
+  return prisma.trip.update({
+    where: { id: tripId },
+    data: { startsAt, endsAt, datesEditedManually: true },
+  });
 }
