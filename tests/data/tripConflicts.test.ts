@@ -75,6 +75,24 @@ describe("findResourceConflicts", () => {
     expect(conflicts).toHaveLength(1);
   });
 
+  it("semnalează suprapunerea și când noua cursă se termină chiar în ziua în care începe cea existentă", async () => {
+    const { company, tractor, session } = await setup("Firma A", "RO1");
+    await createTrip(session, {
+      companyId: company.id,
+      startsAt: d("2026-09-05"),
+      endsAt: d("2026-09-09"),
+      tractorUnitId: tractor.id,
+    });
+
+    const conflicts = await findResourceConflicts(session, company.id, {
+      startsAt: d("2026-09-01"),
+      endsAt: d("2026-09-05"),
+      tractorUnitId: tractor.id,
+    });
+
+    expect(conflicts).toHaveLength(1);
+  });
+
   it("nu semnalează curse consecutive", async () => {
     const { company, tractor, session } = await setup("Firma A", "RO1");
     await createTrip(session, {
@@ -148,6 +166,25 @@ describe("findResourceConflicts", () => {
 
     expect(conflicts).toHaveLength(1);
     expect(conflicts[0].resource).toBe("primaryDriver");
+  });
+
+  it("semnalează un șofer ocupat și în sensul invers: primar existent vs. secund cerut", async () => {
+    const { company, driver, session } = await setup("Firma A", "RO1");
+    await createTrip(session, {
+      companyId: company.id,
+      startsAt: d("2026-09-01"),
+      endsAt: d("2026-09-05"),
+      primaryDriverId: driver.id,
+    });
+
+    const conflicts = await findResourceConflicts(session, company.id, {
+      startsAt: d("2026-09-03"),
+      endsAt: d("2026-09-07"),
+      secondDriverId: driver.id,
+    });
+
+    expect(conflicts).toHaveLength(1);
+    expect(conflicts[0].resource).toBe("secondDriver");
   });
 
   it("nu vede cursele altei firme", async () => {
@@ -246,6 +283,20 @@ describe("updateTripResources și updateTripDates", () => {
 
     await expect(
       updateTripResources(a.session, tripB.id, { tractorUnitId: a.tractor.id })
+    ).rejects.toThrow(TenantAccessError);
+  });
+
+  it("respinge modificarea datelor unei curse din altă firmă", async () => {
+    const a = await setup("Firma A", "RO1");
+    const b = await setup("Firma B", "RO2");
+    const tripB = await createTrip(b.session, {
+      companyId: b.company.id,
+      startsAt: d("2026-09-01"),
+      endsAt: d("2026-09-02"),
+    });
+
+    await expect(
+      updateTripDates(a.session, tripB.id, d("2026-09-01"), d("2026-09-03"))
     ).rejects.toThrow(TenantAccessError);
   });
 

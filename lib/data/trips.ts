@@ -238,6 +238,10 @@ export async function getTripById(
   });
   if (!trip) return null;
   // Null rather than throw, so pages render 404 without revealing existence.
+  // Deliberately no SUPER_ADMIN bypass here (unlike assertCompanyAccess): the
+  // route guard already keeps SUPER_ADMIN out of every /dashboard route, and
+  // the spec forbids that role from reaching any company's operational data,
+  // so this stays a plain companyId match with nothing carved out.
   if (trip.companyId !== session.companyId) return null;
   return trip;
 }
