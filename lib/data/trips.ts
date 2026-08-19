@@ -51,6 +51,10 @@ export const MAX_TRIP_NUMBERING_ATTEMPTS = 3;
  * Proves every supplied resource belongs to this company and is still active.
  * Inactive ones are rejected on the server, not merely hidden in the UI — a
  * stale page could otherwise assign a truck that was sold this morning.
+ *
+ * Precondition: trusts the caller-supplied `companyId` as-is and does not call
+ * `assertCompanyAccess` itself — every caller must validate the session against
+ * that `companyId` before invoking this function.
  */
 export async function assertResourcesUsable(
   companyId: string,

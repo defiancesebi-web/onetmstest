@@ -60,6 +60,32 @@ describe("createTrip", () => {
     expect(tripB.sequence).toBe(1);
   });
 
+  it("reia numerotarea de la 1 când se schimbă anul, pentru aceeași firmă", async () => {
+    const company = await makeCompany("Firma A", "RO1");
+    const session = { role: "COMPANY_ADMIN" as const, companyId: company.id };
+    const lastYear = currentOrderYear() - 1;
+
+    // Seed a trip directly, as if it were created last year, without mocking
+    // the clock: createTrip always stamps the *current* year, so the only way
+    // to get a prior-year row is to insert it ourselves.
+    await prisma.trip.create({
+      data: {
+        companyId: company.id,
+        year: lastYear,
+        sequence: 5,
+        tripNumber: `C-${lastYear}-0005`,
+        startsAt: d("2025-09-01"),
+        endsAt: d("2025-09-05"),
+      },
+    });
+
+    const trip = await createTrip(session, tripInput(company.id));
+
+    expect(trip.year).toBe(currentOrderYear());
+    expect(trip.sequence).toBe(1);
+    expect(trip.tripNumber).toBe(`C-${currentOrderYear()}-0001`);
+  });
+
   it("nu dă același număr la curse create simultan", async () => {
     const company = await makeCompany("Firma A", "RO1");
     const session = { role: "COMPANY_ADMIN" as const, companyId: company.id };
