@@ -6,7 +6,7 @@ import { formatTripNumber, datesOverlap, TRIP_EDITABLE_STATUSES } from "@/lib/tr
 // Reused rather than duplicated: the helper is order-flavoured in name only —
 // it returns the current calendar year in Europe/Bucharest, which is what trip
 // numbering needs too.
-import { currentOrderYear } from "@/lib/data/orders";
+import { currentOrderYear, OrderNotFoundError } from "@/lib/data/orders";
 
 export class TripNotFoundError extends Error {
   constructor() {
@@ -441,11 +441,19 @@ export async function detachOrderFromTrip(
   orderId: string
 ): Promise<void> {
   const order = await prisma.order.findUnique({ where: { id: orderId } });
-  if (!order) throw new TripNotFoundError();
+  if (!order) throw new OrderNotFoundError();
   assertCompanyAccess(session, order.companyId);
 
   const tripId = order.tripId;
   if (!tripId) return;
+
+  // Mirrors the attach-side check: a completed or cancelled trip is a past
+  // fact, and detaching an order from it would rewrite the history the cost
+  // module will rest on.
+  const trip = await assertOwnTrip(session, tripId);
+  if (!(TRIP_EDITABLE_STATUSES as readonly string[]).includes(trip.status)) {
+    throw new InvalidTripError("Cursa este încheiată sau anulată și nu mai poate fi modificată.");
+  }
 
   await prisma.$transaction(async (tx) => {
     await tx.order.update({ where: { id: orderId }, data: { tripId: null } });

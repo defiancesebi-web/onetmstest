@@ -152,6 +152,16 @@ describe("attachOrderToTrip", () => {
     await expect(attachOrderToTrip(session, trip.id, order.id)).rejects.toThrow(InvalidTripError);
   });
 
+  it("respinge atașarea la o cursă anulată", async () => {
+    const { company, client, session } = await setup("Firma A", "RO1");
+    const order = await makeOrder(session, company.id, client.id, "2026-09-03", "2026-09-07");
+    await prisma.order.update({ where: { id: order.id }, data: { status: "CONFIRMED" } });
+    const trip = await createTrip(session, { companyId: company.id, startsAt: d("2026-09-01"), endsAt: d("2026-09-01") });
+    await prisma.trip.update({ where: { id: trip.id }, data: { status: "CANCELLED" } });
+
+    await expect(attachOrderToTrip(session, trip.id, order.id)).rejects.toThrow(InvalidTripError);
+  });
+
   it("respinge o cursă a altei firme", async () => {
     const a = await setup("Firma A", "RO1");
     const b = await setup("Firma B", "RO2");
@@ -190,6 +200,39 @@ describe("detachOrderFromTrip", () => {
     const orderB = await makeOrder(b.session, b.company.id, b.client.id, "2026-09-03", "2026-09-07");
 
     await expect(detachOrderFromTrip(a.session, orderB.id)).rejects.toThrow(TenantAccessError);
+  });
+
+  it("recalculează intervalul la desprinderea comenzii care definește marginea", async () => {
+    const { company, client, session } = await setup("Firma A", "RO1");
+    const first = await makeOrder(session, company.id, client.id, "2026-09-03", "2026-09-05");
+    const second = await makeOrder(session, company.id, client.id, "2026-09-02", "2026-09-09");
+    await prisma.order.updateMany({
+      where: { id: { in: [first.id, second.id] } },
+      data: { status: "CONFIRMED" },
+    });
+    const trip = await createTrip(session, { companyId: company.id, startsAt: d("2026-09-01"), endsAt: d("2026-09-01") });
+    await attachOrderToTrip(session, trip.id, first.id);
+    await attachOrderToTrip(session, trip.id, second.id);
+
+    // `second` (2026-09-02..09) defines both outer edges of the window; once it
+    // is detached only `first` (2026-09-03..05) remains, so the window must
+    // shrink to match it rather than staying at the wider two-order range.
+    await detachOrderFromTrip(session, second.id);
+
+    const fresh = await getTripById(session, trip.id);
+    expect(fresh!.startsAt.toISOString().slice(0, 10)).toBe("2026-09-03");
+    expect(fresh!.endsAt.toISOString().slice(0, 10)).toBe("2026-09-05");
+  });
+
+  it("respinge desprinderea dintr-o cursă încheiată", async () => {
+    const { company, client, session } = await setup("Firma A", "RO1");
+    const order = await makeOrder(session, company.id, client.id, "2026-09-03", "2026-09-07");
+    await prisma.order.update({ where: { id: order.id }, data: { status: "CONFIRMED" } });
+    const trip = await createTrip(session, { companyId: company.id, startsAt: d("2026-09-01"), endsAt: d("2026-09-01") });
+    await attachOrderToTrip(session, trip.id, order.id);
+    await prisma.trip.update({ where: { id: trip.id }, data: { status: "COMPLETED" } });
+
+    await expect(detachOrderFromTrip(session, order.id)).rejects.toThrow(InvalidTripError);
   });
 });
 
