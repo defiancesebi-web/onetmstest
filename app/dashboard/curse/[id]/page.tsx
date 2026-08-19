@@ -37,10 +37,13 @@ function withCurrent(
 
 export default async function TripDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ atasareEsuata?: string }>;
 }) {
   const { id } = await params;
+  const { atasareEsuata } = await searchParams;
   const session = await auth();
   const sessionUser = { role: session!.user.role, companyId: session!.user.companyId };
 
@@ -79,6 +82,14 @@ export default async function TripDetailPage({
         }
       />
 
+      {atasareEsuata && (
+        <div className="mb-6 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+          Cursa a fost creată, dar comanda selectată nu a putut fi atașată automat — probabil a
+          fost planificată între timp pe altă cursă. Atașeaz-o manual mai jos, dacă mai este
+          disponibilă.
+        </div>
+      )}
+
       <section className="mb-8">
         <h2 className="mb-3 text-sm font-medium">Stare</h2>
         <TripStatusActions tripId={trip.id} status={trip.status} />
@@ -88,6 +99,17 @@ export default async function TripDetailPage({
         <section className="mb-8">
           <h2 className="mb-3 text-sm font-medium">Alocare</h2>
           <TripResourcesForm
+            // Forces a full remount whenever the server-side window moves —
+            // e.g. attachOrderToTrip/detachOrderFromTrip calling
+            // recalcTripDates — because the form's fields are local state
+            // seeded once from `values` and are never resynced on a prop
+            // change. Without this the date inputs go stale after such a
+            // move and the next submit would post the old window into
+            // findResourceConflicts, checking the wrong interval entirely.
+            // Safe across the conflict round trip: returning conflicts never
+            // changes the stored dates, so this key is stable across that
+            // re-render and the user's in-progress selection survives.
+            key={`${toDateKey(trip.startsAt)}:${toDateKey(trip.endsAt)}`}
             tripId={trip.id}
             tractorUnits={withCurrent(
               vehicles

@@ -23,8 +23,24 @@ export default async function CursaNouaPage({
   ]);
 
   // Seeding the dates from the order saves the dispatcher retyping what the
-  // stops already say.
+  // stops already say. A genuinely missing or cross-tenant order (null from
+  // getOrderById) just falls through to the plain form below, same as today.
   const order = comanda ? await getOrderById(sessionUser, comanda) : null;
+
+  // An order that exists but can't be planned — not confirmed yet, or
+  // already riding another trip — must not be silently pre-attached: the
+  // dispatcher would create the trip, see "Nicio comandă atașată." with no
+  // explanation, and wrongly believe the order was planned. Render the form
+  // anyway (do not notFound() a merely-ineligible order) and say why.
+  const ineligibleReason = !order
+    ? null
+    : order.tripId
+      ? `Comanda ${order.orderNumber} este deja planificată pe altă cursă.`
+      : order.status !== "CONFIRMED"
+        ? `Comanda ${order.orderNumber} nu este confirmată — poți crea cursa, dar va trebui să o atașezi manual după confirmare.`
+        : null;
+  const eligibleOrderId = order && !ineligibleReason ? order.id : undefined;
+
   const loadingDates = order?.stops.filter((s) => s.type === "LOADING") ?? [];
   const unloadingDates = order?.stops.filter((s) => s.type === "UNLOADING") ?? [];
   const today = toDateKey(new Date());
@@ -48,7 +64,9 @@ export default async function CursaNouaPage({
       </Link>
       <PageHeader
         title="Cursă nouă"
-        description={order ? `Se planifică comanda ${order.orderNumber}.` : undefined}
+        description={
+          ineligibleReason ?? (order ? `Se planifică comanda ${order.orderNumber}.` : undefined)
+        }
       />
 
       <NewTripForm
@@ -59,7 +77,7 @@ export default async function CursaNouaPage({
           .filter((v) => v.type === "SEMI_TRAILER")
           .map((v) => ({ id: v.id, label: v.registrationNumber }))}
         drivers={drivers.map((d) => ({ id: d.id, label: `${d.lastName} ${d.firstName}` }))}
-        orderId={order?.id}
+        orderId={eligibleOrderId}
         defaultStartsAt={defaultStartsAt}
         defaultEndsAt={defaultEndsAt}
       />

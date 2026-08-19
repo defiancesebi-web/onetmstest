@@ -16,6 +16,7 @@ import {
   TripNumberingError,
   type ResourceConflict,
 } from "@/lib/data/trips";
+import { OrderNotFoundError } from "@/lib/data/orders";
 import { InvalidTripStatusTransitionError } from "@/lib/tripStatus";
 import { TenantAccessError } from "@/lib/tenancy";
 import type { TripStatus } from "@/lib/generated/prisma/enums";
@@ -96,16 +97,26 @@ export async function createTripAction(
       await attachOrderToTrip(sessionUser, tripId, orderId);
     } catch (error) {
       if (error instanceof InvalidTripError) {
-        // The trip exists; only the attach failed. Sending the user to it beats
-        // losing the trip they just created.
+        // The trip exists; only the attach failed — most likely another
+        // dispatcher planned this same order onto a different trip in the gap
+        // between the page loading and this submit. Sending the user to the
+        // new trip beats losing it, and the query flag lets the trip page
+        // explain why the order isn't listed instead of the dispatcher
+        // wrongly believing the attach went through.
         revalidatePath("/dashboard/dispecerat");
-        redirect(`/dashboard/curse/${tripId}`);
+        revalidatePath("/dashboard/comenzi");
+        revalidatePath(`/dashboard/comenzi/${orderId}`);
+        redirect(`/dashboard/curse/${tripId}?atasareEsuata=1`);
       }
       throw error;
     }
   }
 
   revalidatePath("/dashboard/dispecerat");
+  if (orderId) {
+    revalidatePath("/dashboard/comenzi");
+    revalidatePath(`/dashboard/comenzi/${orderId}`);
+  }
   redirect(`/dashboard/curse/${tripId}`);
 }
 
@@ -125,6 +136,13 @@ export async function updateTripResourcesAction(
   const endsAt = parseDate(formData.get("endsAt"));
   if (!startsAt || !endsAt) {
     return { error: "Ambele date ale cursei sunt obligatorii.", conflicts: [] };
+  }
+  // Checked here, before either write below, so an invalid range is rejected
+  // whole: without this, updateTripResources could commit and only then
+  // updateTripDates throws, leaving the resource change saved with a date
+  // error still on screen.
+  if (endsAt.getTime() < startsAt.getTime()) {
+    return { error: "Sfârșitul cursei nu poate fi înaintea începutului.", conflicts: [] };
   }
 
   if (!accepted) {
@@ -180,14 +198,19 @@ export async function updateTripStatusAction(
       to
     );
   } catch (error) {
-    if (
-      error instanceof InvalidTripStatusTransitionError ||
-      error instanceof TripNotFoundError ||
-      error instanceof TenantAccessError
-    ) {
-      // Buttons only offer allowed transitions, so this means a stale page.
+    if (error instanceof InvalidTripStatusTransitionError) {
+      // Buttons only offer allowed transitions, so this means a stale page:
+      // another dispatcher already moved the trip. Its message is already
+      // Romanian and built from TRIP_STATUS_LABELS, so it's safe to show.
       revalidatePath(`/dashboard/curse/${tripId}`);
       return { error: error.message };
+    }
+    if (error instanceof TripNotFoundError || error instanceof TenantAccessError) {
+      // Same message for both, so a wrong id cannot confirm another
+      // company's data. TenantAccessError's own message ("Cross-tenant
+      // access denied") is English and internal — it must never reach a user.
+      revalidatePath(`/dashboard/curse/${tripId}`);
+      return { error: new TripNotFoundError().message };
     }
     throw error;
   }
@@ -225,10 +248,12 @@ export async function attachOrderAction(
 
   revalidatePath(`/dashboard/curse/${tripId}`);
   revalidatePath("/dashboard/dispecerat");
+  revalidatePath("/dashboard/comenzi");
+  revalidatePath(`/dashboard/comenzi/${orderId}`);
   return { error: null, conflicts: [] };
 }
 
-export async function detachOrderAction(orderId: string, tripId: string) {
+export async function detachOrderAction(orderId: string, tripId: string): Promise<TripFormState> {
   const session = await auth();
   if (!session?.user.companyId) throw new Error("Neautentificat");
 
@@ -238,13 +263,23 @@ export async function detachOrderAction(orderId: string, tripId: string) {
       orderId
     );
   } catch (error) {
+    // Genuinely missing — orderId doesn't exist at all, tenant-blind — so its
+    // own Romanian message is safe to show as-is.
+    if (error instanceof OrderNotFoundError) return { error: error.message, conflicts: [] };
+    // The trip closed under the dispatcher (a stale page), refused by the
+    // same TRIP_EDITABLE_STATUSES guard the attach side uses.
+    if (error instanceof InvalidTripError) return { error: error.message, conflicts: [] };
+    // Same message for both, so a wrong id cannot confirm another company's
+    // data — mirrors updateTripResourcesAction/attachOrderAction above.
     if (error instanceof TripNotFoundError || error instanceof TenantAccessError) {
-      revalidatePath(`/dashboard/curse/${tripId}`);
-      return;
+      return { error: new TripNotFoundError().message, conflicts: [] };
     }
     throw error;
   }
 
   revalidatePath(`/dashboard/curse/${tripId}`);
   revalidatePath("/dashboard/dispecerat");
+  revalidatePath("/dashboard/comenzi");
+  revalidatePath(`/dashboard/comenzi/${orderId}`);
+  return { error: null, conflicts: [] };
 }
