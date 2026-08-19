@@ -259,6 +259,18 @@ async function assertOwnTrip(session: SessionUser, tripId: string) {
 }
 
 /**
+ * A finished or cancelled trip is a past fact. Changing what it carried —
+ * its resources, its dates, or the orders riding on it — would rewrite the
+ * history the cost module will later read. Shared by every write below so
+ * the guard and its message can't drift between them.
+ */
+function assertTripEditable(trip: { status: TripStatus }): void {
+  if (!(TRIP_EDITABLE_STATUSES as readonly string[]).includes(trip.status)) {
+    throw new InvalidTripError("Cursa este încheiată sau anulată și nu mai poate fi modificată.");
+  }
+}
+
+/**
  * Returns every clash rather than the first, so the dispatcher sees the whole
  * picture in one warning instead of fixing one and discovering the next.
  * A driver occupies the person in either seat, so both slots are checked
@@ -335,6 +347,7 @@ export async function updateTripResources(
   input: TripResourceInput
 ) {
   const trip = await assertOwnTrip(session, tripId);
+  assertTripEditable(trip);
 
   // Only newly-assigned resources are validated. A truck sold after the trip was
   // planned must not make that trip uneditable — you still need to fix its dates
@@ -367,7 +380,8 @@ export async function updateTripDates(
   startsAt: Date,
   endsAt: Date
 ) {
-  await assertOwnTrip(session, tripId);
+  const trip = await assertOwnTrip(session, tripId);
+  assertTripEditable(trip);
   assertDateRangeValid(startsAt, endsAt);
 
   // Setting the flag is the point: from here on, attaching an order must not
@@ -419,10 +433,7 @@ export async function attachOrderToTrip(
   orderId: string
 ): Promise<void> {
   const trip = await assertOwnTrip(session, tripId);
-
-  if (!(TRIP_EDITABLE_STATUSES as readonly string[]).includes(trip.status)) {
-    throw new InvalidTripError("Cursa este încheiată sau anulată și nu mai poate fi modificată.");
-  }
+  assertTripEditable(trip);
 
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order || order.companyId !== trip.companyId) {
@@ -456,9 +467,7 @@ export async function detachOrderFromTrip(
   // fact, and detaching an order from it would rewrite the history the cost
   // module will rest on.
   const trip = await assertOwnTrip(session, tripId);
-  if (!(TRIP_EDITABLE_STATUSES as readonly string[]).includes(trip.status)) {
-    throw new InvalidTripError("Cursa este încheiată sau anulată și nu mai poate fi modificată.");
-  }
+  assertTripEditable(trip);
 
   await prisma.$transaction(async (tx) => {
     await tx.order.update({ where: { id: orderId }, data: { tripId: null } });

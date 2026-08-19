@@ -326,4 +326,65 @@ describe("updateTripResources și updateTripDates", () => {
       updateTripDates(session, trip.id, d("2026-09-05"), d("2026-09-01"))
     ).rejects.toThrow(InvalidTripError);
   });
+
+  // A finished trip is a past fact: attachOrderToTrip and detachOrderFromTrip
+  // already refuse to touch a COMPLETED or CANCELLED trip (see
+  // tests/data/tripOrders.test.ts), and resource/date edits must be refused
+  // the same way, or a server action could still rewrite what a closed trip
+  // carried even though the UI never offers the form.
+  it("respinge modificarea resurselor unei curse încheiate", async () => {
+    const { company, tractor, session } = await setup("Firma A", "RO1");
+    const trip = await createTrip(session, {
+      companyId: company.id,
+      startsAt: d("2026-09-01"),
+      endsAt: d("2026-09-02"),
+    });
+    await prisma.trip.update({ where: { id: trip.id }, data: { status: "COMPLETED" } });
+
+    await expect(
+      updateTripResources(session, trip.id, { tractorUnitId: tractor.id })
+    ).rejects.toThrow(InvalidTripError);
+  });
+
+  it("respinge modificarea resurselor unei curse anulate", async () => {
+    const { company, tractor, session } = await setup("Firma A", "RO1");
+    const trip = await createTrip(session, {
+      companyId: company.id,
+      startsAt: d("2026-09-01"),
+      endsAt: d("2026-09-02"),
+    });
+    await prisma.trip.update({ where: { id: trip.id }, data: { status: "CANCELLED" } });
+
+    await expect(
+      updateTripResources(session, trip.id, { tractorUnitId: tractor.id })
+    ).rejects.toThrow(InvalidTripError);
+  });
+
+  it("respinge modificarea datelor unei curse încheiate", async () => {
+    const { company, session } = await setup("Firma A", "RO1");
+    const trip = await createTrip(session, {
+      companyId: company.id,
+      startsAt: d("2026-09-01"),
+      endsAt: d("2026-09-02"),
+    });
+    await prisma.trip.update({ where: { id: trip.id }, data: { status: "COMPLETED" } });
+
+    await expect(
+      updateTripDates(session, trip.id, d("2026-09-01"), d("2026-09-06"))
+    ).rejects.toThrow(InvalidTripError);
+  });
+
+  it("respinge modificarea datelor unei curse anulate", async () => {
+    const { company, session } = await setup("Firma A", "RO1");
+    const trip = await createTrip(session, {
+      companyId: company.id,
+      startsAt: d("2026-09-01"),
+      endsAt: d("2026-09-02"),
+    });
+    await prisma.trip.update({ where: { id: trip.id }, data: { status: "CANCELLED" } });
+
+    await expect(
+      updateTripDates(session, trip.id, d("2026-09-01"), d("2026-09-06"))
+    ).rejects.toThrow(InvalidTripError);
+  });
 });
