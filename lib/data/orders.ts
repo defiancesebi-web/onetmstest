@@ -221,7 +221,7 @@ export type OrderListItem = Prisma.OrderGetPayload<{
 }>;
 
 export type OrderWithStopsAndClient = Prisma.OrderGetPayload<{
-  include: { stops: true; client: true };
+  include: { stops: true; client: true; trip: { select: { id: true; tripNumber: true } } };
 }>;
 
 export type UpdateOrderInput = {
@@ -269,7 +269,15 @@ export async function getOrderById(
 ): Promise<OrderWithStopsAndClient | null> {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
-    include: { stops: { orderBy: { sequence: "asc" } }, client: true },
+    // The trip is included so the order page can name it (C-2026-0001) instead
+    // of linking to an anonymous "vezi cursa". Purely additive: the tenancy
+    // check below is unchanged, and a cross-tenant order still returns null
+    // before any of this is read.
+    include: {
+      stops: { orderBy: { sequence: "asc" } },
+      client: true,
+      trip: { select: { id: true, tripNumber: true } },
+    },
   });
   if (!order) return null;
   // Null rather than throw, so pages render 404 without revealing existence.

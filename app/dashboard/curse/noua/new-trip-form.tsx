@@ -55,17 +55,28 @@ export function NewTripForm({
     if (secondRef.current) secondRef.current.value = fields.secondDriverId;
   }, [state, fields]);
 
+  // The acceptance belongs to the selection that was warned about, not to the
+  // form. Without this, a dispatcher warned that truck A is busy could switch
+  // to truck B and submit — and B's conflicts would never be checked, silently
+  // losing a warning they never declined. Held as "which action result was on
+  // screen when the user last touched the selection" rather than a boolean, so
+  // a fresh result (a re-warning) revives the acceptance on its own, with no
+  // effect and no cascading render.
+  const [editedAgainst, setEditedAgainst] = useState<TripFormState | null>(null);
+  const conflictsAccepted = state.conflicts.length > 0 && editedAgainst !== state;
+
   function update<K extends keyof typeof fields>(key: K, value: string) {
     setFields((prev) => ({ ...prev, [key]: value }));
+    // Notes do not feed findResourceConflicts, so they cannot stale an acceptance.
+    if (key !== "notes") setEditedAgainst(state);
   }
 
   return (
     <form action={formAction} className="grid max-w-2xl gap-4 sm:grid-cols-2">
       {orderId && <input type="hidden" name="orderId" value={orderId} />}
-      {/* Set once the user has seen the warning: the next submit goes through. */}
-      {state.conflicts.length > 0 && (
-        <input type="hidden" name="acceptConflicts" value="true" />
-      )}
+      {/* Set once the user has seen the warning for *these* resources and dates:
+          the next submit goes through. Changing either drops it again. */}
+      {conflictsAccepted && <input type="hidden" name="acceptConflicts" value="true" />}
 
       <div className="space-y-1.5">
         <Label htmlFor="startsAt">Început</Label>

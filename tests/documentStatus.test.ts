@@ -57,6 +57,18 @@ describe("toDateKey", () => {
   it("citește o dată stocată ca @db.Date fără să o mute cu o zi", () => {
     expect(toDateKey(dateOnly("2026-08-18"))).toBe("2026-08-18");
   });
+
+  // Pins why the two helpers are not interchangeable. toDateKey exists to read
+  // back a @db.Date column (always UTC midnight); applied to a live instant it
+  // gives the UTC calendar day, which is yesterday in Bucharest between
+  // midnight and 02:00/03:00 local. Anything defaulting to "today" — the
+  // new-trip form's date inputs, for one — must use todayKeyInBucharest.
+  it("diferă de todayKeyInBucharest pentru un moment viu de peste graniță", () => {
+    const lateEvening = new Date("2026-08-18T21:30:00Z");
+
+    expect(toDateKey(lateEvening)).toBe("2026-08-18");
+    expect(todayKeyInBucharest(lateEvening)).toBe("2026-08-19");
+  });
 });
 
 describe("aggregateOwnerStatus", () => {

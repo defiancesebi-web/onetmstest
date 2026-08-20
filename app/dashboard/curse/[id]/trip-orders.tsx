@@ -107,7 +107,7 @@ export function TripOrders({
           </form>
         ) : (
           <p className="text-muted-foreground text-sm">
-            Nicio comandă confirmată și neplanificată disponibilă pentru atașare.
+            Nicio comandă neplanificată disponibilă pentru atașare.
           </p>
         ))}
     </section>

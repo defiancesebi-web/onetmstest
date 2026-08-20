@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { prisma } from "@/lib/prisma";
 import { resetDatabase } from "../helpers/db";
-import { createTrip, attachOrderToTrip, updateTripStatus } from "@/lib/data/trips";
+import {
+  createTrip,
+  attachOrderToTrip,
+  updateTripStatus,
+  listUnplannedOrders,
+} from "@/lib/data/trips";
 import { createOrder, updateOrderStatus } from "@/lib/data/orders";
 import { InvalidTripStatusTransitionError } from "@/lib/tripStatus";
 import { TenantAccessError } from "@/lib/tenancy";
@@ -157,5 +162,42 @@ describe("propagarea la pornirea cursei ignoră comenzile anulate", () => {
     const fresh = await prisma.order.findUniqueOrThrow({ where: { id: order.id } });
     expect(fresh.status).toBe("CANCELLED");
     expect(fresh.tripId).toBe(trip.id);
+  });
+});
+
+describe("anularea unei curse pornite readuce comenzile la neplanificate", () => {
+  beforeEach(async () => {
+    await resetDatabase();
+  });
+
+  // The spec says a cancelled trip's orders "revin la lista neplanificate".
+  // Starting the trip has already advanced them to IN_PROGRESS, and the branch
+  // forbids moving an order backwards — so the unplanned list and the attach
+  // path must accept IN_PROGRESS too, or a broken-down truck strands its
+  // orders with no way back onto another one.
+  it("lasă comanda atașabilă din nou după ce cursa e anulată din execuție", async () => {
+    const { company, session, trip, order } = await setupWithOrder("Firma A", "RO1");
+    await updateTripStatus(session, trip.id, "IN_PROGRESS");
+
+    await updateTripStatus(session, trip.id, "CANCELLED");
+
+    const detached = await prisma.order.findUniqueOrThrow({ where: { id: order.id } });
+    expect(detached.tripId).toBeNull();
+    expect(detached.status).toBe("IN_PROGRESS");
+
+    const unplanned = await listUnplannedOrders(session, company.id);
+    expect(unplanned.map((o) => o.id)).toContain(order.id);
+
+    const replacement = await createTrip(session, {
+      companyId: company.id,
+      startsAt: d("2026-09-03"),
+      endsAt: d("2026-09-05"),
+    });
+    await attachOrderToTrip(session, replacement.id, order.id);
+
+    const fresh = await prisma.order.findUniqueOrThrow({ where: { id: order.id } });
+    expect(fresh.tripId).toBe(replacement.id);
+    // Re-planning must not have moved the order backwards.
+    expect(fresh.status).toBe("IN_PROGRESS");
   });
 });

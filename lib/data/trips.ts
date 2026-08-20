@@ -54,6 +54,42 @@ export type CreateTripInput = TripResourceInput & {
 export const MAX_TRIP_NUMBERING_ATTEMPTS = 3;
 
 /**
+ * Which orders may be put on a truck. CONFIRMED is the ordinary case (business
+ * rule 1: a NEW order, unconfirmed by the client, has no business on a truck).
+ * IN_PROGRESS is the return path: cancelling a running trip detaches its orders
+ * without changing their status — the spec says they "revin la lista
+ * neplanificate" — and they are IN_PROGRESS by then, because starting the trip
+ * advanced them. Without this they would be detached and unplannable, with no
+ * route back short of cancelling and re-entering the order under a new number.
+ * Deliberately not solved by moving the order back to CONFIRMED: this branch
+ * never moves an order backwards.
+ */
+export const PLANNABLE_ORDER_STATUSES = ["CONFIRMED", "IN_PROGRESS"] as const;
+
+/**
+ * The two *relational* rules: one person cannot fill both driver seats, and one
+ * vehicle cannot be both the tractor unit and the trailer. Both need each other's
+ * operand to be set, so they must be evaluated over the whole intended resource
+ * set — never over a partial "only what changed" subset, where a null on either
+ * side would silently disable the check. Kept separate from
+ * assertResourcesUsable's per-resource rules for exactly that reason, and shared
+ * so the conditions exist once.
+ */
+export function assertResourcePairsDistinct(input: TripResourceInput): void {
+  if (
+    input.primaryDriverId &&
+    input.secondDriverId &&
+    input.primaryDriverId === input.secondDriverId
+  ) {
+    throw new InvalidTripError("Cei doi șoferi nu pot fi aceeași persoană.");
+  }
+
+  if (input.tractorUnitId && input.tractorUnitId === input.trailerId) {
+    throw new InvalidTripError("Capul tractor și semiremorca nu pot fi același vehicul.");
+  }
+}
+
+/**
  * Proves every supplied resource belongs to this company and is still active.
  * Inactive ones are rejected on the server, not merely hidden in the UI — a
  * stale page could otherwise assign a truck that was sold this morning.
@@ -73,17 +109,7 @@ export async function assertResourcesUsable(
     (id): id is string => Boolean(id)
   );
 
-  if (
-    input.primaryDriverId &&
-    input.secondDriverId &&
-    input.primaryDriverId === input.secondDriverId
-  ) {
-    throw new InvalidTripError("Cei doi șoferi nu pot fi aceeași persoană.");
-  }
-
-  if (input.tractorUnitId && input.tractorUnitId === input.trailerId) {
-    throw new InvalidTripError("Capul tractor și semiremorca nu pot fi același vehicul.");
-  }
+  assertResourcePairsDistinct(input);
 
   for (const id of vehicleIds) {
     const vehicle = await prisma.vehicle.findUnique({ where: { id } });
@@ -349,9 +375,17 @@ export async function updateTripResources(
   const trip = await assertOwnTrip(session, tripId);
   assertTripEditable(trip);
 
-  // Only newly-assigned resources are validated. A truck sold after the trip was
-  // planned must not make that trip uneditable — you still need to fix its dates
-  // or swap the driver, and rejecting the unchanged truck would block everything.
+  // Against the full input, not `changed`: both pairwise rules need each of
+  // their two operands, and `changed` nulls whichever field the dispatcher
+  // left alone — so picking the existing primary driver as the second driver
+  // would slip past a check on the subset. createTrip refuses that exact
+  // combination; this keeps the trip page from being a hole around it.
+  assertResourcePairsDistinct(input);
+
+  // Only newly-assigned resources are validated for ownership and activity. A
+  // truck sold after the trip was planned must not make that trip uneditable —
+  // you still need to fix its dates or swap the driver, and rejecting the
+  // unchanged truck would block everything.
   const changed: TripResourceInput = {
     tractorUnitId:
       input.tractorUnitId !== trip.tractorUnitId ? input.tractorUnitId : null,
@@ -424,6 +458,15 @@ async function recalcTripDates(
   const startsAt = new Date(Math.min(...loadings));
   const endsAt = new Date(Math.max(...unloadings));
 
+  // The two edges are taken from independent sets, so a mistyped stop date
+  // (unloading before loading) can produce startsAt > endsAt. Writing that
+  // would make datesOverlap false for every realistic trip, hiding this trip's
+  // truck and drivers from conflict detection entirely — a silent
+  // double-booking. Keeping the existing window can only over-warn, which is
+  // the safe direction. (Validating stop chronology in lib/data/orders.ts is
+  // the real fix and belongs in its own change.)
+  if (startsAt.getTime() > endsAt.getTime()) return;
+
   await tx.trip.update({ where: { id: tripId }, data: { startsAt, endsAt } });
 }
 
@@ -439,8 +482,10 @@ export async function attachOrderToTrip(
   if (!order || order.companyId !== trip.companyId) {
     throw new InvalidTripError("Comanda selectată nu aparține firmei tale.");
   }
-  if (order.status !== "CONFIRMED") {
-    throw new InvalidTripError("Doar comenzile confirmate pot fi planificate.");
+  if (!(PLANNABLE_ORDER_STATUSES as readonly string[]).includes(order.status)) {
+    throw new InvalidTripError(
+      "Doar comenzile confirmate sau în execuție pot fi planificate."
+    );
   }
   if (order.tripId) {
     throw new InvalidTripError("Comanda este deja atașată unei curse.");
@@ -482,7 +527,7 @@ export async function listUnplannedOrders(
   assertCompanyAccess(session, companyId);
 
   return prisma.order.findMany({
-    where: { companyId, tripId: null, status: "CONFIRMED" },
+    where: { companyId, tripId: null, status: { in: [...PLANNABLE_ORDER_STATUSES] } },
     include: { client: { select: { name: true } }, stops: { orderBy: { sequence: "asc" } } },
     orderBy: { createdAt: "asc" },
   });

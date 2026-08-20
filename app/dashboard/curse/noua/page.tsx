@@ -3,7 +3,9 @@ import { auth } from "@/auth";
 import { listVehicles } from "@/lib/data/vehicles";
 import { listDrivers } from "@/lib/data/drivers";
 import { getOrderById } from "@/lib/data/orders";
-import { toDateKey } from "@/lib/documentStatus";
+import { PLANNABLE_ORDER_STATUSES } from "@/lib/data/trips";
+import { toDateKey, todayKeyInBucharest } from "@/lib/documentStatus";
+import { ORDER_STATUS_LABELS } from "@/lib/orderStatus";
 import { PageHeader } from "@/components/page-header";
 import { NewTripForm } from "./new-trip-form";
 
@@ -36,14 +38,17 @@ export default async function CursaNouaPage({
     ? null
     : order.tripId
       ? `Comanda ${order.orderNumber} este deja planificată pe altă cursă.`
-      : order.status !== "CONFIRMED"
-        ? `Comanda ${order.orderNumber} nu este confirmată — poți crea cursa, dar va trebui să o atașezi manual după confirmare.`
+      : !(PLANNABLE_ORDER_STATUSES as readonly string[]).includes(order.status)
+        ? `Comanda ${order.orderNumber} nu poate fi planificată cât este „${ORDER_STATUS_LABELS[order.status]}” — poți crea cursa, dar va trebui să o atașezi manual.`
         : null;
   const eligibleOrderId = order && !ineligibleReason ? order.id : undefined;
 
   const loadingDates = order?.stops.filter((s) => s.type === "LOADING") ?? [];
   const unloadingDates = order?.stops.filter((s) => s.type === "UNLOADING") ?? [];
-  const today = toDateKey(new Date());
+  // toDateKey reads UTC parts — right for the @db.Date stop columns below,
+  // wrong for a live instant: between midnight and 02:00/03:00 Bucharest it
+  // would default the form to yesterday, and night dispatch is normal here.
+  const today = todayKeyInBucharest();
 
   const defaultStartsAt =
     loadingDates.length > 0

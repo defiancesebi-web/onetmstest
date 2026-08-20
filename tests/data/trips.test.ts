@@ -146,6 +146,36 @@ describe("createTrip", () => {
     ).rejects.toThrow(InvalidTripError);
   });
 
+  it("respinge același șofer pe ambele poziții", async () => {
+    const company = await makeCompany("Firma A", "RO1");
+    const session = { role: "COMPANY_ADMIN" as const, companyId: company.id };
+    const driver = await prisma.driver.create({
+      data: { companyId: company.id, firstName: "Ion", lastName: "Popescu" },
+    });
+
+    await expect(
+      createTrip(
+        session,
+        tripInput(company.id, { primaryDriverId: driver.id, secondDriverId: driver.id })
+      )
+    ).rejects.toThrow(/aceeași persoană/);
+  });
+
+  it("respinge același vehicul ca și cap tractor și semiremorcă", async () => {
+    const company = await makeCompany("Firma A", "RO1");
+    const session = { role: "COMPANY_ADMIN" as const, companyId: company.id };
+    const vehicle = await prisma.vehicle.create({
+      data: { companyId: company.id, registrationNumber: "B-1-AAA", type: "TRACTOR_UNIT" },
+    });
+
+    await expect(
+      createTrip(
+        session,
+        tripInput(company.id, { tractorUnitId: vehicle.id, trailerId: vehicle.id })
+      )
+    ).rejects.toThrow(/același vehicul/);
+  });
+
   it("respinge un interval cu sfârșitul înaintea începutului", async () => {
     const company = await makeCompany("Firma A", "RO1");
     const session = { role: "COMPANY_ADMIN" as const, companyId: company.id };

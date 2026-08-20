@@ -107,6 +107,28 @@ describe("attachOrderToTrip", () => {
     expect(fresh!.endsAt.toISOString().slice(0, 10)).toBe("2026-09-09");
   });
 
+  it("nu inversează intervalul cursei când stopurile comenzii sunt în ordine greșită", async () => {
+    const { company, client, session } = await setup("Firma A", "RO1");
+    // A mistyped unloading date: loading 10.09, unloading 01.09. Nothing
+    // validates stop chronology today, so the order is stored as typed and
+    // the recalc would otherwise write startsAt > endsAt — which makes the
+    // trip's resources invisible to overlap detection.
+    const order = await makeOrder(session, company.id, client.id, "2026-09-10", "2026-09-01");
+    await prisma.order.update({ where: { id: order.id }, data: { status: "CONFIRMED" } });
+    const trip = await createTrip(session, {
+      companyId: company.id,
+      startsAt: d("2026-09-01"),
+      endsAt: d("2026-09-02"),
+    });
+
+    await attachOrderToTrip(session, trip.id, order.id);
+
+    const fresh = await getTripById(session, trip.id);
+    expect(fresh!.startsAt.getTime()).toBeLessThanOrEqual(fresh!.endsAt.getTime());
+    expect(fresh!.startsAt.toISOString().slice(0, 10)).toBe("2026-09-01");
+    expect(fresh!.endsAt.toISOString().slice(0, 10)).toBe("2026-09-02");
+  });
+
   it("respinge o comandă care nu e confirmată", async () => {
     const { company, client, session } = await setup("Firma A", "RO1");
     const order = await makeOrder(session, company.id, client.id, "2026-09-03", "2026-09-07");
@@ -117,6 +139,38 @@ describe("attachOrderToTrip", () => {
     });
 
     await expect(attachOrderToTrip(session, trip.id, order.id)).rejects.toThrow(InvalidTripError);
+  });
+
+  it("atașează o comandă rămasă în execuție după anularea cursei ei", async () => {
+    const { company, client, session } = await setup("Firma A", "RO1");
+    const order = await makeOrder(session, company.id, client.id, "2026-09-03", "2026-09-07");
+    await prisma.order.update({ where: { id: order.id }, data: { status: "IN_PROGRESS" } });
+    const trip = await createTrip(session, {
+      companyId: company.id,
+      startsAt: d("2026-09-01"),
+      endsAt: d("2026-09-01"),
+    });
+
+    await attachOrderToTrip(session, trip.id, order.id);
+
+    const fresh = await prisma.order.findUniqueOrThrow({ where: { id: order.id } });
+    expect(fresh.tripId).toBe(trip.id);
+    expect(fresh.status).toBe("IN_PROGRESS");
+  });
+
+  it("respinge o comandă deja livrată", async () => {
+    const { company, client, session } = await setup("Firma A", "RO1");
+    const order = await makeOrder(session, company.id, client.id, "2026-09-03", "2026-09-07");
+    await prisma.order.update({ where: { id: order.id }, data: { status: "DELIVERED" } });
+    const trip = await createTrip(session, {
+      companyId: company.id,
+      startsAt: d("2026-09-01"),
+      endsAt: d("2026-09-01"),
+    });
+
+    await expect(attachOrderToTrip(session, trip.id, order.id)).rejects.toThrow(
+      /confirmate sau în execuție/
+    );
   });
 
   it("respinge o comandă deja atașată altei curse", async () => {
@@ -257,6 +311,19 @@ describe("listUnplannedOrders", () => {
 
     expect(result.map((o) => o.id)).toEqual([unplanned.id]);
     expect(result.map((o) => o.id)).not.toContain(notConfirmed.id);
+  });
+
+  it("include o comandă rămasă în execuție după anularea cursei ei", async () => {
+    const { company, client, session } = await setup("Firma A", "RO1");
+    const running = await makeOrder(session, company.id, client.id, "2026-09-04", "2026-09-06");
+    const isNew = await makeOrder(session, company.id, client.id, "2026-09-05", "2026-09-07");
+    await prisma.order.update({ where: { id: running.id }, data: { status: "IN_PROGRESS" } });
+
+    const result = await listUnplannedOrders(session, company.id);
+
+    expect(result.map((o) => o.id)).toContain(running.id);
+    // Business rule 1 keeps its intent: a NEW order still cannot be planned.
+    expect(result.map((o) => o.id)).not.toContain(isNew.id);
   });
 
   it("respinge o cerere pentru altă firmă", async () => {

@@ -272,6 +272,73 @@ describe("updateTripResources și updateTripDates", () => {
     expect(updated.tractorUnitId).toBe(tractor.id);
   });
 
+  // The two relational rules in assertResourcesUsable need both operands to
+  // be truthy. updateTripResources only validates the fields that changed, so
+  // before this guard existed the trip page was a hole around its own rule:
+  // createTrip refuses these exact combinations.
+  it("respinge același șofer pe ambele poziții când doar a doua se schimbă", async () => {
+    const { company, driver, session } = await setup("Firma A", "RO1");
+    const trip = await createTrip(session, {
+      companyId: company.id,
+      startsAt: d("2026-09-01"),
+      endsAt: d("2026-09-02"),
+      primaryDriverId: driver.id,
+    });
+
+    await expect(
+      updateTripResources(session, trip.id, {
+        primaryDriverId: driver.id,
+        secondDriverId: driver.id,
+      })
+    ).rejects.toThrow(/aceeași persoană/);
+
+    const fresh = await prisma.trip.findUniqueOrThrow({ where: { id: trip.id } });
+    expect(fresh.secondDriverId).toBeNull();
+  });
+
+  it("respinge același vehicul ca și cap tractor și semiremorcă când doar unul se schimbă", async () => {
+    const { company, tractor, session } = await setup("Firma A", "RO1");
+    const trip = await createTrip(session, {
+      companyId: company.id,
+      startsAt: d("2026-09-01"),
+      endsAt: d("2026-09-02"),
+      tractorUnitId: tractor.id,
+    });
+
+    await expect(
+      updateTripResources(session, trip.id, {
+        tractorUnitId: tractor.id,
+        trailerId: tractor.id,
+      })
+    ).rejects.toThrow(/același vehicul/);
+
+    const fresh = await prisma.trip.findUniqueOrThrow({ where: { id: trip.id } });
+    expect(fresh.trailerId).toBeNull();
+  });
+
+  // The whole reason updateTripResources validates only what changed: a truck
+  // sold or a driver let go after the trip was planned must not make that trip
+  // uneditable. Nothing covered this, and the pairwise guard above runs over
+  // the same input.
+  it("permite o editare fără legătură când o resursă deja alocată a fost dezactivată între timp", async () => {
+    const { company, tractor, driver, session } = await setup("Firma A", "RO1");
+    const trip = await createTrip(session, {
+      companyId: company.id,
+      startsAt: d("2026-09-01"),
+      endsAt: d("2026-09-02"),
+      primaryDriverId: driver.id,
+    });
+    await prisma.driver.update({ where: { id: driver.id }, data: { isActive: false } });
+
+    const updated = await updateTripResources(session, trip.id, {
+      primaryDriverId: driver.id,
+      tractorUnitId: tractor.id,
+    });
+
+    expect(updated.tractorUnitId).toBe(tractor.id);
+    expect(updated.primaryDriverId).toBe(driver.id);
+  });
+
   it("respinge modificarea unei curse din altă firmă", async () => {
     const a = await setup("Firma A", "RO1");
     const b = await setup("Firma B", "RO2");

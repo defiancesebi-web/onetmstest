@@ -52,7 +52,7 @@ export default async function DispeceratPage({
           </h2>
           {unplanned.length === 0 ? (
             <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
-              Nicio comandă confirmată care să aștepte un camion.
+              Nicio comandă care să aștepte un camion.
             </p>
           ) : (
             <ul className="space-y-2">

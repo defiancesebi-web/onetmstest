@@ -48,14 +48,29 @@ export function TripResourcesForm({
     if (secondRef.current) secondRef.current.value = fields.secondDriverId;
   }, [state, fields]);
 
+  // The acceptance belongs to the selection that was warned about, not to the
+  // form. Without this, a dispatcher warned that truck A is busy could switch
+  // to truck B and submit — and B's conflicts would never be checked, silently
+  // losing a warning they never declined. Held as "which action result was on
+  // screen when the user last touched the selection" rather than a boolean, so
+  // a fresh result (a re-warning) revives the acceptance on its own, with no
+  // effect and no cascading render.
+  const [editedAgainst, setEditedAgainst] = useState<TripFormState | null>(null);
+  const conflictsAccepted = state.conflicts.length > 0 && editedAgainst !== state;
+
   function update<K extends keyof typeof fields>(key: K, value: string) {
     setFields((prev) => ({ ...prev, [key]: value }));
     if (key === "startsAt" || key === "endsAt") setDatesChanged(true);
+    // Every field on this form feeds findResourceConflicts.
+    setEditedAgainst(state);
   }
 
   return (
     <form action={formAction} className="grid max-w-2xl gap-4 sm:grid-cols-2">
-      {state.conflicts.length > 0 && <input type="hidden" name="acceptConflicts" value="true" />}
+      {/* Bound to the resources and dates that were warned about, not to the
+          form: changing any of them drops the acceptance so the replacement is
+          checked too. */}
+      {conflictsAccepted && <input type="hidden" name="acceptConflicts" value="true" />}
       {/* Only a deliberate edit pins the dates; otherwise attaching an order may
           keep recalculating them. */}
       <input type="hidden" name="datesChanged" value={datesChanged ? "true" : "false"} />
