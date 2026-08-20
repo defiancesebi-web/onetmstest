@@ -43,6 +43,24 @@ model Company {
   status    CompanyStatus @default(TRIAL)
   createdAt DateTime      @default(now())
 
+  // Invoicing / legal identity of the issuer (furnizor). Filled once from the
+  // in-app invoicing settings screen; required before an invoice can be issued.
+  // Kept nullable so existing companies migrate cleanly and can fill them later.
+  regCom        String?
+  address       String?
+  city          String?
+  county        String?
+  postalCode    String?
+  country       String  @default("România")
+  iban          String?
+  bankName      String?
+  /// Plătitor de TVA. A non-payer issues invoices with no VAT and the legal
+  /// "Neplătitor de TVA" mention instead.
+  vatPayer      Boolean @default(true)
+  /// The invoice series (serie) this company issues under, e.g. "ONE". Numbers
+  /// run continuously within the series. Must be set before issuing.
+  invoiceSeries String?
+
   users       User[]
   invitations Invitation[]
   clients     Client[]
@@ -51,6 +69,7 @@ model Company {
   drivers     Driver[]
   documents   Document[]
   trips       Trip[]
+  invoices    Invoice[]
 }
 
 model User {
@@ -113,8 +132,9 @@ model Client {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  company Company @relation(fields: [companyId], references: [id])
-  orders  Order[]
+  company  Company   @relation(fields: [companyId], references: [id])
+  orders   Order[]
+  invoices Invoice[]
 
   @@index([companyId, name])
 }
@@ -164,10 +184,11 @@ model Order {
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 
-  company Company     @relation(fields: [companyId], references: [id])
-  client  Client      @relation(fields: [clientId], references: [id])
-  trip    Trip?       @relation(fields: [tripId], references: [id])
-  stops   OrderStop[]
+  company  Company     @relation(fields: [companyId], references: [id])
+  client   Client      @relation(fields: [clientId], references: [id])
+  trip     Trip?       @relation(fields: [tripId], references: [id])
+  stops    OrderStop[]
+  invoices Invoice[]
 
   @@unique([companyId, year, sequence])
   @@unique([companyId, orderNumber])
@@ -322,4 +343,115 @@ model Trip {
   @@unique([companyId, tripNumber])
   @@index([companyId, status])
   @@index([companyId, startsAt])
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  CANCELLED
+}
+
+/// Tracks the RO e-Factura (ANAF SPV) lifecycle. No integration yet — every
+/// invoice stays NOT_SENT — but the field exists so the send flow can be added
+/// later without a migration or a data backfill.
+enum EfacturaStatus {
+  NOT_SENT
+  PENDING
+  SENT
+  ACCEPTED
+  REJECTED
+}
+
+/// A stored fiscal invoice. Party details are SNAPSHOTTED at issue time (the
+/// buyer_* and seller_* columns), never read live from Company/Client — a
+/// legal invoice must not change if the firm later edits its address or the
+/// client is renamed. Money is Decimal end-to-end. Shaped for RO e-Factura
+/// (UBL/CIUS-RO): per-line VAT, unit of measure, and an RON exchange rate for
+/// foreign-currency invoices.
+model Invoice {
+  id        String        @id @default(cuid())
+  companyId String
+  /// Bucharest year of issue. Null while still a draft.
+  year      Int?
+  /// series / number / invoiceNumber are assigned only when the invoice is
+  /// ISSUED — a draft carries no fiscal number, and Postgres treats each NULL
+  /// as distinct so many drafts coexist under the unique constraints below.
+  series        String?
+  number        Int?
+  invoiceNumber String?
+  status        InvoiceStatus @default(DRAFT)
+
+  issueDate DateTime @db.Date
+  dueDate   DateTime @db.Date
+  currency  Currency @default(RON)
+  /// Set only when currency != RON: the RON rate frozen at issue, for the
+  /// mandatory RON reporting value on the e-Factura.
+  exchangeRate Decimal? @db.Decimal(10, 4)
+
+  // Buyer snapshot (cumpărător).
+  clientId     String?
+  buyerName    String
+  buyerCui     String
+  buyerRegCom  String?
+  buyerAddress String
+  buyerCity    String
+  buyerCounty  String?
+  buyerCountry String  @default("România")
+
+  // Seller snapshot (furnizor) — copied from Company at issue time.
+  sellerName     String
+  sellerCui      String
+  sellerRegCom   String?
+  sellerAddress  String
+  sellerCity     String
+  sellerCounty   String?
+  sellerCountry  String  @default("România")
+  sellerIban     String?
+  sellerBank     String?
+  sellerVatPayer Boolean @default(true)
+
+  // Stored totals (sum of the lines), so lists and reports never recompute.
+  netTotal   Decimal @db.Decimal(12, 2)
+  vatTotal   Decimal @db.Decimal(12, 2)
+  grossTotal Decimal @db.Decimal(12, 2)
+
+  notes          String?
+  orderId        String?
+  efacturaStatus EfacturaStatus @default(NOT_SENT)
+  issuedAt       DateTime?
+  paidAt         DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  company Company       @relation(fields: [companyId], references: [id])
+  client  Client?       @relation(fields: [clientId], references: [id])
+  order   Order?        @relation(fields: [orderId], references: [id])
+  lines   InvoiceLine[]
+
+  @@unique([companyId, invoiceNumber])
+  @@unique([companyId, series, number])
+  @@index([companyId, status])
+  @@index([companyId, clientId])
+}
+
+model InvoiceLine {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  sequence    Int
+  description String
+  /// Unit of measure (U.M.): buc, cursă, km, kg, lună…
+  unit        String  @default("buc")
+  quantity    Decimal @db.Decimal(12, 3)
+  /// Preț unitar fără TVA.
+  unitPrice   Decimal @db.Decimal(12, 2)
+  /// VAT percentage applied to this line, e.g. 21.00.
+  vatRate     Decimal @db.Decimal(5, 2)
+  netAmount   Decimal @db.Decimal(12, 2)
+  vatAmount   Decimal @db.Decimal(12, 2)
+  grossAmount Decimal @db.Decimal(12, 2)
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@unique([invoiceId, sequence])
 }

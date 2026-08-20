@@ -21,7 +21,7 @@ const COMPANY_NAV: NavDef[] = [
   { key: "drivers", href: "/dashboard/soferi", built: true },
   { key: "customers", href: "/dashboard/clienti", built: true },
   { key: "carriers", href: "/dashboard/curand/carriers", built: false },
-  { key: "invoices", href: "/dashboard/curand/invoices", built: false },
+  { key: "invoices", href: "/dashboard/facturare", built: true },
   { key: "documents", href: "/dashboard/documente", built: true },
   { key: "reports", href: "/dashboard/curand/reports", built: false },
   { key: "analytics", href: "/dashboard/curand/analytics", built: false },

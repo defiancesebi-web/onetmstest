@@ -400,6 +400,127 @@ export type Dictionary = {
     openTrip: string;
     estimated: string;
   };
+  invoices: {
+    title: string;
+    description: string;
+    newLabel: string;
+    settingsLabel: string;
+    searchPlaceholder: string;
+    allStatuses: string;
+    filter: string;
+    notFound: string;
+    setupNeeded: string;
+    setupCta: string;
+    colNumber: string;
+    colClient: string;
+    colIssue: string;
+    colDue: string;
+    colTotal: string;
+    colStatus: string;
+    draftRow: string;
+  };
+  invoiceSettings: {
+    back: string;
+    title: string;
+    description: string;
+    sectionIdentity: string;
+    sectionInvoicing: string;
+    sectionBank: string;
+    name: string;
+    cui: string;
+    readonlyHint: string;
+    regCom: string;
+    address: string;
+    city: string;
+    county: string;
+    postalCode: string;
+    iban: string;
+    bankName: string;
+    vatPayer: string;
+    vatPayerHint: string;
+    series: string;
+    seriesHint: string;
+    save: string;
+    saving: string;
+    saved: string;
+  };
+  invoiceForm: {
+    back: string;
+    title: string;
+    fromOrder: string;
+    sectionBuyer: string;
+    useClient: string;
+    manualBuyer: string;
+    chooseClient: string;
+    buyerName: string;
+    buyerCui: string;
+    buyerRegCom: string;
+    buyerAddress: string;
+    buyerCity: string;
+    buyerCounty: string;
+    buyerCountry: string;
+    sectionDates: string;
+    issueDate: string;
+    dueDate: string;
+    currency: string;
+    exchangeRate: string;
+    exchangeRateHint: string;
+    sectionLines: string;
+    lineDescription: string;
+    lineUnit: string;
+    lineQty: string;
+    lineUnitPrice: string;
+    lineVat: string;
+    lineNet: string;
+    addLine: string;
+    removeLine: string;
+    nonVatNote: string;
+    totalNet: string;
+    totalVat: string;
+    totalGross: string;
+    notes: string;
+    saveDraft: string;
+    issueNow: string;
+    saving: string;
+  };
+  invoiceView: {
+    back: string;
+    draftTitle: string;
+    invoiceWord: string;
+    issue: string;
+    markPaid: string;
+    cancel: string;
+    deleteDraft: string;
+    print: string;
+    efacturaSend: string;
+    efacturaSoon: string;
+    supplier: string;
+    buyer: string;
+    cui: string;
+    regCom: string;
+    iban: string;
+    bank: string;
+    issueDate: string;
+    dueDate: string;
+    fromOrder: string;
+    colNr: string;
+    colDescription: string;
+    colUnit: string;
+    colQty: string;
+    colUnitPrice: string;
+    colVat: string;
+    colNet: string;
+    totalNet: string;
+    totalVat: string;
+    totalGross: string;
+    notes: string;
+    nonVatMention: string;
+    efacturaLabel: string;
+    confirmIssue: string;
+    confirmCancel: string;
+    confirmDelete: string;
+    exchangeInfo: string;
+  };
 };
 
 const dictionaries: Record<Locale, Dictionary> = {
@@ -797,6 +918,128 @@ const dictionaries: Record<Locale, Dictionary> = {
       openTrip: "Deschide cursa",
       estimated: "estimat",
     },
+    invoices: {
+      title: "Facturi",
+      description: "Facturile emise către clienți.",
+      newLabel: "Factură nouă",
+      settingsLabel: "Date facturare",
+      searchPlaceholder: "Caută după număr sau client",
+      allStatuses: "Toate stările",
+      filter: "Filtrează",
+      notFound: "Nicio factură.",
+      setupNeeded:
+        "Înainte de a emite facturi, completează datele de facturare ale firmei (serie, sediu, IBAN).",
+      setupCta: "Completează datele",
+      colNumber: "Număr",
+      colClient: "Client",
+      colIssue: "Emisă",
+      colDue: "Scadență",
+      colTotal: "Total",
+      colStatus: "Stare",
+      draftRow: "(ciornă)",
+    },
+    invoiceSettings: {
+      back: "← Înapoi la facturi",
+      title: "Date facturare",
+      description: "Datele firmei tale care apar pe factură. Le completezi o singură dată.",
+      sectionIdentity: "Identitate firmă",
+      sectionInvoicing: "Serie și TVA",
+      sectionBank: "Bancă",
+      name: "Denumire firmă",
+      cui: "CUI",
+      readonlyHint: "Setate de administratorul platformei.",
+      regCom: "Nr. Reg. Com.",
+      address: "Adresă sediu",
+      city: "Oraș",
+      county: "Județ",
+      postalCode: "Cod poștal",
+      iban: "IBAN",
+      bankName: "Bancă",
+      vatPayer: "Plătitor de TVA",
+      vatPayerHint: "Dacă e dezactivat, facturile se emit fără TVA („Neplătitor de TVA”).",
+      series: "Serie facturi",
+      seriesHint: "Ex. „ONE”. Numerele cresc continuu în cadrul seriei.",
+      save: "Salvează datele",
+      saving: "Se salvează...",
+      saved: "Datele au fost salvate.",
+    },
+    invoiceForm: {
+      back: "← Înapoi la facturi",
+      title: "Factură nouă",
+      fromOrder: "Pre-completată din comanda",
+      sectionBuyer: "Cumpărător",
+      useClient: "Client existent",
+      manualBuyer: "Introdu manual",
+      chooseClient: "— alege un client —",
+      buyerName: "Denumire",
+      buyerCui: "CUI",
+      buyerRegCom: "Nr. Reg. Com.",
+      buyerAddress: "Adresă",
+      buyerCity: "Oraș",
+      buyerCounty: "Județ",
+      buyerCountry: "Țară",
+      sectionDates: "Date și monedă",
+      issueDate: "Data emiterii",
+      dueDate: "Scadență",
+      currency: "Monedă",
+      exchangeRate: "Curs valutar (RON)",
+      exchangeRateHint: "Necesar pentru raportarea în RON la facturi în valută.",
+      sectionLines: "Linii factură",
+      lineDescription: "Descriere",
+      lineUnit: "U.M.",
+      lineQty: "Cant.",
+      lineUnitPrice: "Preț unitar",
+      lineVat: "TVA %",
+      lineNet: "Valoare",
+      addLine: "+ Adaugă linie",
+      removeLine: "Șterge",
+      nonVatNote: "Firmă neplătitoare de TVA — facturile se emit fără TVA.",
+      totalNet: "Total fără TVA",
+      totalVat: "TVA",
+      totalGross: "Total de plată",
+      notes: "Observații",
+      saveDraft: "Salvează ca ciornă",
+      issueNow: "Emite factura",
+      saving: "Se salvează...",
+    },
+    invoiceView: {
+      back: "← Înapoi la facturi",
+      draftTitle: "Ciornă factură",
+      invoiceWord: "Factură",
+      issue: "Emite factura",
+      markPaid: "Marchează plătită",
+      cancel: "Anulează factura",
+      deleteDraft: "Șterge ciorna",
+      print: "Printează",
+      efacturaSend: "Trimite în e-Factura",
+      efacturaSoon: "Integrarea e-Factura (ANAF) sosește într-o etapă următoare.",
+      supplier: "Furnizor",
+      buyer: "Cumpărător",
+      cui: "CUI",
+      regCom: "Reg. Com.",
+      iban: "IBAN",
+      bank: "Banca",
+      issueDate: "Data emiterii",
+      dueDate: "Scadență",
+      fromOrder: "Din comanda",
+      colNr: "Nr.",
+      colDescription: "Denumire produs / serviciu",
+      colUnit: "U.M.",
+      colQty: "Cant.",
+      colUnitPrice: "Preț unitar",
+      colVat: "TVA",
+      colNet: "Valoare",
+      totalNet: "Total fără TVA",
+      totalVat: "Total TVA",
+      totalGross: "Total de plată",
+      notes: "Observații",
+      nonVatMention: "Neplătitor de TVA",
+      efacturaLabel: "e-Factura",
+      confirmIssue: "Emiți factura? Primește serie și număr și nu mai poate fi ștearsă.",
+      confirmCancel: "Anulezi factura? Numărul rămâne rezervat, iar factura nu mai e validă.",
+      confirmDelete: "Ștergi ciorna definitiv?",
+      exchangeInfo: "Curs",
+    },
   },
   en: {
     nav: {
@@ -1191,6 +1434,128 @@ const dictionaries: Record<Locale, Dictionary> = {
         "Positions are estimated from trip progress. Real-time GPS tracking arrives in a later stage.",
       openTrip: "Open trip",
       estimated: "estimated",
+    },
+    invoices: {
+      title: "Invoices",
+      description: "Invoices issued to customers.",
+      newLabel: "New invoice",
+      settingsLabel: "Invoicing details",
+      searchPlaceholder: "Search by number or customer",
+      allStatuses: "All statuses",
+      filter: "Filter",
+      notFound: "No invoices.",
+      setupNeeded:
+        "Before issuing invoices, fill in your company's invoicing details (series, address, IBAN).",
+      setupCta: "Fill in the details",
+      colNumber: "Number",
+      colClient: "Customer",
+      colIssue: "Issued",
+      colDue: "Due",
+      colTotal: "Total",
+      colStatus: "Status",
+      draftRow: "(draft)",
+    },
+    invoiceSettings: {
+      back: "← Back to invoices",
+      title: "Invoicing details",
+      description: "Your company's details that appear on the invoice. Fill them in once.",
+      sectionIdentity: "Company identity",
+      sectionInvoicing: "Series and VAT",
+      sectionBank: "Bank",
+      name: "Company name",
+      cui: "Reg. no. (CUI)",
+      readonlyHint: "Set by the platform administrator.",
+      regCom: "Trade Register no.",
+      address: "Registered address",
+      city: "City",
+      county: "County",
+      postalCode: "Postal code",
+      iban: "IBAN",
+      bankName: "Bank",
+      vatPayer: "VAT payer",
+      vatPayerHint: "If off, invoices are issued without VAT (“Not a VAT payer”).",
+      series: "Invoice series",
+      seriesHint: "E.g. “ONE”. Numbers run continuously within the series.",
+      save: "Save details",
+      saving: "Saving...",
+      saved: "Details saved.",
+    },
+    invoiceForm: {
+      back: "← Back to invoices",
+      title: "New invoice",
+      fromOrder: "Prefilled from load",
+      sectionBuyer: "Buyer",
+      useClient: "Existing customer",
+      manualBuyer: "Enter manually",
+      chooseClient: "— choose a customer —",
+      buyerName: "Name",
+      buyerCui: "Reg. no.",
+      buyerRegCom: "Trade Register no.",
+      buyerAddress: "Address",
+      buyerCity: "City",
+      buyerCounty: "County",
+      buyerCountry: "Country",
+      sectionDates: "Dates and currency",
+      issueDate: "Issue date",
+      dueDate: "Due date",
+      currency: "Currency",
+      exchangeRate: "Exchange rate (RON)",
+      exchangeRateHint: "Required for RON reporting on foreign-currency invoices.",
+      sectionLines: "Invoice lines",
+      lineDescription: "Description",
+      lineUnit: "Unit",
+      lineQty: "Qty",
+      lineUnitPrice: "Unit price",
+      lineVat: "VAT %",
+      lineNet: "Amount",
+      addLine: "+ Add line",
+      removeLine: "Remove",
+      nonVatNote: "Not a VAT payer — invoices are issued without VAT.",
+      totalNet: "Net total",
+      totalVat: "VAT",
+      totalGross: "Total due",
+      notes: "Notes",
+      saveDraft: "Save as draft",
+      issueNow: "Issue invoice",
+      saving: "Saving...",
+    },
+    invoiceView: {
+      back: "← Back to invoices",
+      draftTitle: "Invoice draft",
+      invoiceWord: "Invoice",
+      issue: "Issue invoice",
+      markPaid: "Mark paid",
+      cancel: "Cancel invoice",
+      deleteDraft: "Delete draft",
+      print: "Print",
+      efacturaSend: "Send to e-Factura",
+      efacturaSoon: "e-Factura (ANAF) integration arrives in a later stage.",
+      supplier: "Supplier",
+      buyer: "Buyer",
+      cui: "Reg. no.",
+      regCom: "Trade Reg.",
+      iban: "IBAN",
+      bank: "Bank",
+      issueDate: "Issue date",
+      dueDate: "Due date",
+      fromOrder: "From load",
+      colNr: "No.",
+      colDescription: "Product / service",
+      colUnit: "Unit",
+      colQty: "Qty",
+      colUnitPrice: "Unit price",
+      colVat: "VAT",
+      colNet: "Amount",
+      totalNet: "Net total",
+      totalVat: "Total VAT",
+      totalGross: "Total due",
+      notes: "Notes",
+      nonVatMention: "Not a VAT payer",
+      efacturaLabel: "e-Factura",
+      confirmIssue: "Issue the invoice? It gets a series and number and can no longer be deleted.",
+      confirmCancel: "Cancel the invoice? The number stays reserved and the invoice is no longer valid.",
+      confirmDelete: "Delete the draft permanently?",
+      exchangeInfo: "Rate",
     },
   },
 };

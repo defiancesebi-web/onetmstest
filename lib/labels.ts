@@ -6,6 +6,8 @@ import type {
   StopType,
   VehicleType,
   DocumentType,
+  InvoiceStatus,
+  EfacturaStatus,
 } from "@/lib/generated/prisma/enums";
 
 /**
@@ -105,6 +107,33 @@ export const DOCUMENT_TYPE_I18N: Record<Locale, Record<DocumentType, string>> = 
     AVIZ_PSIHOLOGIC: "Psychological certificate",
   },
 };
+
+export const INVOICE_STATUS_I18N: Record<Locale, Record<InvoiceStatus, string>> = {
+  ro: { DRAFT: "Ciornă", ISSUED: "Emisă", PAID: "Plătită", CANCELLED: "Anulată" },
+  en: { DRAFT: "Draft", ISSUED: "Issued", PAID: "Paid", CANCELLED: "Cancelled" },
+};
+
+export const EFACTURA_STATUS_I18N: Record<Locale, Record<EfacturaStatus, string>> = {
+  ro: {
+    NOT_SENT: "Netrimisă",
+    PENDING: "În curs",
+    SENT: "Trimisă",
+    ACCEPTED: "Acceptată",
+    REJECTED: "Respinsă",
+  },
+  en: {
+    NOT_SENT: "Not sent",
+    PENDING: "Pending",
+    SENT: "Sent",
+    ACCEPTED: "Accepted",
+    REJECTED: "Rejected",
+  },
+};
+
+export const invoiceStatusLabel = (s: InvoiceStatus, locale: Locale) =>
+  INVOICE_STATUS_I18N[locale][s];
+export const efacturaStatusLabel = (s: EfacturaStatus, locale: Locale) =>
+  EFACTURA_STATUS_I18N[locale][s];
 
 export const orderStatusLabel = (s: OrderStatus, locale: Locale) => ORDER_STATUS_I18N[locale][s];
 export const tripStatusLabel = (s: TripStatus, locale: Locale) => TRIP_STATUS_I18N[locale][s];
