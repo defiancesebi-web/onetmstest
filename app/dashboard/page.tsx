@@ -17,7 +17,7 @@ import { getCompanyForSession } from "@/lib/data/companies";
 import { getExpiringDocuments } from "@/lib/data/documents";
 import { getDashboardStats } from "@/lib/data/dashboard";
 import { toDateKey, formatDateKey, DOCUMENT_TYPE_LABELS } from "@/lib/documentStatus";
-import { ORDER_STATUS_LABELS } from "@/lib/orderStatus";
+import { orderStatusLabel } from "@/lib/labels";
 import { getDictionary, getLocale } from "@/lib/i18n-server";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { DonutChart } from "@/components/dashboard/donut-chart";
@@ -47,7 +47,7 @@ export default async function DashboardPage() {
 
   const donutSegments = stats.byStatus
     .filter((s) => s.count > 0)
-    .map((s) => ({ label: ORDER_STATUS_LABELS[s.status], value: s.count, color: STATUS_HEX[s.status] }));
+    .map((s) => ({ label: orderStatusLabel(s.status, locale), value: s.count, color: STATUS_HEX[s.status] }));
 
   const areaPoints = stats.series.map((p) => ({
     label: weekday.format(new Date(`${p.key}T00:00:00`)),
@@ -179,7 +179,7 @@ export default async function DashboardPage() {
                       </td>
                       <td className="px-5 py-2.5">{o.clientName}</td>
                       <td className="px-5 py-2.5">
-                        <OrderStatusPill status={o.status} />
+                        <OrderStatusPill status={o.status} locale={locale} />
                       </td>
                     </tr>
                   ))}

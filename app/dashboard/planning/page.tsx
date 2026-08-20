@@ -3,7 +3,8 @@ import { Truck, CalendarRange } from "lucide-react";
 import { auth } from "@/auth";
 import { listTrips, listUnplannedOrders } from "@/lib/data/trips";
 import { listVehicles } from "@/lib/data/vehicles";
-import { TRIP_STATUS_LABELS } from "@/lib/tripStatus";
+import { getDictionary, getLocale } from "@/lib/i18n-server";
+import { tripStatusLabel, TRIP_STATUS_I18N } from "@/lib/labels";
 import type { TripStatus } from "@/lib/generated/prisma/enums";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -38,6 +39,9 @@ export default async function PlanningPage() {
   const session = await auth();
   const sessionUser = { role: session!.user.role, companyId: session!.user.companyId };
   const companyId = session!.user.companyId!;
+  const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
+  const t = dict.planning;
+  const intlLocale = locale === "ro" ? "ro-RO" : "en-US";
 
   const [trips, unplanned, vehicles] = await Promise.all([
     listTrips(sessionUser, companyId),
@@ -61,8 +65,8 @@ export default async function PlanningPage() {
   const weekEnd = weekKeys[6];
   const todayKey = bucharestKey(new Date());
 
-  const weekdayFmt = new Intl.DateTimeFormat("ro-RO", { weekday: "short" });
-  const rangeLabel = `${weekDays[0].toLocaleDateString("ro-RO", { day: "numeric", month: "short" })} – ${weekDays[6].toLocaleDateString("ro-RO", { day: "numeric", month: "short" })}`;
+  const weekdayFmt = new Intl.DateTimeFormat(intlLocale, { weekday: "short" });
+  const rangeLabel = `${weekDays[0].toLocaleDateString(intlLocale, { day: "numeric", month: "short" })} – ${weekDays[6].toLocaleDateString(intlLocale, { day: "numeric", month: "short" })}`;
 
   // Column span for a trip inside the visible week, or null if fully outside.
   function span(startsAt: Date, endsAt: Date): { start: number; end: number } | null {
@@ -78,7 +82,7 @@ export default async function PlanningPage() {
   const truckRows = vehicles
     .filter((v) => v.isActive && v.type !== "SEMI_TRAILER")
     .map((v) => ({ key: v.registrationNumber, label: v.registrationNumber }));
-  const rows = [...truckRows, { key: "__none__", label: "Fără camion" }];
+  const rows = [...truckRows, { key: "__none__", label: t.noTruck }];
 
   const tripsByRow = new Map<string, typeof trips>();
   for (const t of trips) {
@@ -91,10 +95,8 @@ export default async function PlanningPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Planificare</h1>
-          <p className="text-muted-foreground text-sm">
-            Cursele săptămânii, pe camioane. Comenzile neplanificate așteaptă în stânga.
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">{t.title}</h1>
+          <p className="text-muted-foreground text-sm">{t.subtitle}</p>
         </div>
         <span className="bg-card inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium">
           <CalendarRange className="text-muted-foreground size-4" /> {rangeLabel}
@@ -102,9 +104,9 @@ export default async function PlanningPage() {
       </div>
 
       <div className="flex flex-wrap gap-3 text-xs">
-        {(Object.keys(TRIP_STATUS_LABELS) as TripStatus[]).map((s) => (
+        {(Object.keys(TRIP_STATUS_I18N[locale]) as TripStatus[]).map((s) => (
           <span key={s} className="text-muted-foreground inline-flex items-center gap-1.5">
-            <span className={`size-2.5 rounded-full ${DOT[s]}`} /> {TRIP_STATUS_LABELS[s]}
+            <span className={`size-2.5 rounded-full ${DOT[s]}`} /> {tripStatusLabel(s, locale)}
           </span>
         ))}
       </div>
@@ -113,11 +115,11 @@ export default async function PlanningPage() {
         {/* Unassigned */}
         <section className="bg-card rounded-xl border p-4 shadow-sm">
           <h2 className="mb-3 text-sm font-semibold">
-            Neplanificate <span className="text-muted-foreground">({unplanned.length})</span>
+            {t.unassigned} <span className="text-muted-foreground">({unplanned.length})</span>
           </h2>
           {unplanned.length === 0 ? (
             <p className="text-muted-foreground rounded-lg border border-dashed p-4 text-center text-xs">
-              Nicio comandă care să aștepte un camion.
+              {t.noUnassigned}
             </p>
           ) : (
             <ul className="space-y-2">
@@ -134,7 +136,7 @@ export default async function PlanningPage() {
                         href={`/dashboard/curse/noua?comanda=${o.id}`}
                         className={buttonVariants({ variant: "outline", size: "sm" })}
                       >
-                        Planifică
+                        {t.plan}
                       </Link>
                     </div>
                     <p className="text-muted-foreground mt-1 truncate">{o.client.name}</p>
@@ -156,7 +158,7 @@ export default async function PlanningPage() {
             <div className="min-w-[720px]">
               {/* Header */}
               <div className="grid grid-cols-[150px_1fr] border-b">
-                <div className="text-muted-foreground px-4 py-2.5 text-xs font-medium">Camion</div>
+                <div className="text-muted-foreground px-4 py-2.5 text-xs font-medium">{t.truck}</div>
                 <div className="grid grid-cols-7">
                   {weekDays.map((d) => {
                     const isToday = keyOf(d) === todayKey;
@@ -175,7 +177,9 @@ export default async function PlanningPage() {
 
               {/* Rows */}
               {rows.map((row) => {
-                const rowTrips = (tripsByRow.get(row.key) ?? []).filter((t) => span(t.startsAt, t.endsAt));
+                const rowTrips = (tripsByRow.get(row.key) ?? []).filter((trip) =>
+                  span(trip.startsAt, trip.endsAt)
+                );
                 return (
                   <div key={row.key} className="grid min-h-[56px] grid-cols-[150px_1fr] border-b last:border-0">
                     <div className="flex items-center gap-2 px-4 py-2 text-sm">
@@ -192,19 +196,22 @@ export default async function PlanningPage() {
                       {/* trip bars */}
                       <div className="relative space-y-1 py-1.5">
                         {rowTrips.length === 0 && <div className="h-6" />}
-                        {rowTrips.map((t) => {
-                          const s = span(t.startsAt, t.endsAt)!;
+                        {rowTrips.map((trip) => {
+                          const s = span(trip.startsAt, trip.endsAt)!;
                           return (
-                            <div key={t.id} className="grid grid-cols-7 px-1">
+                            <div key={trip.id} className="grid grid-cols-7 px-1">
                               <Link
-                                href={`/dashboard/curse/${t.id}`}
+                                href={`/dashboard/curse/${trip.id}`}
                                 style={{ gridColumn: `${s.start} / ${s.end}` }}
-                                className={`truncate rounded-md border px-2 py-1 text-xs font-medium ${BLOCK[t.status]}`}
-                                title={`${t.tripNumber} · ${TRIP_STATUS_LABELS[t.status]}`}
+                                className={`truncate rounded-md border px-2 py-1 text-xs font-medium ${BLOCK[trip.status]}`}
+                                title={`${trip.tripNumber} · ${tripStatusLabel(trip.status, locale)}`}
                               >
-                                {t.tripNumber}
-                                {t.orders.length > 0 && (
-                                  <span className="opacity-70"> · {t.orders.length} cmd.</span>
+                                {trip.tripNumber}
+                                {trip.orders.length > 0 && (
+                                  <span className="opacity-70">
+                                    {" "}
+                                    · {trip.orders.length} {t.ordersShort}
+                                  </span>
                                 )}
                               </Link>
                             </div>
@@ -220,10 +227,7 @@ export default async function PlanningPage() {
         </section>
       </div>
 
-      <p className="text-muted-foreground text-xs">
-        Alocarea prin tragere (drag &amp; drop) vine în pasul următor. Deocamdată, „Planifică" pe o comandă
-        deschide formularul de cursă.
-      </p>
+      <p className="text-muted-foreground text-xs">{t.dndNote}</p>
     </div>
   );
 }

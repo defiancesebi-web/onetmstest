@@ -1,4 +1,5 @@
-import { ORDER_STATUS_LABELS } from "@/lib/orderStatus";
+import { orderStatusLabel } from "@/lib/labels";
+import type { Locale } from "@/lib/i18n";
 import type { OrderStatus } from "@/lib/generated/prisma/enums";
 
 const COLORS: Record<OrderStatus, string> = {
@@ -11,12 +12,18 @@ const COLORS: Record<OrderStatus, string> = {
   CANCELLED: "bg-rose-100 text-rose-700",
 };
 
-export function OrderStatusPill({ status }: { status: OrderStatus }) {
+export function OrderStatusPill({
+  status,
+  locale = "ro",
+}: {
+  status: OrderStatus;
+  locale?: Locale;
+}) {
   return (
     <span
       className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-semibold ${COLORS[status]}`}
     >
-      {ORDER_STATUS_LABELS[status]}
+      {orderStatusLabel(status, locale)}
     </span>
   );
 }

@@ -14,7 +14,7 @@ export type TabDef = {
  * the active one, so switching is instant and needs no refetch. Tabs marked
  * `soon` are visible but not selectable.
  */
-export function Tabs({ tabs }: { tabs: TabDef[] }) {
+export function Tabs({ tabs, soonLabel = "în curând" }: { tabs: TabDef[]; soonLabel?: string }) {
   const first = tabs.find((t) => !t.soon) ?? tabs[0];
   const [active, setActive] = useState(first.key);
 
@@ -40,7 +40,7 @@ export function Tabs({ tabs }: { tabs: TabDef[] }) {
               {t.label}
               {t.soon && (
                 <span className="bg-muted text-muted-foreground rounded px-1 py-0.5 text-[9px] font-semibold tracking-wide uppercase">
-                  în curând
+                  {soonLabel}
                 </span>
               )}
             </button>

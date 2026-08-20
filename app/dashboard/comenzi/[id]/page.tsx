@@ -4,8 +4,9 @@ import { ArrowLeft, Check, Truck, User, Building2, Package, MapPin, Route as Rou
 import { auth } from "@/auth";
 import { getOrderById, calculateMargin } from "@/lib/data/orders";
 import { PLANNABLE_ORDER_STATUSES } from "@/lib/data/trips";
-import { ORDER_STATUS_LABELS, STOP_TYPE_LABELS } from "@/lib/orderStatus";
 import type { OrderStatus } from "@/lib/generated/prisma/enums";
+import { getDictionary, getLocale } from "@/lib/i18n-server";
+import { orderStatusLabel, stopTypeLabel } from "@/lib/labels";
 import { Tabs } from "@/components/tabs";
 import { OrderStatusPill } from "@/components/dashboard/order-status-pill";
 import { buttonVariants } from "@/components/ui/button";
@@ -21,16 +22,6 @@ const LIFECYCLE: OrderStatus[] = [
   "INVOICED",
 ];
 
-function formatDate(value: Date) {
-  return new Intl.DateTimeFormat("ro-RO", { dateStyle: "medium" }).format(value);
-}
-
-const money = new Intl.NumberFormat("ro-RO", {
-  style: "currency",
-  currency: "RON",
-  maximumFractionDigits: 0,
-});
-
 export default async function ComandaDetailPage({
   params,
 }: {
@@ -44,6 +35,17 @@ export default async function ComandaDetailPage({
   );
   if (!order) notFound();
 
+  const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
+  const d = dict.order;
+  const intlLocale = locale === "ro" ? "ro-RO" : "en-US";
+  const formatDate = (value: Date) =>
+    new Intl.DateTimeFormat(intlLocale, { dateStyle: "medium" }).format(value);
+  const money = new Intl.NumberFormat(intlLocale, {
+    style: "currency",
+    currency: "RON",
+    maximumFractionDigits: 0,
+  });
+
   const margin = calculateMargin(order);
   const first = order.stops[0];
   const last = order.stops[order.stops.length - 1];
@@ -53,38 +55,38 @@ export default async function ComandaDetailPage({
     : "—";
 
   const info: { icon: React.ReactNode; label: string; value: string }[] = [
-    { icon: <Building2 className="size-4" />, label: "Client", value: order.client.name },
-    { icon: <Truck className="size-4" />, label: "Transportator", value: "Flotă proprie" },
-    { icon: <User className="size-4" />, label: "Șofer", value: driverName },
+    { icon: <Building2 className="size-4" />, label: d.customer, value: order.client.name },
+    { icon: <Truck className="size-4" />, label: d.carrier, value: d.ownFleet },
+    { icon: <User className="size-4" />, label: d.driver, value: driverName },
     {
       icon: <Truck className="size-4" />,
-      label: "Camion",
+      label: d.vehicle,
       value: order.trip?.tractorUnit?.registrationNumber ?? "—",
     },
-    { icon: <Package className="size-4" />, label: "Marfă", value: order.cargoDescription },
+    { icon: <Package className="size-4" />, label: d.commodity, value: order.cargoDescription },
     {
       icon: <Package className="size-4" />,
-      label: "Greutate",
+      label: d.weight,
       value: order.cargoWeightKg ? `${order.cargoWeightKg.toString()} kg` : "—",
     },
   ];
 
   const financial: { label: string; value: string; strong?: boolean }[] = [
-    { label: "Preț vânzare", value: `${order.salePrice.toString()} ${order.currency}` },
-    { label: "Echivalent RON", value: money.format(Number(order.salePriceRon)) },
+    { label: d.salePrice, value: `${order.salePrice.toString()} ${order.currency}` },
+    { label: d.ronEquiv, value: money.format(Number(order.salePriceRon)) },
     {
-      label: "Cost estimat",
+      label: d.estCost,
       value: order.estimatedCostRon ? money.format(Number(order.estimatedCostRon)) : "—",
     },
-    { label: "Profit brut", value: margin ? `${margin.marginRon} RON` : "—", strong: true },
-    { label: "Marjă", value: margin ? `${margin.marginPercent}%` : "—", strong: true },
+    { label: d.grossProfit, value: margin ? `${margin.marginRon} RON` : "—", strong: true },
+    { label: d.margin, value: margin ? `${margin.marginPercent}%` : "—", strong: true },
   ];
 
   const overview = (
     <div className="grid gap-4 lg:grid-cols-3">
       <div className="space-y-4 lg:col-span-2">
         <div className="bg-card rounded-xl border p-5 shadow-sm">
-          <h3 className="mb-4 font-semibold">Informații comandă</h3>
+          <h3 className="mb-4 font-semibold">{d.info}</h3>
           <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
             {info.map((row, i) => (
               <div key={i} className="flex items-start gap-3">
@@ -102,7 +104,7 @@ export default async function ComandaDetailPage({
 
         <div className="bg-card rounded-xl border p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-semibold">Stare comandă</h3>
+            <h3 className="font-semibold">{d.statusTitle}</h3>
             {first && last && (
               <span className="text-muted-foreground text-sm">
                 {first.city} → {last.city}
@@ -110,7 +112,7 @@ export default async function ComandaDetailPage({
             )}
           </div>
           {order.status === "CANCELLED" ? (
-            <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">Comandă anulată.</p>
+            <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{d.cancelled}</p>
           ) : (
             <ol className="flex flex-wrap items-center gap-y-3">
               {LIFECYCLE.map((step, i) => {
@@ -130,7 +132,7 @@ export default async function ComandaDetailPage({
                       {done ? <Check className="size-4" /> : i + 1}
                     </span>
                     <span className={`ml-1.5 text-xs ${active ? "font-semibold" : "text-muted-foreground"}`}>
-                      {ORDER_STATUS_LABELS[step]}
+                      {orderStatusLabel(step, locale)}
                     </span>
                     {i < LIFECYCLE.length - 1 && <span className="bg-border mx-2 h-px w-6" />}
                   </li>
@@ -143,7 +145,7 @@ export default async function ComandaDetailPage({
 
       <div className="space-y-4">
         <div className="bg-card rounded-xl border p-5 shadow-sm">
-          <h3 className="mb-4 font-semibold">Sumar financiar</h3>
+          <h3 className="mb-4 font-semibold">{d.financialSummary}</h3>
           <dl className="space-y-3 text-sm">
             {financial.map((row) => (
               <div key={row.label} className="flex items-center justify-between gap-2">
@@ -157,7 +159,7 @@ export default async function ComandaDetailPage({
         </div>
 
         <div className="bg-card rounded-xl border p-5 shadow-sm">
-          <h3 className="mb-3 font-semibold">Acțiuni</h3>
+          <h3 className="mb-3 font-semibold">{d.actions}</h3>
           <div className="space-y-3">
             <StatusActions orderId={order.id} status={order.status} />
             {order.trip ? (
@@ -165,7 +167,7 @@ export default async function ComandaDetailPage({
                 href={`/dashboard/curse/${order.trip.id}`}
                 className={`${buttonVariants({ variant: "outline", size: "sm" })} w-full`}
               >
-                <RouteIcon className="size-4" /> Cursa {order.trip.tripNumber}
+                <RouteIcon className="size-4" /> {d.trip} {order.trip.tripNumber}
               </Link>
             ) : (
               (PLANNABLE_ORDER_STATUSES as readonly string[]).includes(order.status) && (
@@ -173,7 +175,7 @@ export default async function ComandaDetailPage({
                   href={`/dashboard/curse/noua?comanda=${order.id}`}
                   className={`${buttonVariants({ variant: "outline", size: "sm" })} w-full`}
                 >
-                  <MapPin className="size-4" /> Planifică pe o cursă
+                  <MapPin className="size-4" /> {d.planOnTrip}
                 </Link>
               )
             )}
@@ -190,7 +192,7 @@ export default async function ComandaDetailPage({
           <div className="mb-1 flex flex-wrap items-center gap-2">
             <span className="font-semibold">{stop.sequence}.</span>
             <span className="bg-muted rounded px-2 py-0.5 text-xs font-medium">
-              {STOP_TYPE_LABELS[stop.type]}
+              {stopTypeLabel(stop.type, locale)}
             </span>
             <span className="text-muted-foreground">{formatDate(stop.scheduledDate)}</span>
             {stop.timeFrom && (
@@ -205,7 +207,7 @@ export default async function ComandaDetailPage({
           </p>
           {stop.contactName && (
             <p className="text-muted-foreground">
-              Contact: {stop.contactName}
+              {d.contact}: {stop.contactName}
               {stop.contactPhone && ` · ${stop.contactPhone}`}
             </p>
           )}
@@ -218,41 +220,43 @@ export default async function ComandaDetailPage({
     <div className="bg-card max-w-2xl rounded-xl border p-5 shadow-sm">
       <dl className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
         <div>
-          <dt className="text-muted-foreground">Preț</dt>
+          <dt className="text-muted-foreground">{d.price}</dt>
           <dd className="font-medium">
             {order.salePrice.toString()} {order.currency}
           </dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Echivalent RON</dt>
+          <dt className="text-muted-foreground">{d.ronEquiv}</dt>
           <dd className="font-medium">{money.format(Number(order.salePriceRon))}</dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Cost estimat</dt>
+          <dt className="text-muted-foreground">{d.estCost}</dt>
           <dd className="font-medium">
             {order.estimatedCostRon ? money.format(Number(order.estimatedCostRon)) : "—"}
           </dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Profit brut</dt>
+          <dt className="text-muted-foreground">{d.grossProfit}</dt>
           <dd className="text-primary font-bold">{margin ? `${margin.marginRon} RON` : "—"}</dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Marjă</dt>
+          <dt className="text-muted-foreground">{d.margin}</dt>
           <dd className="text-primary font-bold">{margin ? `${margin.marginPercent}%` : "—"}</dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Curs folosit</dt>
+          <dt className="text-muted-foreground">{d.rateUsed}</dt>
           <dd className="font-medium">
-            {order.exchangeRate.toString()} din {formatDate(order.exchangeRateDate)}
+            {order.exchangeRate.toString()} {d.rateFrom} {formatDate(order.exchangeRateDate)}
           </dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Termen de plată</dt>
-          <dd className="font-medium">{order.paymentTermDays} zile</dd>
+          <dt className="text-muted-foreground">{d.paymentTerm}</dt>
+          <dd className="font-medium">
+            {order.paymentTermDays} {d.days}
+          </dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Documente primite</dt>
+          <dt className="text-muted-foreground">{d.docsReceived}</dt>
           <dd className="font-medium">
             {order.documentsReceivedAt ? formatDate(order.documentsReceivedAt) : "—"}
           </dd>
@@ -282,7 +286,7 @@ export default async function ComandaDetailPage({
 
   const soon = (label: string) => (
     <div className="bg-muted/40 text-muted-foreground rounded-xl border border-dashed p-10 text-center text-sm">
-      {label} — în curând.
+      {label} — {d.soonSuffix}.
     </div>
   );
 
@@ -292,30 +296,32 @@ export default async function ComandaDetailPage({
         href="/dashboard/comenzi"
         className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm"
       >
-        <ArrowLeft className="size-4" /> Comenzi
+        <ArrowLeft className="size-4" /> {d.back}
       </Link>
 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold tracking-tight">{order.orderNumber}</h1>
-            <OrderStatusPill status={order.status} />
+            <OrderStatusPill status={order.status} locale={locale} />
           </div>
           <p className="text-muted-foreground mt-1 text-sm">
-            {order.client.name} · Ref: {order.clientReference} · Creată {formatDate(order.createdAt)}
+            {order.client.name} · {d.ref}: {order.clientReference} · {d.created}{" "}
+            {formatDate(order.createdAt)}
           </p>
         </div>
       </div>
 
       <Tabs
+        soonLabel={d.soonSuffix}
         tabs={[
-          { key: "overview", label: "Prezentare", content: overview },
-          { key: "route", label: "Traseu", content: routeTab },
-          { key: "financial", label: "Financiar", content: financialTab },
-          { key: "edit", label: "Editează", content: editTab },
-          { key: "documents", label: "Documente", content: soon("Documentele comenzii"), soon: true },
-          { key: "activity", label: "Activitate", content: soon("Istoricul activității"), soon: true },
-          { key: "invoices", label: "Facturi", content: soon("Facturile comenzii"), soon: true },
+          { key: "overview", label: d.tabOverview, content: overview },
+          { key: "route", label: d.tabRoute, content: routeTab },
+          { key: "financial", label: d.tabFinancial, content: financialTab },
+          { key: "edit", label: d.tabEdit, content: editTab },
+          { key: "documents", label: d.tabDocuments, content: soon(d.soonDocuments), soon: true },
+          { key: "activity", label: d.tabActivity, content: soon(d.soonActivity), soon: true },
+          { key: "invoices", label: d.tabInvoices, content: soon(d.soonInvoices), soon: true },
         ]}
       />
     </div>

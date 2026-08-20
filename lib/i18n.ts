@@ -72,6 +72,59 @@ export type Dictionary = {
     liveMap: string;
     mapSoon: string;
   };
+  order: {
+    back: string;
+    ref: string;
+    created: string;
+    tabOverview: string;
+    tabRoute: string;
+    tabFinancial: string;
+    tabEdit: string;
+    tabDocuments: string;
+    tabActivity: string;
+    tabInvoices: string;
+    info: string;
+    customer: string;
+    carrier: string;
+    ownFleet: string;
+    driver: string;
+    vehicle: string;
+    commodity: string;
+    weight: string;
+    statusTitle: string;
+    cancelled: string;
+    financialSummary: string;
+    salePrice: string;
+    ronEquiv: string;
+    estCost: string;
+    grossProfit: string;
+    margin: string;
+    price: string;
+    rateUsed: string;
+    rateFrom: string;
+    paymentTerm: string;
+    days: string;
+    docsReceived: string;
+    actions: string;
+    trip: string;
+    planOnTrip: string;
+    contact: string;
+    soonSuffix: string;
+    soonDocuments: string;
+    soonActivity: string;
+    soonInvoices: string;
+  };
+  planning: {
+    title: string;
+    subtitle: string;
+    truck: string;
+    noTruck: string;
+    unassigned: string;
+    noUnassigned: string;
+    plan: string;
+    ordersShort: string;
+    dndNote: string;
+  };
 };
 
 const dictionaries: Record<Locale, Dictionary> = {
@@ -138,6 +191,60 @@ const dictionaries: Record<Locale, Dictionary> = {
       liveMap: "Hartă live",
       mapSoon: "Harta live sosește cu modulul de urmărire GPS.",
     },
+    order: {
+      back: "Comenzi",
+      ref: "Ref",
+      created: "Creată",
+      tabOverview: "Prezentare",
+      tabRoute: "Traseu",
+      tabFinancial: "Financiar",
+      tabEdit: "Editează",
+      tabDocuments: "Documente",
+      tabActivity: "Activitate",
+      tabInvoices: "Facturi",
+      info: "Informații comandă",
+      customer: "Client",
+      carrier: "Transportator",
+      ownFleet: "Flotă proprie",
+      driver: "Șofer",
+      vehicle: "Camion",
+      commodity: "Marfă",
+      weight: "Greutate",
+      statusTitle: "Stare comandă",
+      cancelled: "Comandă anulată.",
+      financialSummary: "Sumar financiar",
+      salePrice: "Preț vânzare",
+      ronEquiv: "Echivalent RON",
+      estCost: "Cost estimat",
+      grossProfit: "Profit brut",
+      margin: "Marjă",
+      price: "Preț",
+      rateUsed: "Curs folosit",
+      rateFrom: "din",
+      paymentTerm: "Termen de plată",
+      days: "zile",
+      docsReceived: "Documente primite",
+      actions: "Acțiuni",
+      trip: "Cursa",
+      planOnTrip: "Planifică pe o cursă",
+      contact: "Contact",
+      soonSuffix: "în curând",
+      soonDocuments: "Documentele comenzii",
+      soonActivity: "Istoricul activității",
+      soonInvoices: "Facturile comenzii",
+    },
+    planning: {
+      title: "Planificare",
+      subtitle: "Cursele săptămânii, pe camioane. Comenzile neplanificate așteaptă în stânga.",
+      truck: "Camion",
+      noTruck: "Fără camion",
+      unassigned: "Neplanificate",
+      noUnassigned: "Nicio comandă care să aștepte un camion.",
+      plan: "Planifică",
+      ordersShort: "cmd.",
+      dndNote:
+        "Alocarea prin tragere (drag & drop) vine în pasul următor. Deocamdată, „Planifică” pe o comandă deschide formularul de cursă.",
+    },
   },
   en: {
     nav: {
@@ -201,6 +308,60 @@ const dictionaries: Record<Locale, Dictionary> = {
       colStatus: "Status",
       liveMap: "Live map",
       mapSoon: "The live map arrives with the GPS tracking module.",
+    },
+    order: {
+      back: "Loads",
+      ref: "Ref",
+      created: "Created",
+      tabOverview: "Overview",
+      tabRoute: "Route",
+      tabFinancial: "Financial",
+      tabEdit: "Edit",
+      tabDocuments: "Documents",
+      tabActivity: "Activity",
+      tabInvoices: "Invoices",
+      info: "Order information",
+      customer: "Customer",
+      carrier: "Carrier",
+      ownFleet: "Own fleet",
+      driver: "Driver",
+      vehicle: "Vehicle",
+      commodity: "Commodity",
+      weight: "Weight",
+      statusTitle: "Order status",
+      cancelled: "Order cancelled.",
+      financialSummary: "Financial summary",
+      salePrice: "Selling price",
+      ronEquiv: "RON equivalent",
+      estCost: "Estimated cost",
+      grossProfit: "Gross profit",
+      margin: "Margin",
+      price: "Price",
+      rateUsed: "Rate used",
+      rateFrom: "from",
+      paymentTerm: "Payment term",
+      days: "days",
+      docsReceived: "Documents received",
+      actions: "Actions",
+      trip: "Trip",
+      planOnTrip: "Plan on a trip",
+      contact: "Contact",
+      soonSuffix: "coming soon",
+      soonDocuments: "Order documents",
+      soonActivity: "Activity history",
+      soonInvoices: "Order invoices",
+    },
+    planning: {
+      title: "Planning",
+      subtitle: "This week's trips, by truck. Unassigned loads wait on the left.",
+      truck: "Truck",
+      noTruck: "No truck",
+      unassigned: "Unassigned",
+      noUnassigned: "No loads waiting for a truck.",
+      plan: "Plan",
+      ordersShort: "loads",
+      dndNote:
+        "Drag-and-drop assignment is coming in the next step. For now, “Plan” on a load opens the trip form.",
     },
   },
 };

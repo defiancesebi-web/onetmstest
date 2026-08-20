@@ -1,22 +1,28 @@
-import { TRIP_STATUS_LABELS } from "@/lib/tripStatus";
+import { tripStatusLabel } from "@/lib/labels";
+import type { Locale } from "@/lib/i18n";
 import type { TripStatus } from "@/lib/generated/prisma/enums";
 
-// Flat, uppercase status pills in the Grilă (Swiss) style: semantic colour, no
-// border, near-square corners. Colours match the approved design mock —
-// planificată slate, în execuție blue, finalizată green, anulată grey.
+// Soft status pills matching the ONE TMS design: planned blue, in-progress
+// amber, completed green, cancelled grey.
 const CLASSES: Record<TripStatus, string> = {
-  PLANNED: "bg-slate-100 text-slate-700",
-  IN_PROGRESS: "bg-blue-100 text-blue-800",
-  COMPLETED: "bg-emerald-100 text-emerald-800",
-  CANCELLED: "bg-muted text-muted-foreground",
+  PLANNED: "bg-blue-100 text-blue-700",
+  IN_PROGRESS: "bg-amber-100 text-amber-800",
+  COMPLETED: "bg-emerald-100 text-emerald-700",
+  CANCELLED: "bg-slate-100 text-slate-600",
 };
 
-export function TripStatusBadge({ status }: { status: TripStatus }) {
+export function TripStatusBadge({
+  status,
+  locale = "ro",
+}: {
+  status: TripStatus;
+  locale?: Locale;
+}) {
   return (
     <span
-      className={`inline-block rounded-[2px] px-2 py-0.5 text-[10px] font-semibold tracking-[0.04em] uppercase ${CLASSES[status]}`}
+      className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-semibold ${CLASSES[status]}`}
     >
-      {TRIP_STATUS_LABELS[status]}
+      {tripStatusLabel(status, locale)}
     </span>
   );
 }
