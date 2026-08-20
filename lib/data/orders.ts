@@ -221,7 +221,20 @@ export type OrderListItem = Prisma.OrderGetPayload<{
 }>;
 
 export type OrderWithStopsAndClient = Prisma.OrderGetPayload<{
-  include: { stops: true; client: true; trip: { select: { id: true; tripNumber: true } } };
+  include: {
+    stops: true;
+    client: true;
+    trip: {
+      select: {
+        id: true;
+        tripNumber: true;
+        status: true;
+        tractorUnit: { select: { registrationNumber: true } };
+        trailer: { select: { registrationNumber: true } };
+        primaryDriver: { select: { firstName: true; lastName: true } };
+      };
+    };
+  };
 }>;
 
 export type UpdateOrderInput = {
@@ -276,7 +289,16 @@ export async function getOrderById(
     include: {
       stops: { orderBy: { sequence: "asc" } },
       client: true,
-      trip: { select: { id: true, tripNumber: true } },
+      trip: {
+        select: {
+          id: true,
+          tripNumber: true,
+          status: true,
+          tractorUnit: { select: { registrationNumber: true } },
+          trailer: { select: { registrationNumber: true } },
+          primaryDriver: { select: { firstName: true, lastName: true } },
+        },
+      },
     },
   });
   if (!order) return null;
