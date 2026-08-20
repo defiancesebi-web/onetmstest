@@ -16,7 +16,7 @@ const COMPANY_NAV: NavDef[] = [
   { key: "loads", href: "/dashboard/comenzi", built: true },
   { key: "planning", href: "/dashboard/planning", built: true },
   { key: "dispatch", href: "/dashboard/dispecerat", built: true },
-  { key: "tracking", href: "/dashboard/curand/tracking", built: false },
+  { key: "tracking", href: "/dashboard/tracking", built: true },
   { key: "vehicles", href: "/dashboard/flota", built: true },
   { key: "drivers", href: "/dashboard/soferi", built: true },
   { key: "customers", href: "/dashboard/clienti", built: true },

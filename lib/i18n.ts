@@ -380,6 +380,26 @@ export type Dictionary = {
     emailPlaceholder: string;
     invite: string;
   };
+  tracking: {
+    title: string;
+    subtitle: string;
+    kpiOnRoad: string;
+    kpiWaiting: string;
+    kpiIdle: string;
+    kpiFleet: string;
+    routesHeading: string;
+    noActive: string;
+    noTruck: string;
+    noDriver: string;
+    stopsWord: string;
+    nextStopLabel: string;
+    noNextStop: string;
+    idleHeading: string;
+    noIdle: string;
+    gpsNote: string;
+    openTrip: string;
+    estimated: string;
+  };
 };
 
 const dictionaries: Record<Locale, Dictionary> = {
@@ -756,6 +776,27 @@ const dictionaries: Record<Locale, Dictionary> = {
       emailPlaceholder: "Email coleg",
       invite: "Invită",
     },
+    tracking: {
+      title: "Urmărire",
+      subtitle: "Cursele aflate pe drum și camioanele libere, într-o singură privire.",
+      kpiOnRoad: "Pe drum",
+      kpiWaiting: "În așteptare",
+      kpiIdle: "Camioane libere",
+      kpiFleet: "Cap tractoare active",
+      routesHeading: "Curse active",
+      noActive: "Nicio cursă pe drum sau planificată momentan.",
+      noTruck: "Fără camion",
+      noDriver: "Fără șofer",
+      stopsWord: "opriri",
+      nextStopLabel: "Următoarea oprire",
+      noNextStop: "Traseu finalizat",
+      idleHeading: "Camioane libere",
+      noIdle: "Toate camioanele sunt pe drum.",
+      gpsNote:
+        "Pozițiile sunt estimate din progresul curselor. Urmărirea GPS în timp real sosește într-o etapă următoare.",
+      openTrip: "Deschide cursa",
+      estimated: "estimat",
+    },
   },
   en: {
     nav: {
@@ -1129,6 +1170,27 @@ const dictionaries: Record<Locale, Dictionary> = {
       inviteHeading: "Invite a colleague",
       emailPlaceholder: "Colleague email",
       invite: "Invite",
+    },
+    tracking: {
+      title: "Tracking",
+      subtitle: "Trips on the road and idle trucks, at a glance.",
+      kpiOnRoad: "On the road",
+      kpiWaiting: "Waiting",
+      kpiIdle: "Idle trucks",
+      kpiFleet: "Active tractor units",
+      routesHeading: "Active trips",
+      noActive: "No trips on the road or planned right now.",
+      noTruck: "No truck",
+      noDriver: "No driver",
+      stopsWord: "stops",
+      nextStopLabel: "Next stop",
+      noNextStop: "Route complete",
+      idleHeading: "Idle trucks",
+      noIdle: "Every truck is on the road.",
+      gpsNote:
+        "Positions are estimated from trip progress. Real-time GPS tracking arrives in a later stage.",
+      openTrip: "Open trip",
+      estimated: "estimated",
     },
   },
 };
