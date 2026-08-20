@@ -43,6 +43,35 @@ export type Dictionary = {
     changePassword: string;
   };
   soon: { title: string; body: string };
+  dashboard: {
+    greeting: string;
+    trialNotice: string;
+    totalLoads: string;
+    inTransit: string;
+    delivered: string;
+    revenue: string;
+    margin: string;
+    vsLastWeek: string;
+    overview: string;
+    last7days: string;
+    byStatus: string;
+    total: string;
+    quickActions: string;
+    newLoad: string;
+    newCustomer: string;
+    newDriver: string;
+    addVehicle: string;
+    newTrip: string;
+    recentLoads: string;
+    viewAll: string;
+    noLoads: string;
+    colId: string;
+    colRoute: string;
+    colClient: string;
+    colStatus: string;
+    liveMap: string;
+    mapSoon: string;
+  };
 };
 
 const dictionaries: Record<Locale, Dictionary> = {
@@ -80,6 +109,35 @@ const dictionaries: Record<Locale, Dictionary> = {
       title: "În curând",
       body: "Acest modul face parte din design și va fi construit într-o etapă următoare.",
     },
+    dashboard: {
+      greeting: "Bine ai venit",
+      trialNotice: "Firma ta este în așteptare de activare. Vei fi contactat în curând.",
+      totalLoads: "Total comenzi",
+      inTransit: "În execuție",
+      delivered: "Livrate",
+      revenue: "Venit total",
+      margin: "Marjă medie",
+      vsLastWeek: "din toate comenzile",
+      overview: "Evoluția comenzilor",
+      last7days: "Ultimele 7 zile",
+      byStatus: "Comenzi după status",
+      total: "Total",
+      quickActions: "Acțiuni rapide",
+      newLoad: "Comandă nouă",
+      newCustomer: "Client nou",
+      newDriver: "Șofer nou",
+      addVehicle: "Adaugă vehicul",
+      newTrip: "Cursă nouă",
+      recentLoads: "Comenzi recente",
+      viewAll: "Vezi toate",
+      noLoads: "Nicio comandă încă.",
+      colId: "Comandă",
+      colRoute: "Rută",
+      colClient: "Client",
+      colStatus: "Status",
+      liveMap: "Hartă live",
+      mapSoon: "Harta live sosește cu modulul de urmărire GPS.",
+    },
   },
   en: {
     nav: {
@@ -114,6 +172,35 @@ const dictionaries: Record<Locale, Dictionary> = {
     soon: {
       title: "Coming soon",
       body: "This screen is part of the design and will be built in a later stage.",
+    },
+    dashboard: {
+      greeting: "Welcome",
+      trialNotice: "Your company is pending activation. We'll be in touch soon.",
+      totalLoads: "Total loads",
+      inTransit: "In transit",
+      delivered: "Delivered",
+      revenue: "Total revenue",
+      margin: "Avg margin",
+      vsLastWeek: "of all loads",
+      overview: "Loads overview",
+      last7days: "Last 7 days",
+      byStatus: "Loads by status",
+      total: "Total",
+      quickActions: "Quick actions",
+      newLoad: "New load",
+      newCustomer: "New customer",
+      newDriver: "New driver",
+      addVehicle: "Add vehicle",
+      newTrip: "New trip",
+      recentLoads: "Recent loads",
+      viewAll: "View all",
+      noLoads: "No loads yet.",
+      colId: "Load",
+      colRoute: "Route",
+      colClient: "Customer",
+      colStatus: "Status",
+      liveMap: "Live map",
+      mapSoon: "The live map arrives with the GPS tracking module.",
     },
   },
 };
