@@ -125,6 +125,34 @@ export type Dictionary = {
     ordersShort: string;
     dndNote: string;
   };
+  dispatch: {
+    title: string;
+    description: string;
+    newTrip: string;
+    unplanned: string;
+    noUnplanned: string;
+    plan: string;
+    trips: string;
+    allStatuses: string;
+    filter: string;
+    noTrips: string;
+    noTruck: string;
+    noOrders: string;
+  };
+  loads: {
+    title: string;
+    description: string;
+    newLabel: string;
+    searchPlaceholder: string;
+    allStatuses: string;
+    filter: string;
+    notFound: string;
+    colNumber: string;
+    colClient: string;
+    colRef: string;
+    colPrice: string;
+    colStatus: string;
+  };
 };
 
 const dictionaries: Record<Locale, Dictionary> = {
@@ -245,6 +273,34 @@ const dictionaries: Record<Locale, Dictionary> = {
       dndNote:
         "Alocarea prin tragere (drag & drop) vine în pasul următor. Deocamdată, „Planifică” pe o comandă deschide formularul de cursă.",
     },
+    dispatch: {
+      title: "Dispecerat",
+      description: "Comenzile care așteaptă un camion și cursele formate.",
+      newTrip: "Cursă nouă",
+      unplanned: "Comenzi neplanificate",
+      noUnplanned: "Nicio comandă care să aștepte un camion.",
+      plan: "Planifică",
+      trips: "Curse",
+      allStatuses: "Toate stările",
+      filter: "Filtrează",
+      noTrips: "Nicio cursă.",
+      noTruck: "fără camion",
+      noOrders: "fără comenzi",
+    },
+    loads: {
+      title: "Comenzi",
+      description: "Comenzile de transport primite de la clienți.",
+      newLabel: "Comandă nouă",
+      searchPlaceholder: "Caută după număr sau referința clientului",
+      allStatuses: "Toate stările",
+      filter: "Filtrează",
+      notFound: "Nicio comandă găsită.",
+      colNumber: "Număr",
+      colClient: "Client",
+      colRef: "Referință",
+      colPrice: "Preț",
+      colStatus: "Stare",
+    },
   },
   en: {
     nav: {
@@ -362,6 +418,34 @@ const dictionaries: Record<Locale, Dictionary> = {
       ordersShort: "loads",
       dndNote:
         "Drag-and-drop assignment is coming in the next step. For now, “Plan” on a load opens the trip form.",
+    },
+    dispatch: {
+      title: "Dispatch",
+      description: "Loads waiting for a truck and the trips that carry them.",
+      newTrip: "New trip",
+      unplanned: "Unassigned loads",
+      noUnplanned: "No loads waiting for a truck.",
+      plan: "Plan",
+      trips: "Trips",
+      allStatuses: "All statuses",
+      filter: "Filter",
+      noTrips: "No trips.",
+      noTruck: "no truck",
+      noOrders: "no loads",
+    },
+    loads: {
+      title: "Loads",
+      description: "Transport loads received from customers.",
+      newLabel: "New load",
+      searchPlaceholder: "Search by number or customer reference",
+      allStatuses: "All statuses",
+      filter: "Filter",
+      notFound: "No loads found.",
+      colNumber: "Number",
+      colClient: "Customer",
+      colRef: "Reference",
+      colPrice: "Price",
+      colStatus: "Status",
     },
   },
 };

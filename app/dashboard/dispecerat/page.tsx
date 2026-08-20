@@ -1,20 +1,14 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { listTrips, listUnplannedOrders } from "@/lib/data/trips";
-import { TRIP_STATUS_LABELS } from "@/lib/tripStatus";
+import { getDictionary, getLocale } from "@/lib/i18n-server";
+import { TRIP_STATUS_I18N, tripStatusLabel } from "@/lib/labels";
 import type { TripStatus } from "@/lib/generated/prisma/enums";
 import { PageHeader } from "@/components/page-header";
 import { TripStatusBadge } from "@/components/trip-status-badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 
-const STATUS_VALUES = Object.keys(TRIP_STATUS_LABELS) as TripStatus[];
-
-// Matches the convention in app/dashboard/comenzi/[id]/page.tsx: the server
-// runs in UTC and every date here is a @db.Date column, so formatting without
-// an explicit timeZone already reads the correct Europe/Bucharest calendar day.
-function formatDate(value: Date) {
-  return new Intl.DateTimeFormat("ro-RO", { dateStyle: "medium" }).format(value);
-}
+const STATUS_VALUES = Object.keys(TRIP_STATUS_I18N.ro) as TripStatus[];
 
 export default async function DispeceratPage({
   searchParams,
@@ -25,6 +19,14 @@ export default async function DispeceratPage({
   const session = await auth();
   const sessionUser = { role: session!.user.role, companyId: session!.user.companyId };
   const companyId = session!.user.companyId!;
+  const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
+  const d = dict.dispatch;
+  const intlLocale = locale === "ro" ? "ro-RO" : "en-US";
+
+  // The server runs in UTC and every date here is a @db.Date column, so
+  // formatting without an explicit timeZone reads the correct Bucharest day.
+  const formatDate = (value: Date) =>
+    new Intl.DateTimeFormat(intlLocale, { dateStyle: "medium" }).format(value);
 
   const status = STATUS_VALUES.includes(stare as TripStatus) ? (stare as TripStatus) : undefined;
 
@@ -36,24 +38,24 @@ export default async function DispeceratPage({
   return (
     <div>
       <PageHeader
-        title="Dispecerat"
-        description="Comenzile care așteaptă un camion și cursele formate."
+        title={d.title}
+        description={d.description}
         actions={
           <Link href="/dashboard/curse/noua" className={buttonVariants()}>
-            Cursă nouă
+            {d.newTrip}
           </Link>
         }
       />
 
       <div className="grid gap-8 lg:grid-cols-2">
         <section>
-          <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.13em]">
-            Comenzi neplanificate{" "}
+          <h2 className="mb-3 text-xs font-bold tracking-[0.13em] uppercase">
+            {d.unplanned}{" "}
             <span className="text-muted-foreground font-semibold">({unplanned.length})</span>
           </h2>
           {unplanned.length === 0 ? (
             <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
-              Nicio comandă care să aștepte un camion.
+              {d.noUnplanned}
             </p>
           ) : (
             <ul className="space-y-2">
@@ -65,15 +67,15 @@ export default async function DispeceratPage({
                     <div className="flex items-center justify-between gap-2">
                       <Link
                         href={`/dashboard/comenzi/${order.id}`}
-                        className="font-mono font-semibold underline"
+                        className="text-primary font-semibold"
                       >
                         {order.orderNumber}
                       </Link>
                       <Link
                         href={`/dashboard/curse/noua?comanda=${order.id}`}
-                        className={`${buttonVariants({ variant: "outline", size: "sm" })} border-primary text-primary text-xs font-semibold tracking-wide uppercase`}
+                        className={`${buttonVariants({ variant: "outline", size: "sm" })} border-primary text-primary`}
                       >
-                        Planifică
+                        {d.plan}
                       </Link>
                     </div>
                     <p className="text-muted-foreground mt-1">{order.client.name}</p>
@@ -91,8 +93,8 @@ export default async function DispeceratPage({
 
         <section>
           <div className="mb-3 flex items-center justify-between gap-2">
-            <h2 className="text-xs font-bold uppercase tracking-[0.13em]">
-              Curse <span className="text-muted-foreground font-semibold">({trips.length})</span>
+            <h2 className="text-xs font-bold tracking-[0.13em] uppercase">
+              {d.trips} <span className="text-muted-foreground font-semibold">({trips.length})</span>
             </h2>
             <form className="flex items-center gap-2">
               <select
@@ -100,22 +102,22 @@ export default async function DispeceratPage({
                 defaultValue={stare ?? ""}
                 className="rounded-lg border px-2 py-1 text-sm"
               >
-                <option value="">Toate stările</option>
+                <option value="">{d.allStatuses}</option>
                 {STATUS_VALUES.map((value) => (
                   <option key={value} value={value}>
-                    {TRIP_STATUS_LABELS[value]}
+                    {tripStatusLabel(value, locale)}
                   </option>
                 ))}
               </select>
               <Button type="submit" variant="outline" size="sm">
-                Filtrează
+                {d.filter}
               </Button>
             </form>
           </div>
 
           {trips.length === 0 ? (
             <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
-              Nicio cursă.
+              {d.noTrips}
             </p>
           ) : (
             <ul className="space-y-2">
@@ -124,24 +126,24 @@ export default async function DispeceratPage({
                   <div className="flex items-center justify-between gap-2">
                     <Link
                       href={`/dashboard/curse/${trip.id}`}
-                      className="font-mono font-semibold underline"
+                      className="text-primary font-semibold"
                     >
                       {trip.tripNumber}
                     </Link>
-                    <TripStatusBadge status={trip.status} />
+                    <TripStatusBadge status={trip.status} locale={locale} />
                   </div>
                   <p className="text-muted-foreground mt-1">
                     {formatDate(trip.startsAt)} – {formatDate(trip.endsAt)}
                   </p>
                   <p className="text-muted-foreground">
-                    {trip.tractorUnit?.registrationNumber ?? "fără camion"}
+                    {trip.tractorUnit?.registrationNumber ?? d.noTruck}
                     {trip.trailer && ` + ${trip.trailer.registrationNumber}`}
                     {trip.primaryDriver &&
                       ` · ${trip.primaryDriver.lastName} ${trip.primaryDriver.firstName}`}
                   </p>
                   <p className="text-muted-foreground">
                     {trip.orders.length === 0
-                      ? "fără comenzi"
+                      ? d.noOrders
                       : trip.orders.map((o) => o.orderNumber).join(", ")}
                   </p>
                 </li>

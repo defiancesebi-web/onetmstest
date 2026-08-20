@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { listOrders } from "@/lib/data/orders";
-import { ORDER_STATUS_LABELS } from "@/lib/orderStatus";
+import { getDictionary, getLocale } from "@/lib/i18n-server";
+import { ORDER_STATUS_I18N, orderStatusLabel } from "@/lib/labels";
 import type { OrderStatus } from "@/lib/generated/prisma/enums";
 import { PageHeader } from "@/components/page-header";
-import { Badge } from "@/components/ui/badge";
+import { OrderStatusPill } from "@/components/dashboard/order-status-pill";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const STATUS_VALUES = Object.keys(ORDER_STATUS_LABELS) as OrderStatus[];
+const STATUS_VALUES = Object.keys(ORDER_STATUS_I18N.ro) as OrderStatus[];
 
 export default async function ComenziPage({
   searchParams,
@@ -17,6 +18,8 @@ export default async function ComenziPage({
 }) {
   const { q, stare } = await searchParams;
   const session = await auth();
+  const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
+  const d = dict.loads;
 
   const status = STATUS_VALUES.includes(stare as OrderStatus)
     ? (stare as OrderStatus)
@@ -31,11 +34,11 @@ export default async function ComenziPage({
   return (
     <div className="max-w-5xl">
       <PageHeader
-        title="Comenzi"
-        description="Comenzile de transport primite de la clienți."
+        title={d.title}
+        description={d.description}
         actions={
           <Link href="/dashboard/comenzi/noua" className={buttonVariants()}>
-            Comandă nouă
+            {d.newLabel}
           </Link>
         }
       />
@@ -43,7 +46,7 @@ export default async function ComenziPage({
       <form className="mb-4 flex flex-wrap items-center gap-2">
         <Input
           name="q"
-          placeholder="Caută după număr sau referința clientului"
+          placeholder={d.searchPlaceholder}
           defaultValue={q ?? ""}
           className="max-w-xs"
         />
@@ -52,39 +55,39 @@ export default async function ComenziPage({
           defaultValue={stare ?? ""}
           className="rounded-lg border px-2 py-2 text-sm"
         >
-          <option value="">Toate stările</option>
+          <option value="">{d.allStatuses}</option>
           {STATUS_VALUES.map((value) => (
             <option key={value} value={value}>
-              {ORDER_STATUS_LABELS[value]}
+              {orderStatusLabel(value, locale)}
             </option>
           ))}
         </select>
         <Button type="submit" variant="outline">
-          Filtrează
+          {d.filter}
         </Button>
       </form>
 
       {orders.length === 0 ? (
         <p className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
-          Nicio comandă găsită.
+          {d.notFound}
         </p>
       ) : (
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full text-left text-sm">
             <thead className="bg-muted/50">
               <tr className="border-b">
-                <th className="px-4 py-2 font-medium">Număr</th>
-                <th className="px-4 py-2 font-medium">Client</th>
-                <th className="px-4 py-2 font-medium">Referință</th>
-                <th className="px-4 py-2 font-medium">Preț</th>
-                <th className="px-4 py-2 font-medium">Stare</th>
+                <th className="px-4 py-2 font-medium">{d.colNumber}</th>
+                <th className="px-4 py-2 font-medium">{d.colClient}</th>
+                <th className="px-4 py-2 font-medium">{d.colRef}</th>
+                <th className="px-4 py-2 font-medium">{d.colPrice}</th>
+                <th className="px-4 py-2 font-medium">{d.colStatus}</th>
               </tr>
             </thead>
             <tbody>
               {orders.map((order) => (
                 <tr key={order.id} className="border-b last:border-0">
                   <td className="px-4 py-2">
-                    <Link href={`/dashboard/comenzi/${order.id}`} className="underline">
+                    <Link href={`/dashboard/comenzi/${order.id}`} className="text-primary font-medium">
                       {order.orderNumber}
                     </Link>
                   </td>
@@ -94,7 +97,7 @@ export default async function ComenziPage({
                     {order.salePrice.toString()} {order.currency}
                   </td>
                   <td className="px-4 py-2">
-                    <Badge>{ORDER_STATUS_LABELS[order.status]}</Badge>
+                    <OrderStatusPill status={order.status} locale={locale} />
                   </td>
                 </tr>
               ))}
