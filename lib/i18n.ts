@@ -521,6 +521,35 @@ export type Dictionary = {
     confirmDelete: string;
     exchangeInfo: string;
   };
+  reports: {
+    title: string;
+    subtitle: string;
+    rangeMonth: string;
+    rangeYear: string;
+    rangeAll: string;
+    kpiRevenue: string;
+    kpiRevenueHint: string;
+    kpiCollected: string;
+    kpiOutstanding: string;
+    kpiOutstandingHint: string;
+    kpiOverdue: string;
+    kpiOrders: string;
+    kpiTrips: string;
+    monthlyHeading: string;
+    last6months: string;
+    byStatusHeading: string;
+    total: string;
+    noData: string;
+    topClientsHeading: string;
+    colClient: string;
+    colRevenue: string;
+    overdueHeading: string;
+    colInvoice: string;
+    colDue: string;
+    colAmount: string;
+    daysWord: string;
+    noOverdue: string;
+  };
 };
 
 const dictionaries: Record<Locale, Dictionary> = {
@@ -1040,6 +1069,35 @@ const dictionaries: Record<Locale, Dictionary> = {
       confirmDelete: "Ștergi ciorna definitiv?",
       exchangeInfo: "Curs",
     },
+    reports: {
+      title: "Rapoarte",
+      subtitle: "Venituri, încasări și activitate — pe scurt.",
+      rangeMonth: "Luna curentă",
+      rangeYear: "Anul curent",
+      rangeAll: "Tot",
+      kpiRevenue: "Venituri",
+      kpiRevenueHint: "fără TVA, facturi emise",
+      kpiCollected: "Încasat",
+      kpiOutstanding: "De încasat",
+      kpiOutstandingHint: "facturi emise, neplătite",
+      kpiOverdue: "Restante",
+      kpiOrders: "Comenzi",
+      kpiTrips: "Curse finalizate",
+      monthlyHeading: "Venituri lunare",
+      last6months: "Ultimele 6 luni",
+      byStatusHeading: "Comenzi după status",
+      total: "Total",
+      noData: "Nu există date încă.",
+      topClientsHeading: "Top clienți",
+      colClient: "Client",
+      colRevenue: "Venit",
+      overdueHeading: "Facturi restante",
+      colInvoice: "Factură",
+      colDue: "Scadență",
+      colAmount: "Sumă",
+      daysWord: "zile",
+      noOverdue: "Nicio factură restantă.",
+    },
   },
   en: {
     nav: {
@@ -1556,6 +1614,35 @@ const dictionaries: Record<Locale, Dictionary> = {
       confirmCancel: "Cancel the invoice? The number stays reserved and the invoice is no longer valid.",
       confirmDelete: "Delete the draft permanently?",
       exchangeInfo: "Rate",
+    },
+    reports: {
+      title: "Reports",
+      subtitle: "Revenue, collections and activity — at a glance.",
+      rangeMonth: "This month",
+      rangeYear: "This year",
+      rangeAll: "All time",
+      kpiRevenue: "Revenue",
+      kpiRevenueHint: "net, issued invoices",
+      kpiCollected: "Collected",
+      kpiOutstanding: "Outstanding",
+      kpiOutstandingHint: "issued, unpaid",
+      kpiOverdue: "Overdue",
+      kpiOrders: "Loads",
+      kpiTrips: "Completed trips",
+      monthlyHeading: "Monthly revenue",
+      last6months: "Last 6 months",
+      byStatusHeading: "Loads by status",
+      total: "Total",
+      noData: "No data yet.",
+      topClientsHeading: "Top customers",
+      colClient: "Customer",
+      colRevenue: "Revenue",
+      overdueHeading: "Overdue invoices",
+      colInvoice: "Invoice",
+      colDue: "Due",
+      colAmount: "Amount",
+      daysWord: "days",
+      noOverdue: "No overdue invoices.",
     },
   },
 };

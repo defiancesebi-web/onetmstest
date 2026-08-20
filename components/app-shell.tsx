@@ -23,7 +23,7 @@ const COMPANY_NAV: NavDef[] = [
   { key: "carriers", href: "/dashboard/curand/carriers", built: false },
   { key: "invoices", href: "/dashboard/facturare", built: true },
   { key: "documents", href: "/dashboard/documente", built: true },
-  { key: "reports", href: "/dashboard/curand/reports", built: false },
+  { key: "reports", href: "/dashboard/rapoarte", built: true },
   { key: "analytics", href: "/dashboard/curand/analytics", built: false },
   { key: "team", href: "/dashboard/echipa", built: true, roles: ["COMPANY_ADMIN"] },
   { key: "settings", href: "/dashboard/curand/settings", built: false },
