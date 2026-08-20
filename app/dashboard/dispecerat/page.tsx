@@ -47,8 +47,9 @@ export default async function DispeceratPage({
 
       <div className="grid gap-8 lg:grid-cols-2">
         <section>
-          <h2 className="mb-3 text-sm font-medium">
-            Comenzi neplanificate ({unplanned.length})
+          <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.13em]">
+            Comenzi neplanificate{" "}
+            <span className="text-muted-foreground font-semibold">({unplanned.length})</span>
           </h2>
           {unplanned.length === 0 ? (
             <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
@@ -62,12 +63,15 @@ export default async function DispeceratPage({
                 return (
                   <li key={order.id} className="rounded-lg border p-3 text-sm">
                     <div className="flex items-center justify-between gap-2">
-                      <Link href={`/dashboard/comenzi/${order.id}`} className="font-medium underline">
+                      <Link
+                        href={`/dashboard/comenzi/${order.id}`}
+                        className="font-mono font-semibold underline"
+                      >
                         {order.orderNumber}
                       </Link>
                       <Link
                         href={`/dashboard/curse/noua?comanda=${order.id}`}
-                        className={buttonVariants({ variant: "outline", size: "sm" })}
+                        className={`${buttonVariants({ variant: "outline", size: "sm" })} border-primary text-primary text-xs font-semibold tracking-wide uppercase`}
                       >
                         Planifică
                       </Link>
@@ -87,7 +91,9 @@ export default async function DispeceratPage({
 
         <section>
           <div className="mb-3 flex items-center justify-between gap-2">
-            <h2 className="text-sm font-medium">Curse ({trips.length})</h2>
+            <h2 className="text-xs font-bold uppercase tracking-[0.13em]">
+              Curse <span className="text-muted-foreground font-semibold">({trips.length})</span>
+            </h2>
             <form className="flex items-center gap-2">
               <select
                 name="stare"
@@ -116,7 +122,10 @@ export default async function DispeceratPage({
               {trips.map((trip) => (
                 <li key={trip.id} className="rounded-lg border p-3 text-sm">
                   <div className="flex items-center justify-between gap-2">
-                    <Link href={`/dashboard/curse/${trip.id}`} className="font-medium underline">
+                    <Link
+                      href={`/dashboard/curse/${trip.id}`}
+                      className="font-mono font-semibold underline"
+                    >
                       {trip.tripNumber}
                     </Link>
                     <TripStatusBadge status={trip.status} />

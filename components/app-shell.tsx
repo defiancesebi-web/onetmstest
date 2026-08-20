@@ -1,27 +1,39 @@
-import Link from "next/link";
 import { auth } from "@/auth";
-import { logoutAction } from "@/app/actions/logout";
-import { Button } from "@/components/ui/button";
+import { getCompanyForSession } from "@/lib/data/companies";
+import { type Dictionary } from "@/lib/i18n";
+import { getDictionary, getLocale } from "@/lib/i18n-server";
+import { DashboardChrome, type ChromeNavItem } from "@/components/dashboard-chrome";
 import type { UserRole } from "@/lib/generated/prisma/enums";
 
-type NavItem = {
-  href: string;
-  label: string;
-  /** Omitted means every role that reaches this shell sees the item. */
-  roles?: UserRole[];
-};
+type NavKey = keyof Dictionary["nav"];
+type NavDef = { key: NavKey; href: string; built: boolean; roles?: UserRole[] };
 
-const COMPANY_NAV: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/dashboard/dispecerat", label: "Dispecerat" },
-  { href: "/dashboard/comenzi", label: "Comenzi" },
-  { href: "/dashboard/clienti", label: "Clienți" },
-  { href: "/dashboard/flota", label: "Flotă" },
-  { href: "/dashboard/soferi", label: "Șoferi" },
-  { href: "/dashboard/echipa", label: "Echipă", roles: ["COMPANY_ADMIN"] },
+// The full navigation from the design. Built items link to their real routes;
+// the rest point at the shared "coming soon" placeholder until their module is
+// implemented. Order matches the reference sidebar.
+const COMPANY_NAV: NavDef[] = [
+  { key: "dashboard", href: "/dashboard", built: true },
+  { key: "loads", href: "/dashboard/comenzi", built: true },
+  { key: "planning", href: "/dashboard/curand/planning", built: false },
+  { key: "dispatch", href: "/dashboard/dispecerat", built: true },
+  { key: "tracking", href: "/dashboard/curand/tracking", built: false },
+  { key: "vehicles", href: "/dashboard/flota", built: true },
+  { key: "drivers", href: "/dashboard/soferi", built: true },
+  { key: "customers", href: "/dashboard/clienti", built: true },
+  { key: "carriers", href: "/dashboard/curand/carriers", built: false },
+  { key: "invoices", href: "/dashboard/curand/invoices", built: false },
+  { key: "documents", href: "/dashboard/documente", built: true },
+  { key: "reports", href: "/dashboard/curand/reports", built: false },
+  { key: "analytics", href: "/dashboard/curand/analytics", built: false },
+  { key: "team", href: "/dashboard/echipa", built: true, roles: ["COMPANY_ADMIN"] },
+  { key: "settings", href: "/dashboard/curand/settings", built: false },
 ];
 
-const ADMIN_NAV: NavItem[] = [{ href: "/admin", label: "Firme" }];
+const ROLE_LABELS: Record<UserRole, { ro: string; en: string }> = {
+  SUPER_ADMIN: { ro: "Super Admin", en: "Super Admin" },
+  COMPANY_ADMIN: { ro: "Administrator", en: "Admin" },
+  COMPANY_USER: { ro: "Utilizator", en: "User" },
+};
 
 export async function AppShell({
   area,
@@ -32,50 +44,46 @@ export async function AppShell({
 }) {
   const session = await auth();
   const role = session!.user.role;
-  const items = (area === "admin" ? ADMIN_NAV : COMPANY_NAV).filter(
-    (item) => !item.roles || item.roles.includes(role)
-  );
+  const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
+
+  const company =
+    area === "company"
+      ? await getCompanyForSession({ role, companyId: session!.user.companyId })
+      : null;
+
+  const items: ChromeNavItem[] =
+    area === "admin"
+      ? [
+          {
+            key: "dashboard",
+            href: "/admin",
+            label: locale === "ro" ? "Firme" : "Companies",
+            built: true,
+          },
+        ]
+      : COMPANY_NAV.filter((item) => !item.roles || item.roles.includes(role)).map((item) => ({
+          key: item.key,
+          href: item.href,
+          label: dict.nav[item.key],
+          built: item.built,
+        }));
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="bg-muted/40 flex w-56 shrink-0 flex-col border-r">
-        <div className="border-b px-4 py-4">
-          <Link href={area === "admin" ? "/admin" : "/dashboard"} className="font-semibold">
-            ONE x TMS
-          </Link>
-          {area === "admin" && (
-            <p className="text-muted-foreground mt-0.5 text-xs">Administrare platformă</p>
-          )}
-        </div>
-        <nav className="flex flex-col gap-0.5 p-2">
-          {items.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="hover:bg-muted rounded-md px-3 py-2 text-sm"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-      </aside>
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-end gap-3 border-b px-6 py-3">
-          <span className="text-muted-foreground text-sm">{session!.user.name}</span>
-          {/* An account page, not a module — so it lives here rather than in the
-              sidebar, and is reachable from both the company and admin areas. */}
-          <Link href="/parola" className="text-muted-foreground text-sm underline">
-            Schimbă parola
-          </Link>
-          <form action={logoutAction}>
-            <Button type="submit" variant="outline" size="sm">
-              Delogare
-            </Button>
-          </form>
-        </header>
-        <main className="min-w-0 flex-1 p-6">{children}</main>
-      </div>
-    </div>
+    <DashboardChrome
+      items={items}
+      brandSub={area === "admin" ? dict.topbar.platform : (company?.name ?? "")}
+      user={{ name: session!.user.name ?? "", roleLabel: ROLE_LABELS[role][locale] }}
+      locale={locale}
+      labels={{
+        search: dict.topbar.search,
+        collapse: dict.nav.collapse,
+        expand: dict.nav.expand,
+        soon: dict.nav.soon,
+        logout: dict.topbar.logout,
+        changePassword: dict.topbar.changePassword,
+      }}
+    >
+      {children}
+    </DashboardChrome>
   );
 }
