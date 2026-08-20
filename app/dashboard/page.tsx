@@ -236,7 +236,7 @@ export default async function DashboardPage() {
                         {DOCUMENT_TYPE_LABELS[doc.type]} · {formatDateKey(toDateKey(doc.expiresAt))}
                       </span>
                     </span>
-                    <DocumentStatusBadge status={doc.status} />
+                    <DocumentStatusBadge status={doc.status} locale={locale} />
                   </Link>
                 </li>
               ))}

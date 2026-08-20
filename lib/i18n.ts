@@ -153,6 +153,50 @@ export type Dictionary = {
     colPrice: string;
     colStatus: string;
   };
+  crud: {
+    search: string;
+    active: string;
+    inactive: string;
+    status: string;
+    documents: string;
+    days: string;
+  };
+  customers: {
+    title: string;
+    description: string;
+    newLabel: string;
+    searchPlaceholder: string;
+    showInactive: string;
+    hideInactive: string;
+    notFound: string;
+    colName: string;
+    colCui: string;
+    colCity: string;
+    colPaymentTerm: string;
+  };
+  fleet: {
+    title: string;
+    description: string;
+    newLabel: string;
+    searchPlaceholder: string;
+    showInactive: string;
+    hideInactive: string;
+    notFound: string;
+    colNumber: string;
+    colType: string;
+    colMakeModel: string;
+  };
+  drivers: {
+    title: string;
+    description: string;
+    newLabel: string;
+    searchPlaceholder: string;
+    showInactive: string;
+    hideInactive: string;
+    notFound: string;
+    colName: string;
+    colPhone: string;
+  };
 };
 
 const dictionaries: Record<Locale, Dictionary> = {
@@ -301,6 +345,50 @@ const dictionaries: Record<Locale, Dictionary> = {
       colPrice: "Preț",
       colStatus: "Stare",
     },
+    crud: {
+      search: "Caută",
+      active: "Activ",
+      inactive: "Inactiv",
+      status: "Status",
+      documents: "Documente",
+      days: "zile",
+    },
+    customers: {
+      title: "Clienți",
+      description: "Firmele care îți trimit comenzi de transport.",
+      newLabel: "Client nou",
+      searchPlaceholder: "Caută după nume sau CUI",
+      showInactive: "Arată și clienții inactivi",
+      hideInactive: "Ascunde clienții inactivi",
+      notFound: "Niciun client. Adaugă primul client ca să poți crea comenzi.",
+      colName: "Nume",
+      colCui: "CUI",
+      colCity: "Oraș",
+      colPaymentTerm: "Termen plată",
+    },
+    fleet: {
+      title: "Flotă",
+      description: "Vehiculele firmei și starea documentelor lor.",
+      newLabel: "Vehicul nou",
+      searchPlaceholder: "Caută după număr",
+      showInactive: "Arată și vehiculele inactive",
+      hideInactive: "Ascunde vehiculele inactive",
+      notFound: "Niciun vehicul. Adaugă primul vehicul ca să poți urmări documentele lui.",
+      colNumber: "Număr",
+      colType: "Tip",
+      colMakeModel: "Marcă / model",
+    },
+    drivers: {
+      title: "Șoferi",
+      description: "Șoferii firmei și starea documentelor lor.",
+      newLabel: "Șofer nou",
+      searchPlaceholder: "Caută după nume",
+      showInactive: "Arată și șoferii inactivi",
+      hideInactive: "Ascunde șoferii inactivi",
+      notFound: "Niciun șofer. Adaugă primul șofer ca să poți urmări documentele lui.",
+      colName: "Nume",
+      colPhone: "Telefon",
+    },
   },
   en: {
     nav: {
@@ -446,6 +534,50 @@ const dictionaries: Record<Locale, Dictionary> = {
       colRef: "Reference",
       colPrice: "Price",
       colStatus: "Status",
+    },
+    crud: {
+      search: "Search",
+      active: "Active",
+      inactive: "Inactive",
+      status: "Status",
+      documents: "Documents",
+      days: "days",
+    },
+    customers: {
+      title: "Customers",
+      description: "The companies that send you transport loads.",
+      newLabel: "New customer",
+      searchPlaceholder: "Search by name or reg. number",
+      showInactive: "Show inactive customers too",
+      hideInactive: "Hide inactive customers",
+      notFound: "No customers. Add your first one so you can create loads.",
+      colName: "Name",
+      colCui: "Reg. no.",
+      colCity: "City",
+      colPaymentTerm: "Payment term",
+    },
+    fleet: {
+      title: "Fleet",
+      description: "The company's vehicles and the state of their documents.",
+      newLabel: "New vehicle",
+      searchPlaceholder: "Search by number",
+      showInactive: "Show inactive vehicles too",
+      hideInactive: "Hide inactive vehicles",
+      notFound: "No vehicles. Add your first one to track its documents.",
+      colNumber: "Number",
+      colType: "Type",
+      colMakeModel: "Make / model",
+    },
+    drivers: {
+      title: "Drivers",
+      description: "The company's drivers and the state of their documents.",
+      newLabel: "New driver",
+      searchPlaceholder: "Search by name",
+      showInactive: "Show inactive drivers too",
+      hideInactive: "Hide inactive drivers",
+      notFound: "No drivers. Add your first one to track their documents.",
+      colName: "Name",
+      colPhone: "Phone",
     },
   },
 };

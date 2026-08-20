@@ -1,5 +1,6 @@
 import type { Locale } from "@/lib/i18n";
-import type { OrderStatus, TripStatus, StopType } from "@/lib/generated/prisma/enums";
+import type { OwnerDocumentStatus } from "@/lib/documentStatus";
+import type { OrderStatus, TripStatus, StopType, VehicleType } from "@/lib/generated/prisma/enums";
 
 /**
  * Bilingual labels for the domain enums shown in the UI. Separate from the RO
@@ -38,6 +39,39 @@ export const STOP_TYPE_I18N: Record<Locale, Record<StopType, string>> = {
   en: { LOADING: "Loading", UNLOADING: "Unloading" },
 };
 
+export const OWNER_DOC_STATUS_I18N: Record<Locale, Record<OwnerDocumentStatus, string>> = {
+  ro: {
+    EXPIRED: "Expirat",
+    EXPIRING_SOON: "Expiră curând",
+    VALID: "În regulă",
+    NO_DOCUMENTS: "Fără documente",
+  },
+  en: {
+    EXPIRED: "Expired",
+    EXPIRING_SOON: "Expiring soon",
+    VALID: "Valid",
+    NO_DOCUMENTS: "No documents",
+  },
+};
+
+export const VEHICLE_TYPE_I18N: Record<Locale, Record<VehicleType, string>> = {
+  ro: {
+    TRACTOR_UNIT: "Cap tractor",
+    SEMI_TRAILER: "Semiremorcă",
+    RIGID_TRUCK: "Autocamion",
+    VAN_3_5T: "Dubă 3.5t",
+  },
+  en: {
+    TRACTOR_UNIT: "Tractor unit",
+    SEMI_TRAILER: "Semi-trailer",
+    RIGID_TRUCK: "Rigid truck",
+    VAN_3_5T: "Van 3.5t",
+  },
+};
+
 export const orderStatusLabel = (s: OrderStatus, locale: Locale) => ORDER_STATUS_I18N[locale][s];
 export const tripStatusLabel = (s: TripStatus, locale: Locale) => TRIP_STATUS_I18N[locale][s];
 export const stopTypeLabel = (s: StopType, locale: Locale) => STOP_TYPE_I18N[locale][s];
+export const ownerDocStatusLabel = (s: OwnerDocumentStatus, locale: Locale) =>
+  OWNER_DOC_STATUS_I18N[locale][s];
+export const vehicleTypeLabel = (s: VehicleType, locale: Locale) => VEHICLE_TYPE_I18N[locale][s];
