@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { VEHICLE_TYPE_LABELS } from "@/lib/documentStatus";
+import { vehicleTypeLabel } from "@/lib/labels";
+import type { Locale } from "@/lib/i18n";
+import type { Dictionary } from "@/lib/i18n";
 import type { VehicleType } from "@/lib/generated/prisma/enums";
 import type { VehicleFormState } from "./actions";
 
@@ -45,10 +48,14 @@ export function VehicleForm({
   action,
   values,
   submitLabel,
+  t,
+  locale,
 }: {
   action: (state: VehicleFormState, formData: FormData) => Promise<VehicleFormState>;
   values?: Values;
   submitLabel: string;
+  t: Dictionary["vehicleForm"];
+  locale: Locale;
 }) {
   const [state, formAction, pending] = useActionState(action, { error: null });
   // Controlled: React 19 resets the form after every action call, which would
@@ -72,7 +79,7 @@ export function VehicleForm({
   return (
     <form action={formAction} className="grid max-w-2xl gap-4 sm:grid-cols-2">
       <div className="space-y-1.5">
-        <Label htmlFor="registrationNumber">Număr de înmatriculare</Label>
+        <Label htmlFor="registrationNumber">{t.regNumber}</Label>
         <Input
           id="registrationNumber"
           name="registrationNumber"
@@ -82,7 +89,7 @@ export function VehicleForm({
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="type">Tip</Label>
+        <Label htmlFor="type">{t.type}</Label>
         <select
           ref={typeSelectRef}
           id="type"
@@ -93,21 +100,21 @@ export function VehicleForm({
         >
           {(Object.keys(VEHICLE_TYPE_LABELS) as VehicleType[]).map((type) => (
             <option key={type} value={type}>
-              {VEHICLE_TYPE_LABELS[type]}
+              {vehicleTypeLabel(type, locale)}
             </option>
           ))}
         </select>
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="make">Marcă</Label>
+        <Label htmlFor="make">{t.make}</Label>
         <Input id="make" name="make" value={fields.make} onChange={(e) => update("make", e.target.value)} />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="model">Model</Label>
+        <Label htmlFor="model">{t.model}</Label>
         <Input id="model" name="model" value={fields.model} onChange={(e) => update("model", e.target.value)} />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="manufactureYear">An fabricație</Label>
+        <Label htmlFor="manufactureYear">{t.manufactureYear}</Label>
         <Input
           id="manufactureYear"
           name="manufactureYear"
@@ -119,11 +126,11 @@ export function VehicleForm({
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="vin">Serie șasiu</Label>
+        <Label htmlFor="vin">{t.vin}</Label>
         <Input id="vin" name="vin" value={fields.vin} onChange={(e) => update("vin", e.target.value)} />
       </div>
       <div className="space-y-1.5 sm:col-span-2">
-        <Label htmlFor="notes">Observații</Label>
+        <Label htmlFor="notes">{t.notes}</Label>
         <Input id="notes" name="notes" value={fields.notes} onChange={(e) => update("notes", e.target.value)} />
       </div>
 
@@ -131,7 +138,7 @@ export function VehicleForm({
 
       <div className="sm:col-span-2">
         <Button type="submit" disabled={pending}>
-          {pending ? "Se salvează..." : submitLabel}
+          {pending ? t.saving : submitLabel}
         </Button>
       </div>
     </form>

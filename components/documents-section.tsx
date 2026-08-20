@@ -5,8 +5,31 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DocumentStatusBadge } from "@/components/document-status-badge";
-import { DOCUMENT_TYPE_LABELS, formatDateKey, type DocumentStatus } from "@/lib/documentStatus";
+import { formatDateKey, type DocumentStatus } from "@/lib/documentStatus";
+import { documentTypeLabel } from "@/lib/labels";
+import type { Locale } from "@/lib/i18n";
 import type { DocumentType } from "@/lib/generated/prisma/enums";
+
+export type DocsLabels = {
+  heading: string;
+  none: string;
+  colType: string;
+  colNumber: string;
+  colExpires: string;
+  colStatus: string;
+  colActions: string;
+  renew: string;
+  delete: string;
+  deleteConfirm: string;
+  newExpiryAria: string;
+  addHeading: string;
+  docType: string;
+  numberSeries: string;
+  issuedAt: string;
+  expiresAt: string;
+  add: string;
+  saving: string;
+};
 import {
   createDocumentAction,
   deleteDocumentAction,
@@ -31,10 +54,12 @@ function DocumentRenewal({
   documentId,
   ownerPath,
   currentExpiry,
+  labels,
 }: {
   documentId: string;
   ownerPath: string;
   currentExpiry: string;
+  labels: DocsLabels;
 }) {
   const boundAction = renewDocumentAction.bind(null, documentId, ownerPath);
   const [state, formAction, pending] = useActionState<DocumentFormState, FormData>(boundAction, {
@@ -51,10 +76,10 @@ function DocumentRenewal({
         onChange={(e) => setExpiresAt(e.target.value)}
         required
         className="w-36"
-        aria-label="Noua dată de expirare"
+        aria-label={labels.newExpiryAria}
       />
       <Button type="submit" size="sm" variant="outline" disabled={pending}>
-        {pending ? "..." : "Reînnoiește"}
+        {pending ? "..." : labels.renew}
       </Button>
       {state.error && <span className="text-xs text-red-600">{state.error}</span>}
     </form>
@@ -67,12 +92,16 @@ export function DocumentsSection({
   ownerPath,
   availableTypes,
   documents,
+  locale,
+  labels,
 }: {
   ownerKind: "vehicle" | "driver";
   ownerId: string;
   ownerPath: string;
   availableTypes: readonly DocumentType[];
   documents: DocumentRow[];
+  locale: Locale;
+  labels: DocsLabels;
 }) {
   const [state, formAction, pending] = useActionState<DocumentFormState, FormData>(
     createDocumentAction,
@@ -97,32 +126,32 @@ export function DocumentsSection({
 
   return (
     <section className="mt-10">
-      <h2 className="mb-3 text-sm font-medium">Documente</h2>
+      <h2 className="mb-3 text-sm font-medium">{labels.heading}</h2>
 
       {documents.length === 0 ? (
         <p className="text-muted-foreground mb-6 rounded-lg border border-dashed p-6 text-center text-sm">
-          Niciun document înregistrat.
+          {labels.none}
         </p>
       ) : (
         <div className="mb-6 overflow-x-auto rounded-lg border">
           <table className="w-full text-left text-sm">
             <thead className="bg-muted/50">
               <tr className="border-b">
-                <th className="px-4 py-2 font-medium">Tip</th>
-                <th className="px-4 py-2 font-medium">Număr</th>
-                <th className="px-4 py-2 font-medium">Expiră</th>
-                <th className="px-4 py-2 font-medium">Stare</th>
-                <th className="px-4 py-2 font-medium">Acțiuni</th>
+                <th className="px-4 py-2 font-medium">{labels.colType}</th>
+                <th className="px-4 py-2 font-medium">{labels.colNumber}</th>
+                <th className="px-4 py-2 font-medium">{labels.colExpires}</th>
+                <th className="px-4 py-2 font-medium">{labels.colStatus}</th>
+                <th className="px-4 py-2 font-medium">{labels.colActions}</th>
               </tr>
             </thead>
             <tbody>
               {documents.map((document) => (
                 <tr key={document.id} className="border-b last:border-0">
-                  <td className="px-4 py-2">{DOCUMENT_TYPE_LABELS[document.type]}</td>
+                  <td className="px-4 py-2">{documentTypeLabel(document.type, locale)}</td>
                   <td className="text-muted-foreground px-4 py-2">{document.number ?? "—"}</td>
                   <td className="px-4 py-2">{formatDateKey(document.expiresAt)}</td>
                   <td className="px-4 py-2">
-                    <DocumentStatusBadge status={document.status} />
+                    <DocumentStatusBadge status={document.status} locale={locale} />
                   </td>
                   <td className="px-4 py-2">
                     <div className="flex items-center gap-2">
@@ -130,6 +159,7 @@ export function DocumentsSection({
                         documentId={document.id}
                         ownerPath={ownerPath}
                         currentExpiry={document.expiresAt}
+                        labels={labels}
                       />
                       <form action={deleteDocumentAction.bind(null, document.id, ownerPath)}>
                         <Button
@@ -137,10 +167,10 @@ export function DocumentsSection({
                           size="sm"
                           variant="destructive"
                           onClick={(event) => {
-                            if (!window.confirm("Ștergi acest document?")) event.preventDefault();
+                            if (!window.confirm(labels.deleteConfirm)) event.preventDefault();
                           }}
                         >
-                          Șterge
+                          {labels.delete}
                         </Button>
                       </form>
                     </div>
@@ -152,7 +182,7 @@ export function DocumentsSection({
         </div>
       )}
 
-      <h3 className="mb-3 text-sm font-medium">Adaugă un document</h3>
+      <h3 className="mb-3 text-sm font-medium">{labels.addHeading}</h3>
       <form action={formAction} className="grid max-w-2xl gap-4 sm:grid-cols-2">
         <input
           type="hidden"
@@ -161,7 +191,7 @@ export function DocumentsSection({
         />
 
         <div className="space-y-1.5">
-          <Label htmlFor="documentType">Tip document</Label>
+          <Label htmlFor="documentType">{labels.docType}</Label>
           <select
             ref={typeSelectRef}
             id="documentType"
@@ -172,17 +202,17 @@ export function DocumentsSection({
           >
             {availableTypes.map((value) => (
               <option key={value} value={value}>
-                {DOCUMENT_TYPE_LABELS[value]}
+                {documentTypeLabel(value, locale)}
               </option>
             ))}
           </select>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="number">Număr / serie</Label>
+          <Label htmlFor="number">{labels.numberSeries}</Label>
           <Input id="number" name="number" value={number} onChange={(e) => setNumber(e.target.value)} />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="issuedAt">Data emiterii</Label>
+          <Label htmlFor="issuedAt">{labels.issuedAt}</Label>
           <Input
             id="issuedAt"
             name="issuedAt"
@@ -192,7 +222,7 @@ export function DocumentsSection({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="expiresAt">Data expirării</Label>
+          <Label htmlFor="expiresAt">{labels.expiresAt}</Label>
           <Input
             id="expiresAt"
             name="expiresAt"
@@ -207,7 +237,7 @@ export function DocumentsSection({
 
         <div className="sm:col-span-2">
           <Button type="submit" disabled={pending}>
-            {pending ? "Se salvează..." : "Adaugă documentul"}
+            {pending ? labels.saving : labels.add}
           </Button>
         </div>
       </form>

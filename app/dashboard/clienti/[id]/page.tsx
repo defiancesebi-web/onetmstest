@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { getClientById } from "@/lib/data/clients";
 import { listOrders } from "@/lib/data/orders";
-import { ORDER_STATUS_LABELS } from "@/lib/orderStatus";
+import { orderStatusLabel } from "@/lib/labels";
+import { getDictionary, getLocale } from "@/lib/i18n-server";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,8 @@ export default async function ClientDetailPage({
 }) {
   const { id } = await params;
   const session = await auth();
+  const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
+  const t = dict.customerForm;
 
   const client = await getClientById(
     { role: session!.user.role, companyId: session!.user.companyId },
@@ -36,40 +39,41 @@ export default async function ClientDetailPage({
   return (
     <div>
       <Link href="/dashboard/clienti" className="text-muted-foreground mb-4 inline-block text-sm underline">
-        ← Înapoi la clienți
+        {t.back}
       </Link>
 
       <PageHeader
         title={client.name}
         description={
           <>
-            CUI: {client.cui} · <Badge>{client.isActive ? "Activ" : "Inactiv"}</Badge>
+            {t.cui}: {client.cui} ·{" "}
+            <Badge>{client.isActive ? t.activeBadge : t.inactiveBadge}</Badge>
           </>
         }
         actions={
           <form action={boundToggle}>
             <Button type="submit" variant={client.isActive ? "destructive" : "outline"}>
-              {client.isActive ? "Dezactivează" : "Reactivează"}
+              {client.isActive ? t.deactivate : t.reactivate}
             </Button>
           </form>
         }
       />
 
-      <ClientForm action={boundUpdate} values={client} submitLabel="Salvează modificările" />
+      <ClientForm action={boundUpdate} values={client} submitLabel={t.saveChanges} t={t} />
 
       <section className="mt-10">
-        <h2 className="mb-3 text-sm font-medium">Comenzile acestui client</h2>
+        <h2 className="mb-3 text-sm font-medium">{t.ordersHeading}</h2>
         {orders.length === 0 ? (
-          <p className="text-muted-foreground text-sm">Nicio comandă încă.</p>
+          <p className="text-muted-foreground text-sm">{t.noOrders}</p>
         ) : (
           <div className="overflow-x-auto rounded-lg border">
             <table className="w-full text-left text-sm">
               <thead className="bg-muted/50">
                 <tr className="border-b">
-                  <th className="px-4 py-2 font-medium">Număr</th>
-                  <th className="px-4 py-2 font-medium">Referință</th>
-                  <th className="px-4 py-2 font-medium">Preț</th>
-                  <th className="px-4 py-2 font-medium">Stare</th>
+                  <th className="px-4 py-2 font-medium">{t.colNumber}</th>
+                  <th className="px-4 py-2 font-medium">{t.colRef}</th>
+                  <th className="px-4 py-2 font-medium">{t.colPrice}</th>
+                  <th className="px-4 py-2 font-medium">{t.colStatus}</th>
                 </tr>
               </thead>
               <tbody>
@@ -85,7 +89,7 @@ export default async function ClientDetailPage({
                       {order.salePrice.toString()} {order.currency}
                     </td>
                     <td className="px-4 py-2">
-                      <Badge>{ORDER_STATUS_LABELS[order.status]}</Badge>
+                      <Badge>{orderStatusLabel(order.status, locale)}</Badge>
                     </td>
                   </tr>
                 ))}

@@ -1,6 +1,12 @@
 import type { Locale } from "@/lib/i18n";
 import type { OwnerDocumentStatus } from "@/lib/documentStatus";
-import type { OrderStatus, TripStatus, StopType, VehicleType } from "@/lib/generated/prisma/enums";
+import type {
+  OrderStatus,
+  TripStatus,
+  StopType,
+  VehicleType,
+  DocumentType,
+} from "@/lib/generated/prisma/enums";
 
 /**
  * Bilingual labels for the domain enums shown in the UI. Separate from the RO
@@ -69,9 +75,41 @@ export const VEHICLE_TYPE_I18N: Record<Locale, Record<VehicleType, string>> = {
   },
 };
 
+export const DOCUMENT_TYPE_I18N: Record<Locale, Record<DocumentType, string>> = {
+  ro: {
+    ITP: "ITP",
+    RCA: "RCA",
+    CASCO: "CASCO",
+    ROVINIETA: "Rovinietă",
+    TAHOGRAF: "Verificare tahograf",
+    COPIE_CONFORMA: "Copie conformă",
+    ASIGURARE_CMR: "Asigurare CMR",
+    PERMIS_CONDUCERE: "Permis de conducere",
+    ATESTAT_PROFESIONAL: "Atestat profesional",
+    CARD_TAHOGRAF: "Card tahograf",
+    AVIZ_MEDICAL: "Aviz medical",
+    AVIZ_PSIHOLOGIC: "Aviz psihologic",
+  },
+  en: {
+    ITP: "Roadworthiness (ITP)",
+    RCA: "Liability insurance (RCA)",
+    CASCO: "CASCO",
+    ROVINIETA: "Road tax (Rovinietă)",
+    TAHOGRAF: "Tachograph check",
+    COPIE_CONFORMA: "Certified copy",
+    ASIGURARE_CMR: "CMR insurance",
+    PERMIS_CONDUCERE: "Driving licence",
+    ATESTAT_PROFESIONAL: "Professional certificate",
+    CARD_TAHOGRAF: "Tachograph card",
+    AVIZ_MEDICAL: "Medical certificate",
+    AVIZ_PSIHOLOGIC: "Psychological certificate",
+  },
+};
+
 export const orderStatusLabel = (s: OrderStatus, locale: Locale) => ORDER_STATUS_I18N[locale][s];
 export const tripStatusLabel = (s: TripStatus, locale: Locale) => TRIP_STATUS_I18N[locale][s];
 export const stopTypeLabel = (s: StopType, locale: Locale) => STOP_TYPE_I18N[locale][s];
 export const ownerDocStatusLabel = (s: OwnerDocumentStatus, locale: Locale) =>
   OWNER_DOC_STATUS_I18N[locale][s];
 export const vehicleTypeLabel = (s: VehicleType, locale: Locale) => VEHICLE_TYPE_I18N[locale][s];
+export const documentTypeLabel = (s: DocumentType, locale: Locale) => DOCUMENT_TYPE_I18N[locale][s];

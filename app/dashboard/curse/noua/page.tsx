@@ -5,7 +5,8 @@ import { listDrivers } from "@/lib/data/drivers";
 import { getOrderById } from "@/lib/data/orders";
 import { PLANNABLE_ORDER_STATUSES } from "@/lib/data/trips";
 import { toDateKey, todayKeyInBucharest } from "@/lib/documentStatus";
-import { ORDER_STATUS_LABELS } from "@/lib/orderStatus";
+import { orderStatusLabel } from "@/lib/labels";
+import { getDictionary, getLocale } from "@/lib/i18n-server";
 import { PageHeader } from "@/components/page-header";
 import { NewTripForm } from "./new-trip-form";
 
@@ -18,6 +19,8 @@ export default async function CursaNouaPage({
   const session = await auth();
   const sessionUser = { role: session!.user.role, companyId: session!.user.companyId };
   const companyId = session!.user.companyId!;
+  const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
+  const t = dict.tripForm;
 
   const [vehicles, drivers] = await Promise.all([
     listVehicles(sessionUser, companyId),
@@ -37,9 +40,9 @@ export default async function CursaNouaPage({
   const ineligibleReason = !order
     ? null
     : order.tripId
-      ? `Comanda ${order.orderNumber} este deja planificată pe altă cursă.`
+      ? t.alreadyPlanned.replace("{n}", order.orderNumber)
       : !(PLANNABLE_ORDER_STATUSES as readonly string[]).includes(order.status)
-        ? `Comanda ${order.orderNumber} nu poate fi planificată cât este „${ORDER_STATUS_LABELS[order.status]}” — poți crea cursa, dar va trebui să o atașezi manual.`
+        ? `${t.cannotPlanPrefix.replace("{n}", order.orderNumber)}${orderStatusLabel(order.status, locale)}${t.cannotPlanSuffix}`
         : null;
   const eligibleOrderId = order && !ineligibleReason ? order.id : undefined;
 
@@ -65,12 +68,13 @@ export default async function CursaNouaPage({
         href="/dashboard/dispecerat"
         className="text-muted-foreground mb-4 inline-block text-sm underline"
       >
-        ← Înapoi la dispecerat
+        {t.back}
       </Link>
       <PageHeader
-        title="Cursă nouă"
+        title={t.newTitle}
         description={
-          ineligibleReason ?? (order ? `Se planifică comanda ${order.orderNumber}.` : undefined)
+          ineligibleReason ??
+          (order ? t.planningOrder.replace("{n}", order.orderNumber) : undefined)
         }
       />
 
@@ -85,6 +89,7 @@ export default async function CursaNouaPage({
         orderId={eligibleOrderId}
         defaultStartsAt={defaultStartsAt}
         defaultEndsAt={defaultEndsAt}
+        t={t}
       />
     </div>
   );

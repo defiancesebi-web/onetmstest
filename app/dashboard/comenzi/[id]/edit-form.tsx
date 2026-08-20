@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { Dictionary } from "@/lib/i18n";
 import { updateOrderDetailsAction, type OrderFormState } from "../actions";
 
 type Values = {
@@ -48,7 +49,15 @@ function toFormFields(values: Values): FormFields {
   };
 }
 
-export function OrderEditForm({ orderId, values }: { orderId: string; values: Values }) {
+export function OrderEditForm({
+  orderId,
+  values,
+  t,
+}: {
+  orderId: string;
+  values: Values;
+  t: Dictionary["orderForm"];
+}) {
   const boundAction = updateOrderDetailsAction.bind(null, orderId);
   const [state, formAction, pending] = useActionState<OrderFormState, FormData>(boundAction, {
     error: null,
@@ -69,7 +78,7 @@ export function OrderEditForm({ orderId, values }: { orderId: string; values: Va
   return (
     <form action={formAction} className="grid max-w-2xl gap-4 sm:grid-cols-2">
       <div className="space-y-1.5">
-        <Label htmlFor="clientReference">Referința clientului</Label>
+        <Label htmlFor="clientReference">{t.clientReference}</Label>
         <Input
           id="clientReference"
           name="clientReference"
@@ -79,7 +88,7 @@ export function OrderEditForm({ orderId, values }: { orderId: string; values: Va
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="paymentTermDays">Termen de plată (zile)</Label>
+        <Label htmlFor="paymentTermDays">{t.paymentTermDays}</Label>
         <Input
           id="paymentTermDays"
           name="paymentTermDays"
@@ -90,7 +99,7 @@ export function OrderEditForm({ orderId, values }: { orderId: string; values: Va
         />
       </div>
       <div className="space-y-1.5 sm:col-span-2">
-        <Label htmlFor="cargoDescription">Descrierea mărfii</Label>
+        <Label htmlFor="cargoDescription">{t.cargoDescription}</Label>
         <Input
           id="cargoDescription"
           name="cargoDescription"
@@ -100,7 +109,7 @@ export function OrderEditForm({ orderId, values }: { orderId: string; values: Va
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="cargoWeightKg">Greutate (kg)</Label>
+        <Label htmlFor="cargoWeightKg">{t.weightKg}</Label>
         <Input
           id="cargoWeightKg"
           name="cargoWeightKg"
@@ -112,7 +121,7 @@ export function OrderEditForm({ orderId, values }: { orderId: string; values: Va
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="cargoPackaging">Ambalaj</Label>
+        <Label htmlFor="cargoPackaging">{t.packaging}</Label>
         <Input
           id="cargoPackaging"
           name="cargoPackaging"
@@ -121,7 +130,9 @@ export function OrderEditForm({ orderId, values }: { orderId: string; values: Va
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="salePrice">Preț de vânzare ({values.currency})</Label>
+        <Label htmlFor="salePrice">
+          {t.salePrice} ({values.currency})
+        </Label>
         <Input
           id="salePrice"
           name="salePrice"
@@ -133,12 +144,10 @@ export function OrderEditForm({ orderId, values }: { orderId: string; values: Va
           required
         />
         {/* The stored rate is reused on save; the currency itself is not editable. */}
-        <p className="text-muted-foreground text-xs">
-          Echivalentul în RON se recalculează cu cursul înghețat la crearea comenzii.
-        </p>
+        <p className="text-muted-foreground text-xs">{t.rateFrozenHint}</p>
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="estimatedCostRon">Cost estimat (RON)</Label>
+        <Label htmlFor="estimatedCostRon">{t.estimatedCost}</Label>
         <Input
           id="estimatedCostRon"
           name="estimatedCostRon"
@@ -150,7 +159,7 @@ export function OrderEditForm({ orderId, values }: { orderId: string; values: Va
         />
       </div>
       <div className="space-y-1.5 sm:col-span-2">
-        <Label htmlFor="notes">Observații</Label>
+        <Label htmlFor="notes">{t.notes}</Label>
         <Input
           id="notes"
           name="notes"
@@ -163,7 +172,7 @@ export function OrderEditForm({ orderId, values }: { orderId: string; values: Va
 
       <div className="sm:col-span-2">
         <Button type="submit" disabled={pending}>
-          {pending ? "Se salvează..." : "Salvează modificările"}
+          {pending ? t.saving : t.saveChanges}
         </Button>
       </div>
     </form>

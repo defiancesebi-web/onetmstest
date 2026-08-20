@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { attachOrderAction, detachOrderAction, type TripFormState } from "../actions";
+import type { Dictionary } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 
 export type AttachedOrder = { id: string; orderNumber: string; clientName: string };
@@ -13,11 +14,13 @@ export function TripOrders({
   editable,
   attached,
   attachable,
+  t,
 }: {
   tripId: string;
   editable: boolean;
   attached: AttachedOrder[];
   attachable: AttachableOrder[];
+  t: Dictionary["tripDetail"];
 }) {
   const boundAttach = attachOrderAction.bind(null, tripId);
   const [state, formAction, pending] = useActionState<TripFormState, FormData>(boundAttach, {
@@ -50,11 +53,11 @@ export function TripOrders({
 
   return (
     <section className="mt-8">
-      <h2 className="mb-3 text-sm font-medium">Comenzi pe această cursă</h2>
+      <h2 className="mb-3 text-sm font-medium">{t.ordersHeading}</h2>
 
       {attached.length === 0 ? (
         <p className="text-muted-foreground mb-4 rounded-lg border border-dashed p-6 text-center text-sm">
-          Nicio comandă atașată.
+          {t.noneAttached}
         </p>
       ) : (
         <ul className="mb-4 space-y-2">
@@ -74,7 +77,7 @@ export function TripOrders({
                   disabled={detaching}
                   onClick={() => handleDetach(order.id)}
                 >
-                  Desprinde
+                  {t.detach}
                 </Button>
               )}
             </li>
@@ -93,7 +96,7 @@ export function TripOrders({
               onChange={(e) => setOrderId(e.target.value)}
               className="rounded-lg border px-2 py-2 text-sm"
             >
-              <option value="">— alege o comandă —</option>
+              <option value="">{t.chooseOrder}</option>
               {attachable.map((o) => (
                 <option key={o.id} value={o.id}>
                   {o.label}
@@ -101,14 +104,12 @@ export function TripOrders({
               ))}
             </select>
             <Button type="submit" size="sm" disabled={pending}>
-              {pending ? "Se atașează..." : "Atașează"}
+              {pending ? t.attaching : t.attach}
             </Button>
             {state.error && <p className="w-full text-sm text-red-600">{state.error}</p>}
           </form>
         ) : (
-          <p className="text-muted-foreground text-sm">
-            Nicio comandă neplanificată disponibilă pentru atașare.
-          </p>
+          <p className="text-muted-foreground text-sm">{t.noAttachable}</p>
         ))}
     </section>
   );

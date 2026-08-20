@@ -113,6 +113,10 @@ export type Dictionary = {
     soonDocuments: string;
     soonActivity: string;
     soonInvoices: string;
+    statusFinal: string;
+    cancelOrder: string;
+    markAs: string;
+    cancelConfirm: string;
   };
   planning: {
     title: string;
@@ -196,6 +200,185 @@ export type Dictionary = {
     notFound: string;
     colName: string;
     colPhone: string;
+  };
+  orderForm: {
+    back: string;
+    newTitle: string;
+    noClients: string;
+    addFirstClient: string;
+    sectionClientCargo: string;
+    client: string;
+    clientReference: string;
+    cargoDescription: string;
+    weightKg: string;
+    packaging: string;
+    packagingPlaceholder: string;
+    sectionStops: string;
+    addLoading: string;
+    addUnloading: string;
+    delete: string;
+    address: string;
+    city: string;
+    contactName: string;
+    phone: string;
+    sectionMoney: string;
+    salePrice: string;
+    currency: string;
+    estimatedCost: string;
+    paymentTermDays: string;
+    manualRate: string;
+    manualRateHint: string;
+    bnrRate: string;
+    bnrRateFrom: string;
+    ronEquivalent: string;
+    save: string;
+    saving: string;
+    saveChanges: string;
+    rateFrozenHint: string;
+    notes: string;
+  };
+  tripForm: {
+    back: string;
+    newTitle: string;
+    planningOrder: string;
+    alreadyPlanned: string;
+    cannotPlanPrefix: string;
+    cannotPlanSuffix: string;
+    start: string;
+    end: string;
+    tractor: string;
+    trailer: string;
+    primaryDriver: string;
+    secondDriver: string;
+    none: string;
+    noneFem: string;
+    notes: string;
+    conflictsTitle: string;
+    conflictTrip: string;
+    conflictAgain: string;
+    create: string;
+    saving: string;
+    saveAllocation: string;
+  };
+  tripDetail: {
+    back: string;
+    tripTitle: string;
+    attachWarning: string;
+    statusHeading: string;
+    allocation: string;
+    tractor: string;
+    trailer: string;
+    driver: string;
+    secondDriver: string;
+    inactive: string;
+    route: string;
+    notes: string;
+    ordersHeading: string;
+    noneAttached: string;
+    detach: string;
+    chooseOrder: string;
+    attach: string;
+    attaching: string;
+    noAttachable: string;
+    finalState: string;
+    cancelTrip: string;
+    markAs: string;
+    cancelConfirm: string;
+  };
+  customerForm: {
+    back: string;
+    newTitle: string;
+    companyName: string;
+    cui: string;
+    address: string;
+    city: string;
+    country: string;
+    paymentTermDays: string;
+    contactName: string;
+    phone: string;
+    email: string;
+    notes: string;
+    duplicateAgain: string;
+    saving: string;
+    saveNew: string;
+    saveChanges: string;
+    activeBadge: string;
+    inactiveBadge: string;
+    deactivate: string;
+    reactivate: string;
+    ordersHeading: string;
+    noOrders: string;
+    colNumber: string;
+    colRef: string;
+    colPrice: string;
+    colStatus: string;
+  };
+  vehicleForm: {
+    back: string;
+    newTitle: string;
+    regNumber: string;
+    type: string;
+    make: string;
+    model: string;
+    manufactureYear: string;
+    vin: string;
+    notes: string;
+    saving: string;
+    saveNew: string;
+    saveChanges: string;
+    inactive: string;
+    deactivate: string;
+    reactivate: string;
+  };
+  driverForm: {
+    back: string;
+    newTitle: string;
+    lastName: string;
+    firstName: string;
+    phone: string;
+    email: string;
+    hiredAt: string;
+    personalId: string;
+    notes: string;
+    saving: string;
+    saveNew: string;
+    saveChanges: string;
+    inactive: string;
+    deactivate: string;
+    reactivate: string;
+  };
+  docs: {
+    heading: string;
+    none: string;
+    colType: string;
+    colNumber: string;
+    colExpires: string;
+    colStatus: string;
+    colActions: string;
+    renew: string;
+    delete: string;
+    deleteConfirm: string;
+    newExpiryAria: string;
+    addHeading: string;
+    docType: string;
+    numberSeries: string;
+    issuedAt: string;
+    expiresAt: string;
+    add: string;
+    saving: string;
+  };
+  team: {
+    title: string;
+    description: string;
+    colName: string;
+    colEmail: string;
+    colRole: string;
+    colStatus: string;
+    roleAdmin: string;
+    roleUser: string;
+    inviteHeading: string;
+    emailPlaceholder: string;
+    invite: string;
   };
 };
 
@@ -304,6 +487,10 @@ const dictionaries: Record<Locale, Dictionary> = {
       soonDocuments: "Documentele comenzii",
       soonActivity: "Istoricul activității",
       soonInvoices: "Facturile comenzii",
+      statusFinal: "Comanda este în stare finală — nu mai poate fi schimbată.",
+      cancelOrder: "Anulează comanda",
+      markAs: "Marchează:",
+      cancelConfirm: "Sigur anulezi comanda? Anularea este definitivă și nu poate fi revenită.",
     },
     planning: {
       title: "Planificare",
@@ -388,6 +575,186 @@ const dictionaries: Record<Locale, Dictionary> = {
       notFound: "Niciun șofer. Adaugă primul șofer ca să poți urmări documentele lui.",
       colName: "Nume",
       colPhone: "Telefon",
+    },
+    orderForm: {
+      back: "← Înapoi la comenzi",
+      newTitle: "Comandă nouă",
+      noClients: "Nu ai niciun client activ. O comandă are nevoie de un client.",
+      addFirstClient: "Adaugă primul client",
+      sectionClientCargo: "Client și marfă",
+      client: "Client",
+      clientReference: "Referința clientului",
+      cargoDescription: "Descrierea mărfii",
+      weightKg: "Greutate (kg)",
+      packaging: "Ambalaj",
+      packagingPlaceholder: "paleți, vrac...",
+      sectionStops: "Opriri",
+      addLoading: "+ Încărcare",
+      addUnloading: "+ Descărcare",
+      delete: "Șterge",
+      address: "Adresă",
+      city: "Oraș",
+      contactName: "Persoană de contact",
+      phone: "Telefon",
+      sectionMoney: "Bani",
+      salePrice: "Preț de vânzare",
+      currency: "Valută",
+      estimatedCost: "Cost estimat (RON)",
+      paymentTermDays: "Termen de plată (zile)",
+      manualRate: "Curs EUR → RON (manual)",
+      manualRateHint: "Cursul BNR nu este disponibil momentan. Introdu manual cursul EUR → RON.",
+      bnrRate: "Curs BNR",
+      bnrRateFrom: "din",
+      ronEquivalent: "Echivalent în RON",
+      save: "Salvează comanda",
+      saving: "Se salvează...",
+      saveChanges: "Salvează modificările",
+      rateFrozenHint: "Echivalentul în RON se recalculează cu cursul înghețat la crearea comenzii.",
+      notes: "Observații",
+    },
+    tripForm: {
+      back: "← Înapoi la dispecerat",
+      newTitle: "Cursă nouă",
+      planningOrder: "Se planifică comanda {n}.",
+      alreadyPlanned: "Comanda {n} este deja planificată pe altă cursă.",
+      cannotPlanPrefix: "Comanda {n} nu poate fi planificată cât este „",
+      cannotPlanSuffix: "” — poți crea cursa, dar va trebui să o atașezi manual.",
+      start: "Început",
+      end: "Sfârșit",
+      tractor: "Cap tractor",
+      trailer: "Semiremorcă",
+      primaryDriver: "Șofer principal",
+      secondDriver: "Al doilea șofer",
+      none: "— niciunul —",
+      noneFem: "— niciuna —",
+      notes: "Observații",
+      conflictsTitle: "Resurse deja ocupate în acest interval:",
+      conflictTrip: "cursa",
+      conflictAgain: "Apasă din nou pe buton dacă vrei să continui oricum.",
+      create: "Creează cursa",
+      saving: "Se salvează...",
+      saveAllocation: "Salvează alocarea",
+    },
+    tripDetail: {
+      back: "← Înapoi la dispecerat",
+      tripTitle: "Cursa",
+      attachWarning:
+        "Cursa a fost creată, dar comanda selectată nu a putut fi atașată automat — probabil a fost planificată între timp pe altă cursă. Atașeaz-o manual mai jos, dacă mai este disponibilă.",
+      statusHeading: "Stare",
+      allocation: "Alocare",
+      tractor: "Cap tractor",
+      trailer: "Semiremorcă",
+      driver: "Șofer",
+      secondDriver: "Al doilea șofer",
+      inactive: "inactiv",
+      route: "Traseu",
+      notes: "Observații",
+      ordersHeading: "Comenzi pe această cursă",
+      noneAttached: "Nicio comandă atașată.",
+      detach: "Desprinde",
+      chooseOrder: "— alege o comandă —",
+      attach: "Atașează",
+      attaching: "Se atașează...",
+      noAttachable: "Nicio comandă neplanificată disponibilă pentru atașare.",
+      finalState: "Cursa este în stare finală — nu mai poate fi schimbată.",
+      cancelTrip: "Anulează cursa",
+      markAs: "Marchează:",
+      cancelConfirm: "Anulezi cursa? Comenzile ei revin la neplanificate.",
+    },
+    customerForm: {
+      back: "← Înapoi la clienți",
+      newTitle: "Client nou",
+      companyName: "Nume firmă",
+      cui: "CUI",
+      address: "Adresă",
+      city: "Oraș",
+      country: "Țară",
+      paymentTermDays: "Termen de plată (zile)",
+      contactName: "Persoană de contact",
+      phone: "Telefon",
+      email: "Email",
+      notes: "Observații",
+      duplicateAgain: "Apasă din nou pe buton pentru a-l adăuga oricum.",
+      saving: "Se salvează...",
+      saveNew: "Salvează clientul",
+      saveChanges: "Salvează modificările",
+      activeBadge: "Activ",
+      inactiveBadge: "Inactiv",
+      deactivate: "Dezactivează",
+      reactivate: "Reactivează",
+      ordersHeading: "Comenzile acestui client",
+      noOrders: "Nicio comandă încă.",
+      colNumber: "Număr",
+      colRef: "Referință",
+      colPrice: "Preț",
+      colStatus: "Stare",
+    },
+    vehicleForm: {
+      back: "← Înapoi la flotă",
+      newTitle: "Vehicul nou",
+      regNumber: "Număr de înmatriculare",
+      type: "Tip",
+      make: "Marcă",
+      model: "Model",
+      manufactureYear: "An fabricație",
+      vin: "Serie șasiu",
+      notes: "Observații",
+      saving: "Se salvează...",
+      saveNew: "Salvează vehiculul",
+      saveChanges: "Salvează modificările",
+      inactive: "Inactiv",
+      deactivate: "Dezactivează",
+      reactivate: "Reactivează",
+    },
+    driverForm: {
+      back: "← Înapoi la șoferi",
+      newTitle: "Șofer nou",
+      lastName: "Nume",
+      firstName: "Prenume",
+      phone: "Telefon",
+      email: "Email",
+      hiredAt: "Data angajării",
+      personalId: "CNP (opțional)",
+      notes: "Observații",
+      saving: "Se salvează...",
+      saveNew: "Salvează șoferul",
+      saveChanges: "Salvează modificările",
+      inactive: "Inactiv",
+      deactivate: "Dezactivează",
+      reactivate: "Reactivează",
+    },
+    docs: {
+      heading: "Documente",
+      none: "Niciun document înregistrat.",
+      colType: "Tip",
+      colNumber: "Număr",
+      colExpires: "Expiră",
+      colStatus: "Stare",
+      colActions: "Acțiuni",
+      renew: "Reînnoiește",
+      delete: "Șterge",
+      deleteConfirm: "Ștergi acest document?",
+      newExpiryAria: "Noua dată de expirare",
+      addHeading: "Adaugă un document",
+      docType: "Tip document",
+      numberSeries: "Număr / serie",
+      issuedAt: "Data emiterii",
+      expiresAt: "Data expirării",
+      add: "Adaugă documentul",
+      saving: "Se salvează...",
+    },
+    team: {
+      title: "Echipă",
+      description: "Utilizatorii care au acces la contul firmei tale.",
+      colName: "Nume",
+      colEmail: "Email",
+      colRole: "Rol",
+      colStatus: "Status",
+      roleAdmin: "Admin firmă",
+      roleUser: "Utilizator",
+      inviteHeading: "Invită un coleg",
+      emailPlaceholder: "Email coleg",
+      invite: "Invită",
     },
   },
   en: {
@@ -494,6 +861,10 @@ const dictionaries: Record<Locale, Dictionary> = {
       soonDocuments: "Order documents",
       soonActivity: "Activity history",
       soonInvoices: "Order invoices",
+      statusFinal: "The order is in a final state — it can no longer be changed.",
+      cancelOrder: "Cancel order",
+      markAs: "Mark as:",
+      cancelConfirm: "Cancel the order for sure? Cancellation is final and cannot be undone.",
     },
     planning: {
       title: "Planning",
@@ -578,6 +949,186 @@ const dictionaries: Record<Locale, Dictionary> = {
       notFound: "No drivers. Add your first one to track their documents.",
       colName: "Name",
       colPhone: "Phone",
+    },
+    orderForm: {
+      back: "← Back to loads",
+      newTitle: "New load",
+      noClients: "You have no active customers. A load needs a customer.",
+      addFirstClient: "Add your first customer",
+      sectionClientCargo: "Customer and cargo",
+      client: "Customer",
+      clientReference: "Customer reference",
+      cargoDescription: "Cargo description",
+      weightKg: "Weight (kg)",
+      packaging: "Packaging",
+      packagingPlaceholder: "pallets, bulk...",
+      sectionStops: "Stops",
+      addLoading: "+ Loading",
+      addUnloading: "+ Unloading",
+      delete: "Remove",
+      address: "Address",
+      city: "City",
+      contactName: "Contact person",
+      phone: "Phone",
+      sectionMoney: "Money",
+      salePrice: "Selling price",
+      currency: "Currency",
+      estimatedCost: "Estimated cost (RON)",
+      paymentTermDays: "Payment term (days)",
+      manualRate: "EUR → RON rate (manual)",
+      manualRateHint: "The BNR rate is not available right now. Enter the EUR → RON rate manually.",
+      bnrRate: "BNR rate",
+      bnrRateFrom: "from",
+      ronEquivalent: "RON equivalent",
+      save: "Save load",
+      saving: "Saving...",
+      saveChanges: "Save changes",
+      rateFrozenHint: "The RON equivalent is recomputed with the rate frozen when the load was created.",
+      notes: "Notes",
+    },
+    tripForm: {
+      back: "← Back to dispatch",
+      newTitle: "New trip",
+      planningOrder: "Planning load {n}.",
+      alreadyPlanned: "Load {n} is already planned on another trip.",
+      cannotPlanPrefix: "Load {n} cannot be planned while it is “",
+      cannotPlanSuffix: "” — you can create the trip, but you'll have to attach it manually.",
+      start: "Start",
+      end: "End",
+      tractor: "Tractor unit",
+      trailer: "Semi-trailer",
+      primaryDriver: "Primary driver",
+      secondDriver: "Second driver",
+      none: "— none —",
+      noneFem: "— none —",
+      notes: "Notes",
+      conflictsTitle: "Resources already busy in this interval:",
+      conflictTrip: "trip",
+      conflictAgain: "Press the button again if you want to continue anyway.",
+      create: "Create trip",
+      saving: "Saving...",
+      saveAllocation: "Save allocation",
+    },
+    tripDetail: {
+      back: "← Back to dispatch",
+      tripTitle: "Trip",
+      attachWarning:
+        "The trip was created, but the selected load couldn't be attached automatically — it was probably planned onto another trip in the meantime. Attach it manually below, if it's still available.",
+      statusHeading: "Status",
+      allocation: "Allocation",
+      tractor: "Tractor unit",
+      trailer: "Semi-trailer",
+      driver: "Driver",
+      secondDriver: "Second driver",
+      inactive: "inactive",
+      route: "Route",
+      notes: "Notes",
+      ordersHeading: "Loads on this trip",
+      noneAttached: "No loads attached.",
+      detach: "Detach",
+      chooseOrder: "— choose a load —",
+      attach: "Attach",
+      attaching: "Attaching...",
+      noAttachable: "No unassigned loads available to attach.",
+      finalState: "The trip is in a final state — it can no longer be changed.",
+      cancelTrip: "Cancel trip",
+      markAs: "Mark as:",
+      cancelConfirm: "Cancel the trip? Its loads go back to unassigned.",
+    },
+    customerForm: {
+      back: "← Back to customers",
+      newTitle: "New customer",
+      companyName: "Company name",
+      cui: "Reg. no.",
+      address: "Address",
+      city: "City",
+      country: "Country",
+      paymentTermDays: "Payment term (days)",
+      contactName: "Contact person",
+      phone: "Phone",
+      email: "Email",
+      notes: "Notes",
+      duplicateAgain: "Press the button again to add it anyway.",
+      saving: "Saving...",
+      saveNew: "Save customer",
+      saveChanges: "Save changes",
+      activeBadge: "Active",
+      inactiveBadge: "Inactive",
+      deactivate: "Deactivate",
+      reactivate: "Reactivate",
+      ordersHeading: "This customer's loads",
+      noOrders: "No loads yet.",
+      colNumber: "Number",
+      colRef: "Reference",
+      colPrice: "Price",
+      colStatus: "Status",
+    },
+    vehicleForm: {
+      back: "← Back to fleet",
+      newTitle: "New vehicle",
+      regNumber: "Registration number",
+      type: "Type",
+      make: "Make",
+      model: "Model",
+      manufactureYear: "Year",
+      vin: "VIN",
+      notes: "Notes",
+      saving: "Saving...",
+      saveNew: "Save vehicle",
+      saveChanges: "Save changes",
+      inactive: "Inactive",
+      deactivate: "Deactivate",
+      reactivate: "Reactivate",
+    },
+    driverForm: {
+      back: "← Back to drivers",
+      newTitle: "New driver",
+      lastName: "Last name",
+      firstName: "First name",
+      phone: "Phone",
+      email: "Email",
+      hiredAt: "Hire date",
+      personalId: "National ID (optional)",
+      notes: "Notes",
+      saving: "Saving...",
+      saveNew: "Save driver",
+      saveChanges: "Save changes",
+      inactive: "Inactive",
+      deactivate: "Deactivate",
+      reactivate: "Reactivate",
+    },
+    docs: {
+      heading: "Documents",
+      none: "No documents recorded.",
+      colType: "Type",
+      colNumber: "Number",
+      colExpires: "Expires",
+      colStatus: "Status",
+      colActions: "Actions",
+      renew: "Renew",
+      delete: "Delete",
+      deleteConfirm: "Delete this document?",
+      newExpiryAria: "New expiry date",
+      addHeading: "Add a document",
+      docType: "Document type",
+      numberSeries: "Number / series",
+      issuedAt: "Issue date",
+      expiresAt: "Expiry date",
+      add: "Add document",
+      saving: "Saving...",
+    },
+    team: {
+      title: "Team",
+      description: "The users who have access to your company's account.",
+      colName: "Name",
+      colEmail: "Email",
+      colRole: "Role",
+      colStatus: "Status",
+      roleAdmin: "Company admin",
+      roleUser: "User",
+      inviteHeading: "Invite a colleague",
+      emailPlaceholder: "Colleague email",
+      invite: "Invite",
     },
   },
 };

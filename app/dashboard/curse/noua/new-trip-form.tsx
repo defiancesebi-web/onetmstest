@@ -5,6 +5,7 @@ import { createTripAction, type TripFormState } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { Dictionary } from "@/lib/i18n";
 
 export type ResourceOption = { id: string; label: string };
 
@@ -15,6 +16,7 @@ export function NewTripForm({
   orderId,
   defaultStartsAt,
   defaultEndsAt,
+  t,
 }: {
   tractorUnits: ResourceOption[];
   trailers: ResourceOption[];
@@ -22,6 +24,7 @@ export function NewTripForm({
   orderId?: string;
   defaultStartsAt: string;
   defaultEndsAt: string;
+  t: Dictionary["tripForm"];
 }) {
   const [state, formAction, pending] = useActionState<TripFormState, FormData>(createTripAction, {
     error: null,
@@ -79,7 +82,7 @@ export function NewTripForm({
       {conflictsAccepted && <input type="hidden" name="acceptConflicts" value="true" />}
 
       <div className="space-y-1.5">
-        <Label htmlFor="startsAt">Început</Label>
+        <Label htmlFor="startsAt">{t.start}</Label>
         <Input
           id="startsAt"
           name="startsAt"
@@ -90,7 +93,7 @@ export function NewTripForm({
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="endsAt">Sfârșit</Label>
+        <Label htmlFor="endsAt">{t.end}</Label>
         <Input
           id="endsAt"
           name="endsAt"
@@ -102,7 +105,7 @@ export function NewTripForm({
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="tractorUnitId">Cap tractor</Label>
+        <Label htmlFor="tractorUnitId">{t.tractor}</Label>
         <select
           id="tractorUnitId"
           name="tractorUnitId"
@@ -111,7 +114,7 @@ export function NewTripForm({
           onChange={(e) => update("tractorUnitId", e.target.value)}
           className="w-full rounded-lg border px-2 py-2 text-sm"
         >
-          <option value="">— niciunul —</option>
+          <option value="">{t.none}</option>
           {tractorUnits.map((v) => (
             <option key={v.id} value={v.id}>
               {v.label}
@@ -120,7 +123,7 @@ export function NewTripForm({
         </select>
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="trailerId">Semiremorcă</Label>
+        <Label htmlFor="trailerId">{t.trailer}</Label>
         <select
           id="trailerId"
           name="trailerId"
@@ -129,7 +132,7 @@ export function NewTripForm({
           onChange={(e) => update("trailerId", e.target.value)}
           className="w-full rounded-lg border px-2 py-2 text-sm"
         >
-          <option value="">— niciuna —</option>
+          <option value="">{t.noneFem}</option>
           {trailers.map((v) => (
             <option key={v.id} value={v.id}>
               {v.label}
@@ -139,7 +142,7 @@ export function NewTripForm({
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="primaryDriverId">Șofer principal</Label>
+        <Label htmlFor="primaryDriverId">{t.primaryDriver}</Label>
         <select
           id="primaryDriverId"
           name="primaryDriverId"
@@ -148,7 +151,7 @@ export function NewTripForm({
           onChange={(e) => update("primaryDriverId", e.target.value)}
           className="w-full rounded-lg border px-2 py-2 text-sm"
         >
-          <option value="">— niciunul —</option>
+          <option value="">{t.none}</option>
           {drivers.map((v) => (
             <option key={v.id} value={v.id}>
               {v.label}
@@ -157,7 +160,7 @@ export function NewTripForm({
         </select>
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="secondDriverId">Al doilea șofer</Label>
+        <Label htmlFor="secondDriverId">{t.secondDriver}</Label>
         <select
           id="secondDriverId"
           name="secondDriverId"
@@ -166,7 +169,7 @@ export function NewTripForm({
           onChange={(e) => update("secondDriverId", e.target.value)}
           className="w-full rounded-lg border px-2 py-2 text-sm"
         >
-          <option value="">— niciunul —</option>
+          <option value="">{t.none}</option>
           {drivers.map((v) => (
             <option key={v.id} value={v.id}>
               {v.label}
@@ -176,7 +179,7 @@ export function NewTripForm({
       </div>
 
       <div className="space-y-1.5 sm:col-span-2">
-        <Label htmlFor="notes">Observații</Label>
+        <Label htmlFor="notes">{t.notes}</Label>
         <Input
           id="notes"
           name="notes"
@@ -187,22 +190,22 @@ export function NewTripForm({
 
       {state.conflicts.length > 0 && (
         <div className="space-y-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 sm:col-span-2">
-          <p className="font-medium">Resurse deja ocupate în acest interval:</p>
+          <p className="font-medium">{t.conflictsTitle}</p>
           <ul className="list-inside list-disc">
             {state.conflicts.map((c, i) => (
               <li key={i}>
-                {c.resourceLabel} — cursa {c.tripNumber}
+                {c.resourceLabel} — {t.conflictTrip} {c.tripNumber}
               </li>
             ))}
           </ul>
-          <p>Apasă din nou pe buton dacă vrei să continui oricum.</p>
+          <p>{t.conflictAgain}</p>
         </div>
       )}
       {state.error && <p className="text-sm text-red-600 sm:col-span-2">{state.error}</p>}
 
       <div className="sm:col-span-2">
         <Button type="submit" disabled={pending}>
-          {pending ? "Se salvează..." : "Creează cursa"}
+          {pending ? t.saving : t.create}
         </Button>
       </div>
     </form>

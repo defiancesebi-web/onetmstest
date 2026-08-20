@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ALLOWED_TRIP_TRANSITIONS, TRIP_STATUS_LABELS } from "@/lib/tripStatus";
+import { ALLOWED_TRIP_TRANSITIONS } from "@/lib/tripStatus";
+import { tripStatusLabel } from "@/lib/labels";
+import type { Locale, Dictionary } from "@/lib/i18n";
 import type { TripStatus } from "@/lib/generated/prisma/enums";
 import { updateTripStatusAction } from "../actions";
 import { Button } from "@/components/ui/button";
@@ -9,9 +11,13 @@ import { Button } from "@/components/ui/button";
 export function TripStatusActions({
   tripId,
   status,
+  locale,
+  t,
 }: {
   tripId: string;
   status: TripStatus;
+  locale: Locale;
+  t: Dictionary["tripDetail"];
 }) {
   // Kept here, on the container, rather than per-button: this component isn't
   // remounted by a status-prop refresh, so the message survives the automatic
@@ -24,7 +30,7 @@ export function TripStatusActions({
   function handleClick(next: TripStatus) {
     if (next === "CANCELLED") {
       // Cancelling is terminal and detaches every order — worth a pause.
-      if (!window.confirm("Anulezi cursa? Comenzile ei revin la neplanificate.")) return;
+      if (!window.confirm(t.cancelConfirm)) return;
     }
 
     setError(null);
@@ -36,9 +42,7 @@ export function TripStatusActions({
 
   if (nextStates.length === 0) {
     return (
-      <p className="text-muted-foreground text-sm">
-        Cursa este în stare finală — nu mai poate fi schimbată.
-      </p>
+      <p className="text-muted-foreground text-sm">{t.finalState}</p>
     );
   }
 
@@ -54,7 +58,7 @@ export function TripStatusActions({
             variant={next === "CANCELLED" ? "destructive" : "default"}
             onClick={() => handleClick(next)}
           >
-            {next === "CANCELLED" ? "Anulează cursa" : `Marchează: ${TRIP_STATUS_LABELS[next]}`}
+            {next === "CANCELLED" ? t.cancelTrip : `${t.markAs} ${tripStatusLabel(next, locale)}`}
           </Button>
         ))}
       </div>

@@ -6,7 +6,9 @@ import { listVehicles } from "@/lib/data/vehicles";
 import { listDrivers } from "@/lib/data/drivers";
 import { TRIP_EDITABLE_STATUSES } from "@/lib/tripStatus";
 import { toDateKey } from "@/lib/documentStatus";
-import { STOP_TYPE_LABELS } from "@/lib/orderStatus";
+import { stopTypeLabel } from "@/lib/labels";
+import { getDictionary, getLocale } from "@/lib/i18n-server";
+import type { Locale } from "@/lib/i18n";
 import { PageHeader } from "@/components/page-header";
 import { TripStatusBadge } from "@/components/trip-status-badge";
 import { TripStatusActions } from "./trip-status-actions";
@@ -17,8 +19,10 @@ import { TripOrders } from "./trip-orders";
 // app/dashboard/dispecerat/page.tsx: the server runs in UTC and every date
 // here is a @db.Date column, so formatting without an explicit timeZone
 // already reads the correct Europe/Bucharest calendar day.
-function formatDate(date: Date) {
-  return new Intl.DateTimeFormat("ro-RO", { dateStyle: "medium" }).format(date);
+function formatDate(date: Date, locale: Locale) {
+  return new Intl.DateTimeFormat(locale === "ro" ? "ro-RO" : "en-US", {
+    dateStyle: "medium",
+  }).format(date);
 }
 
 /**
@@ -29,10 +33,11 @@ function formatDate(date: Date) {
 function withCurrent(
   options: { id: string; label: string }[],
   currentId: string | null,
-  currentLabel: string | null | undefined
+  currentLabel: string | null | undefined,
+  inactiveLabel: string
 ) {
   if (!currentId || options.some((o) => o.id === currentId)) return options;
-  return [{ id: currentId, label: `${currentLabel ?? currentId} (inactiv)` }, ...options];
+  return [{ id: currentId, label: `${currentLabel ?? currentId} (${inactiveLabel})` }, ...options];
 }
 
 export default async function TripDetailPage({
@@ -46,6 +51,8 @@ export default async function TripDetailPage({
   const { atasareEsuata } = await searchParams;
   const session = await auth();
   const sessionUser = { role: session!.user.role, companyId: session!.user.companyId };
+  const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
+  const t = dict.tripDetail;
 
   const trip = await getTripById(sessionUser, id);
   if (!trip) notFound();
@@ -69,35 +76,33 @@ export default async function TripDetailPage({
         href="/dashboard/dispecerat"
         className="text-muted-foreground mb-4 inline-block text-sm underline"
       >
-        ← Înapoi la dispecerat
+        {t.back}
       </Link>
 
       <PageHeader
-        title={`Cursa ${trip.tripNumber}`}
+        title={`${t.tripTitle} ${trip.tripNumber}`}
         description={
           <>
-            {formatDate(trip.startsAt)} – {formatDate(trip.endsAt)} ·{" "}
-            <TripStatusBadge status={trip.status} />
+            {formatDate(trip.startsAt, locale)} – {formatDate(trip.endsAt, locale)} ·{" "}
+            <TripStatusBadge status={trip.status} locale={locale} />
           </>
         }
       />
 
       {atasareEsuata && (
         <div className="mb-6 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
-          Cursa a fost creată, dar comanda selectată nu a putut fi atașată automat — probabil a
-          fost planificată între timp pe altă cursă. Atașeaz-o manual mai jos, dacă mai este
-          disponibilă.
+          {t.attachWarning}
         </div>
       )}
 
       <section className="mb-8">
-        <h2 className="mb-3 text-sm font-medium">Stare</h2>
-        <TripStatusActions tripId={trip.id} status={trip.status} />
+        <h2 className="mb-3 text-sm font-medium">{t.statusHeading}</h2>
+        <TripStatusActions tripId={trip.id} status={trip.status} locale={locale} t={t} />
       </section>
 
       {editable ? (
         <section className="mb-8">
-          <h2 className="mb-3 text-sm font-medium">Alocare</h2>
+          <h2 className="mb-3 text-sm font-medium">{t.allocation}</h2>
           <TripResourcesForm
             // Forces a full remount whenever the server-side window moves —
             // e.g. attachOrderToTrip/detachOrderFromTrip calling
@@ -116,23 +121,27 @@ export default async function TripDetailPage({
                 .filter((v) => v.type !== "SEMI_TRAILER")
                 .map((v) => ({ id: v.id, label: v.registrationNumber })),
               trip.tractorUnitId,
-              trip.tractorUnit?.registrationNumber
+              trip.tractorUnit?.registrationNumber,
+              t.inactive
             )}
             trailers={withCurrent(
               vehicles
                 .filter((v) => v.type === "SEMI_TRAILER")
                 .map((v) => ({ id: v.id, label: v.registrationNumber })),
               trip.trailerId,
-              trip.trailer?.registrationNumber
+              trip.trailer?.registrationNumber,
+              t.inactive
             )}
             drivers={withCurrent(
               withCurrent(
                 drivers.map((d) => ({ id: d.id, label: `${d.lastName} ${d.firstName}` })),
                 trip.primaryDriverId,
-                trip.primaryDriver && `${trip.primaryDriver.lastName} ${trip.primaryDriver.firstName}`
+                trip.primaryDriver && `${trip.primaryDriver.lastName} ${trip.primaryDriver.firstName}`,
+                t.inactive
               ),
               trip.secondDriverId,
-              trip.secondDriver && `${trip.secondDriver.lastName} ${trip.secondDriver.firstName}`
+              trip.secondDriver && `${trip.secondDriver.lastName} ${trip.secondDriver.firstName}`,
+              t.inactive
             )}
             values={{
               startsAt: toDateKey(trip.startsAt),
@@ -142,22 +151,23 @@ export default async function TripDetailPage({
               primaryDriverId: trip.primaryDriverId ?? "",
               secondDriverId: trip.secondDriverId ?? "",
             }}
+            t={dict.tripForm}
           />
         </section>
       ) : (
         <section className="mb-8">
-          <h2 className="mb-3 text-sm font-medium">Alocare</h2>
+          <h2 className="mb-3 text-sm font-medium">{t.allocation}</h2>
           <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
             <div>
-              <dt className="text-muted-foreground">Cap tractor</dt>
+              <dt className="text-muted-foreground">{t.tractor}</dt>
               <dd>{trip.tractorUnit?.registrationNumber ?? "—"}</dd>
             </div>
             <div>
-              <dt className="text-muted-foreground">Semiremorcă</dt>
+              <dt className="text-muted-foreground">{t.trailer}</dt>
               <dd>{trip.trailer?.registrationNumber ?? "—"}</dd>
             </div>
             <div>
-              <dt className="text-muted-foreground">Șofer</dt>
+              <dt className="text-muted-foreground">{t.driver}</dt>
               <dd>
                 {trip.primaryDriver
                   ? `${trip.primaryDriver.lastName} ${trip.primaryDriver.firstName}`
@@ -165,7 +175,7 @@ export default async function TripDetailPage({
               </dd>
             </div>
             <div>
-              <dt className="text-muted-foreground">Al doilea șofer</dt>
+              <dt className="text-muted-foreground">{t.secondDriver}</dt>
               <dd>
                 {trip.secondDriver
                   ? `${trip.secondDriver.lastName} ${trip.secondDriver.firstName}`
@@ -188,17 +198,18 @@ export default async function TripDetailPage({
           id: o.id,
           label: `${o.orderNumber} — ${o.client.name}`,
         }))}
+        t={t}
       />
 
       {route.length > 0 && (
         <section className="mt-8">
-          <h2 className="mb-3 text-sm font-medium">Traseu</h2>
+          <h2 className="mb-3 text-sm font-medium">{t.route}</h2>
           <ol className="space-y-2">
             {route.map(({ order, stop }) => (
               <li key={stop.id} className="rounded-lg border p-3 text-sm">
-                <span className="font-medium">{STOP_TYPE_LABELS[stop.type]}</span>{" "}
+                <span className="font-medium">{stopTypeLabel(stop.type, locale)}</span>{" "}
                 <span className="text-muted-foreground">
-                  {formatDate(stop.scheduledDate)} · {order}
+                  {formatDate(stop.scheduledDate, locale)} · {order}
                 </span>
                 <p>
                   {stop.address}, {stop.city}, {stop.country}
@@ -211,7 +222,7 @@ export default async function TripDetailPage({
 
       {trip.notes && (
         <section className="mt-8">
-          <h2 className="mb-2 text-sm font-medium">Observații</h2>
+          <h2 className="mb-2 text-sm font-medium">{t.notes}</h2>
           <p className="text-sm">{trip.notes}</p>
         </section>
       )}

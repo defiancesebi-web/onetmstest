@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ALLOWED_TRANSITIONS, ORDER_STATUS_LABELS } from "@/lib/orderStatus";
+import { ALLOWED_TRANSITIONS } from "@/lib/orderStatus";
+import { orderStatusLabel } from "@/lib/labels";
+import type { Locale, Dictionary } from "@/lib/i18n";
 import type { OrderStatus } from "@/lib/generated/prisma/enums";
 import { updateOrderStatusAction } from "../actions";
 import { Button } from "@/components/ui/button";
@@ -9,9 +11,13 @@ import { Button } from "@/components/ui/button";
 export function StatusActions({
   orderId,
   status,
+  locale,
+  t,
 }: {
   orderId: string;
   status: OrderStatus;
+  locale: Locale;
+  t: Dictionary["order"];
 }) {
   // Kept here, on the container, rather than per-button: this component
   // isn't remounted by a status-prop refresh, so the message survives the
@@ -26,10 +32,7 @@ export function StatusActions({
     // Cancellation is terminal — there is no transition out of CANCELLED and
     // orders are never deleted — so a misclick would permanently kill an
     // order that keeps its number forever.
-    if (
-      to === "CANCELLED" &&
-      !window.confirm("Sigur anulezi comanda? Anularea este definitivă și nu poate fi revenită.")
-    ) {
+    if (to === "CANCELLED" && !window.confirm(t.cancelConfirm)) {
       return;
     }
 
@@ -42,9 +45,7 @@ export function StatusActions({
 
   if (nextStates.length === 0) {
     return (
-      <p className="text-muted-foreground text-sm">
-        Comanda este în stare finală — nu mai poate fi schimbată.
-      </p>
+      <p className="text-muted-foreground text-sm">{t.statusFinal}</p>
     );
   }
 
@@ -60,7 +61,7 @@ export function StatusActions({
             disabled={pending}
             onClick={() => handleClick(next)}
           >
-            {next === "CANCELLED" ? "Anulează comanda" : `Marchează: ${ORDER_STATUS_LABELS[next]}`}
+            {next === "CANCELLED" ? t.cancelOrder : `${t.markAs} ${orderStatusLabel(next, locale)}`}
           </Button>
         ))}
       </div>

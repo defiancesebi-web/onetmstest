@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { getDriverById } from "@/lib/data/drivers";
 import { listDocumentsForDriver } from "@/lib/data/documents";
 import { documentStatus, DRIVER_DOCUMENT_TYPES, toDateKey } from "@/lib/documentStatus";
+import { getDictionary, getLocale } from "@/lib/i18n-server";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { DocumentsSection } from "@/components/documents-section";
@@ -17,6 +18,8 @@ export default async function DriverDetailPage({
 }) {
   const { id } = await params;
   const session = await auth();
+  const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
+  const t = dict.driverForm;
 
   const driver = await getDriverById(
     { role: session!.user.role, companyId: session!.user.companyId },
@@ -44,22 +47,22 @@ export default async function DriverDetailPage({
   return (
     <div className="max-w-3xl">
       <Link href="/dashboard/soferi" className="text-muted-foreground mb-4 inline-block text-sm underline">
-        ← Înapoi la șoferi
+        {t.back}
       </Link>
 
       <PageHeader
         title={`${driver.lastName} ${driver.firstName}`}
-        description={driver.isActive ? undefined : "Inactiv"}
+        description={driver.isActive ? undefined : t.inactive}
         actions={
           <form action={boundToggle}>
             <Button type="submit" variant={driver.isActive ? "destructive" : "outline"}>
-              {driver.isActive ? "Dezactivează" : "Reactivează"}
+              {driver.isActive ? t.deactivate : t.reactivate}
             </Button>
           </form>
         }
       />
 
-      <DriverForm action={boundUpdate} values={driver} submitLabel="Salvează modificările" />
+      <DriverForm action={boundUpdate} values={driver} submitLabel={t.saveChanges} t={t} />
 
       <DocumentsSection
         ownerKind="driver"
@@ -67,6 +70,8 @@ export default async function DriverDetailPage({
         ownerPath={`/dashboard/soferi/${driver.id}`}
         availableTypes={DRIVER_DOCUMENT_TYPES}
         documents={documents}
+        locale={locale}
+        labels={dict.docs}
       />
     </div>
   );

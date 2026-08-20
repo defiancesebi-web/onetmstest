@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { Dictionary } from "@/lib/i18n";
 import type { ClientFormState } from "./actions";
 
 type Values = {
@@ -57,10 +58,12 @@ export function ClientForm({
   action,
   values,
   submitLabel,
+  t,
 }: {
   action: (state: ClientFormState, formData: FormData) => Promise<ClientFormState>;
   values?: Values;
   submitLabel: string;
+  t: Dictionary["customerForm"];
 }) {
   const [state, formAction, pending] = useActionState(action, {
     error: null,
@@ -82,7 +85,7 @@ export function ClientForm({
     <form action={formAction} className="max-w-xl space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="name">Nume firmă</Label>
+          <Label htmlFor="name">{t.companyName}</Label>
           <Input
             id="name"
             name="name"
@@ -92,7 +95,7 @@ export function ClientForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="cui">CUI</Label>
+          <Label htmlFor="cui">{t.cui}</Label>
           <Input
             id="cui"
             name="cui"
@@ -102,7 +105,7 @@ export function ClientForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="address">Adresă</Label>
+          <Label htmlFor="address">{t.address}</Label>
           <Input
             id="address"
             name="address"
@@ -112,7 +115,7 @@ export function ClientForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="city">Oraș</Label>
+          <Label htmlFor="city">{t.city}</Label>
           <Input
             id="city"
             name="city"
@@ -122,7 +125,7 @@ export function ClientForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="country">Țară</Label>
+          <Label htmlFor="country">{t.country}</Label>
           <Input
             id="country"
             name="country"
@@ -131,7 +134,7 @@ export function ClientForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="paymentTermDays">Termen de plată (zile)</Label>
+          <Label htmlFor="paymentTermDays">{t.paymentTermDays}</Label>
           <Input
             id="paymentTermDays"
             name="paymentTermDays"
@@ -142,7 +145,7 @@ export function ClientForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="contactName">Persoană de contact</Label>
+          <Label htmlFor="contactName">{t.contactName}</Label>
           <Input
             id="contactName"
             name="contactName"
@@ -151,7 +154,7 @@ export function ClientForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="contactPhone">Telefon</Label>
+          <Label htmlFor="contactPhone">{t.phone}</Label>
           <Input
             id="contactPhone"
             name="contactPhone"
@@ -160,7 +163,7 @@ export function ClientForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="contactEmail">Email</Label>
+          <Label htmlFor="contactEmail">{t.email}</Label>
           <Input
             id="contactEmail"
             name="contactEmail"
@@ -170,7 +173,7 @@ export function ClientForm({
           />
         </div>
         <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="notes">Observații</Label>
+          <Label htmlFor="notes">{t.notes}</Label>
           <Input
             id="notes"
             name="notes"
@@ -185,13 +188,13 @@ export function ClientForm({
           <p>{state.duplicateWarning}</p>
           {/* Resubmits the same fields with the confirmation flag set. */}
           <input type="hidden" name="confirmDuplicateCui" value="true" />
-          <p className="text-xs">Apasă din nou pe buton pentru a-l adăuga oricum.</p>
+          <p className="text-xs">{t.duplicateAgain}</p>
         </div>
       )}
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}
 
       <Button type="submit" disabled={pending}>
-        {pending ? "Se salvează..." : submitLabel}
+        {pending ? t.saving : submitLabel}
       </Button>
     </form>
   );

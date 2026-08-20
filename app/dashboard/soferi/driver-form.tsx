@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { Dictionary } from "@/lib/i18n";
 import type { DriverFormState } from "./actions";
 
 type Values = {
@@ -42,10 +43,12 @@ export function DriverForm({
   action,
   values,
   submitLabel,
+  t,
 }: {
   action: (state: DriverFormState, formData: FormData) => Promise<DriverFormState>;
   values?: Values;
   submitLabel: string;
+  t: Dictionary["driverForm"];
 }) {
   const [state, formAction, pending] = useActionState(action, { error: null });
   // Controlled, for the same React 19 reset reason as every other form here.
@@ -58,7 +61,7 @@ export function DriverForm({
   return (
     <form action={formAction} className="grid max-w-2xl gap-4 sm:grid-cols-2">
       <div className="space-y-1.5">
-        <Label htmlFor="lastName">Nume</Label>
+        <Label htmlFor="lastName">{t.lastName}</Label>
         <Input
           id="lastName"
           name="lastName"
@@ -68,7 +71,7 @@ export function DriverForm({
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="firstName">Prenume</Label>
+        <Label htmlFor="firstName">{t.firstName}</Label>
         <Input
           id="firstName"
           name="firstName"
@@ -78,11 +81,11 @@ export function DriverForm({
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="phone">Telefon</Label>
+        <Label htmlFor="phone">{t.phone}</Label>
         <Input id="phone" name="phone" value={fields.phone} onChange={(e) => update("phone", e.target.value)} />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{t.email}</Label>
         <Input
           id="email"
           name="email"
@@ -92,7 +95,7 @@ export function DriverForm({
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="hiredAt">Data angajării</Label>
+        <Label htmlFor="hiredAt">{t.hiredAt}</Label>
         <Input
           id="hiredAt"
           name="hiredAt"
@@ -102,7 +105,7 @@ export function DriverForm({
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="personalId">CNP (opțional)</Label>
+        <Label htmlFor="personalId">{t.personalId}</Label>
         <Input
           id="personalId"
           name="personalId"
@@ -111,7 +114,7 @@ export function DriverForm({
         />
       </div>
       <div className="space-y-1.5 sm:col-span-2">
-        <Label htmlFor="notes">Observații</Label>
+        <Label htmlFor="notes">{t.notes}</Label>
         <Input id="notes" name="notes" value={fields.notes} onChange={(e) => update("notes", e.target.value)} />
       </div>
 
@@ -119,7 +122,7 @@ export function DriverForm({
 
       <div className="sm:col-span-2">
         <Button type="submit" disabled={pending}>
-          {pending ? "Se salvează..." : submitLabel}
+          {pending ? t.saving : submitLabel}
         </Button>
       </div>
     </form>

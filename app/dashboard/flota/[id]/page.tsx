@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { getVehicleById } from "@/lib/data/vehicles";
 import { listDocumentsForVehicle } from "@/lib/data/documents";
-import { VEHICLE_TYPE_LABELS, documentStatus, VEHICLE_DOCUMENT_TYPES, toDateKey } from "@/lib/documentStatus";
+import { documentStatus, VEHICLE_DOCUMENT_TYPES, toDateKey } from "@/lib/documentStatus";
+import { vehicleTypeLabel } from "@/lib/labels";
+import { getDictionary, getLocale } from "@/lib/i18n-server";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { DocumentsSection } from "@/components/documents-section";
@@ -17,6 +19,8 @@ export default async function VehicleDetailPage({
 }) {
   const { id } = await params;
   const session = await auth();
+  const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
+  const t = dict.vehicleForm;
 
   const vehicle = await getVehicleById(
     { role: session!.user.role, companyId: session!.user.companyId },
@@ -44,22 +48,22 @@ export default async function VehicleDetailPage({
   return (
     <div className="max-w-3xl">
       <Link href="/dashboard/flota" className="text-muted-foreground mb-4 inline-block text-sm underline">
-        ← Înapoi la flotă
+        {t.back}
       </Link>
 
       <PageHeader
         title={vehicle.registrationNumber}
-        description={`${VEHICLE_TYPE_LABELS[vehicle.type]}${vehicle.isActive ? "" : " · Inactiv"}`}
+        description={`${vehicleTypeLabel(vehicle.type, locale)}${vehicle.isActive ? "" : ` · ${t.inactive}`}`}
         actions={
           <form action={boundToggle}>
             <Button type="submit" variant={vehicle.isActive ? "destructive" : "outline"}>
-              {vehicle.isActive ? "Dezactivează" : "Reactivează"}
+              {vehicle.isActive ? t.deactivate : t.reactivate}
             </Button>
           </form>
         }
       />
 
-      <VehicleForm action={boundUpdate} values={vehicle} submitLabel="Salvează modificările" />
+      <VehicleForm action={boundUpdate} values={vehicle} submitLabel={t.saveChanges} t={t} locale={locale} />
 
       <DocumentsSection
         ownerKind="vehicle"
@@ -67,6 +71,8 @@ export default async function VehicleDetailPage({
         ownerPath={`/dashboard/flota/${vehicle.id}`}
         availableTypes={VEHICLE_DOCUMENT_TYPES}
         documents={documents}
+        locale={locale}
+        labels={dict.docs}
       />
     </div>
   );

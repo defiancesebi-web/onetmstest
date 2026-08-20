@@ -161,7 +161,7 @@ export default async function ComandaDetailPage({
         <div className="bg-card rounded-xl border p-5 shadow-sm">
           <h3 className="mb-3 font-semibold">{d.actions}</h3>
           <div className="space-y-3">
-            <StatusActions orderId={order.id} status={order.status} />
+            <StatusActions orderId={order.id} status={order.status} locale={locale} t={d} />
             {order.trip ? (
               <Link
                 href={`/dashboard/curse/${order.trip.id}`}
@@ -280,6 +280,7 @@ export default async function ComandaDetailPage({
           paymentTermDays: order.paymentTermDays,
           notes: order.notes,
         }}
+        t={dict.orderForm}
       />
     </div>
   );

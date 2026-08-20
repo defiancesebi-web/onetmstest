@@ -5,16 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createOrderAction, type OrderFormState } from "../actions";
-import { STOP_TYPE_LABELS } from "@/lib/orderStatus";
+import { stopTypeLabel } from "@/lib/labels";
+import type { Locale, Dictionary } from "@/lib/i18n";
 import { multiplyAndRoundToTwoDecimals } from "@/lib/money";
 
-function formatRateDate(isoDate: string): string {
+function formatRateDate(isoDate: string, locale: Locale): string {
   // isoDate is a bare "YYYY-MM-DD" with no time component, so it must be
   // read back in UTC — otherwise a browser west of Bucharest would parse
   // midnight UTC as the previous day's evening and display the wrong date.
-  return new Intl.DateTimeFormat("ro-RO", { dateStyle: "medium", timeZone: "UTC" }).format(
-    new Date(isoDate)
-  );
+  return new Intl.DateTimeFormat(locale === "ro" ? "ro-RO" : "en-US", {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  }).format(new Date(isoDate));
 }
 
 type Stop = {
@@ -44,10 +46,14 @@ function emptyStop(type: Stop["type"]): Stop {
 export function OrderForm({
   clients,
   eurRate,
+  t,
+  locale,
 }: {
   clients: { id: string; name: string; paymentTermDays: number }[];
   /** Fetched server-side on page load; null means BNR was unreachable. */
   eurRate: { rate: string; date: string } | null;
+  t: Dictionary["orderForm"];
+  locale: Locale;
 }) {
   const [state, formAction, pending] = useActionState<OrderFormState, FormData>(
     createOrderAction,
@@ -120,10 +126,10 @@ export function OrderForm({
       <input type="hidden" name="stops" value={JSON.stringify(stops)} />
 
       <section className="space-y-4">
-        <h2 className="text-sm font-medium">Client și marfă</h2>
+        <h2 className="text-sm font-medium">{t.sectionClientCargo}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="clientId">Client</Label>
+            <Label htmlFor="clientId">{t.client}</Label>
             <select
               ref={clientSelectRef}
               id="clientId"
@@ -145,7 +151,7 @@ export function OrderForm({
             </select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="clientReference">Referința clientului</Label>
+            <Label htmlFor="clientReference">{t.clientReference}</Label>
             <Input
               id="clientReference"
               name="clientReference"
@@ -155,7 +161,7 @@ export function OrderForm({
             />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
-            <Label htmlFor="cargoDescription">Descrierea mărfii</Label>
+            <Label htmlFor="cargoDescription">{t.cargoDescription}</Label>
             <Input
               id="cargoDescription"
               name="cargoDescription"
@@ -165,7 +171,7 @@ export function OrderForm({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="cargoWeightKg">Greutate (kg)</Label>
+            <Label htmlFor="cargoWeightKg">{t.weightKg}</Label>
             <Input
               id="cargoWeightKg"
               name="cargoWeightKg"
@@ -177,11 +183,11 @@ export function OrderForm({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="cargoPackaging">Ambalaj</Label>
+            <Label htmlFor="cargoPackaging">{t.packaging}</Label>
             <Input
               id="cargoPackaging"
               name="cargoPackaging"
-              placeholder="paleți, vrac..."
+              placeholder={t.packagingPlaceholder}
               value={cargoPackaging}
               onChange={(e) => setCargoPackaging(e.target.value)}
             />
@@ -191,7 +197,7 @@ export function OrderForm({
 
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium">Opriri</h2>
+          <h2 className="text-sm font-medium">{t.sectionStops}</h2>
           <div className="flex gap-2">
             <Button
               type="button"
@@ -199,7 +205,7 @@ export function OrderForm({
               variant="outline"
               onClick={() => setStops((c) => [...c, emptyStop("LOADING")])}
             >
-              + Încărcare
+              {t.addLoading}
             </Button>
             <Button
               type="button"
@@ -207,7 +213,7 @@ export function OrderForm({
               variant="outline"
               onClick={() => setStops((c) => [...c, emptyStop("UNLOADING")])}
             >
-              + Descărcare
+              {t.addUnloading}
             </Button>
           </div>
         </div>
@@ -216,7 +222,7 @@ export function OrderForm({
           <div key={index} className="space-y-3 rounded-lg border p-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">
-                {index + 1}. {STOP_TYPE_LABELS[stop.type]}
+                {index + 1}. {stopTypeLabel(stop.type, locale)}
               </span>
               {stops.length > 2 && (
                 <Button
@@ -225,19 +231,19 @@ export function OrderForm({
                   variant="destructive"
                   onClick={() => setStops((c) => c.filter((_, i) => i !== index))}
                 >
-                  Șterge
+                  {t.delete}
                 </Button>
               )}
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Input
-                placeholder="Adresă"
+                placeholder={t.address}
                 required
                 value={stop.address}
                 onChange={(e) => updateStop(index, { address: e.target.value })}
               />
               <Input
-                placeholder="Oraș"
+                placeholder={t.city}
                 required
                 value={stop.city}
                 onChange={(e) => updateStop(index, { city: e.target.value })}
@@ -261,12 +267,12 @@ export function OrderForm({
                 />
               </div>
               <Input
-                placeholder="Persoană de contact"
+                placeholder={t.contactName}
                 value={stop.contactName}
                 onChange={(e) => updateStop(index, { contactName: e.target.value })}
               />
               <Input
-                placeholder="Telefon"
+                placeholder={t.phone}
                 value={stop.contactPhone}
                 onChange={(e) => updateStop(index, { contactPhone: e.target.value })}
               />
@@ -276,10 +282,10 @@ export function OrderForm({
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-medium">Bani</h2>
+        <h2 className="text-sm font-medium">{t.sectionMoney}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="salePrice">Preț de vânzare</Label>
+            <Label htmlFor="salePrice">{t.salePrice}</Label>
             <Input
               id="salePrice"
               name="salePrice"
@@ -292,7 +298,7 @@ export function OrderForm({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="currency">Valută</Label>
+            <Label htmlFor="currency">{t.currency}</Label>
             <select
               ref={currencySelectRef}
               id="currency"
@@ -306,7 +312,7 @@ export function OrderForm({
             </select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="estimatedCostRon">Cost estimat (RON)</Label>
+            <Label htmlFor="estimatedCostRon">{t.estimatedCost}</Label>
             <Input
               id="estimatedCostRon"
               name="estimatedCostRon"
@@ -318,7 +324,7 @@ export function OrderForm({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="paymentTermDays">Termen de plată (zile)</Label>
+            <Label htmlFor="paymentTermDays">{t.paymentTermDays}</Label>
             <Input
               id="paymentTermDays"
               name="paymentTermDays"
@@ -330,7 +336,7 @@ export function OrderForm({
           </div>
           {showManualRateField && (
             <div className="space-y-1.5 sm:col-span-2">
-              <Label htmlFor="manualExchangeRate">Curs EUR → RON (manual)</Label>
+              <Label htmlFor="manualExchangeRate">{t.manualRate}</Label>
               <Input
                 id="manualExchangeRate"
                 name="manualExchangeRate"
@@ -341,33 +347,36 @@ export function OrderForm({
                 value={manualExchangeRate}
                 onChange={(e) => setManualExchangeRate(e.target.value)}
               />
-              <p className="text-muted-foreground text-xs">
-                Cursul BNR nu este disponibil momentan. Introdu manual cursul EUR → RON.
-              </p>
+              <p className="text-muted-foreground text-xs">{t.manualRateHint}</p>
             </div>
           )}
           {currency === "EUR" && (
             <div className="text-muted-foreground space-y-1 text-xs sm:col-span-2">
               {!showManualRateField && eurRate && (
                 <p>
-                  Curs BNR: {eurRate.rate} RON din {formatRateDate(eurRate.date)}
+                  {t.bnrRate}: {eurRate.rate} RON {t.bnrRateFrom}{" "}
+                  {formatRateDate(eurRate.date, locale)}
                 </p>
               )}
-              {ronPreview && <p>Echivalent în RON: {ronPreview} RON</p>}
+              {ronPreview && (
+                <p>
+                  {t.ronEquivalent}: {ronPreview} RON
+                </p>
+              )}
             </div>
           )}
         </div>
       </section>
 
       <div className="space-y-1.5">
-        <Label htmlFor="notes">Observații</Label>
+        <Label htmlFor="notes">{t.notes}</Label>
         <Input id="notes" name="notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
       </div>
 
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}
 
       <Button type="submit" disabled={pending}>
-        {pending ? "Se salvează..." : "Salvează comanda"}
+        {pending ? t.saving : t.save}
       </Button>
     </form>
   );

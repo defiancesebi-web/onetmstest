@@ -2,12 +2,15 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { listClients } from "@/lib/data/clients";
 import { getEurRate } from "@/lib/bnr";
+import { getDictionary, getLocale } from "@/lib/i18n-server";
 import { PageHeader } from "@/components/page-header";
 import { buttonVariants } from "@/components/ui/button";
 import { OrderForm } from "./order-form";
 
 export default async function ComandaNouaPage() {
   const session = await auth();
+  const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
+  const t = dict.orderForm;
   const clients = await listClients(
     { role: session!.user.role, companyId: session!.user.companyId },
     session!.user.companyId!
@@ -30,17 +33,15 @@ export default async function ComandaNouaPage() {
   return (
     <div>
       <Link href="/dashboard/comenzi" className="text-muted-foreground mb-4 inline-block text-sm underline">
-        ← Înapoi la comenzi
+        {t.back}
       </Link>
-      <PageHeader title="Comandă nouă" />
+      <PageHeader title={t.newTitle} />
 
       {clients.length === 0 ? (
         <div className="max-w-xl space-y-3 rounded-lg border border-dashed p-8 text-center">
-          <p className="text-muted-foreground text-sm">
-            Nu ai niciun client activ. O comandă are nevoie de un client.
-          </p>
+          <p className="text-muted-foreground text-sm">{t.noClients}</p>
           <Link href="/dashboard/clienti/nou" className={buttonVariants()}>
-            Adaugă primul client
+            {t.addFirstClient}
           </Link>
         </div>
       ) : (
@@ -51,6 +52,8 @@ export default async function ComandaNouaPage() {
             paymentTermDays: c.paymentTermDays,
           }))}
           eurRate={eurRate}
+          t={t}
+          locale={locale}
         />
       )}
     </div>
