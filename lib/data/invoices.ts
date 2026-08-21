@@ -213,6 +213,9 @@ export async function createInvoice(
     sellerCountry: company.country,
     sellerIban: company.iban,
     sellerBank: company.bankName,
+    sellerPhone: company.phone,
+    sellerEmail: company.email,
+    sellerCapital: company.shareCapital,
     sellerVatPayer: company.vatPayer,
   };
 
@@ -386,6 +389,9 @@ export async function issueInvoice(session: SessionUser, invoiceId: string) {
         sellerCountry: company.country,
         sellerIban: company.iban,
         sellerBank: company.bankName,
+        sellerPhone: company.phone,
+        sellerEmail: company.email,
+        sellerCapital: company.shareCapital,
         sellerVatPayer: company.vatPayer,
       },
     });

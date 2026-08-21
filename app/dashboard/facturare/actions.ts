@@ -5,7 +5,6 @@ import { revalidatePath } from "next/cache";
 import type { Session } from "next-auth";
 import { auth } from "@/auth";
 import type { Currency } from "@/lib/generated/prisma/enums";
-import { updateCompanyInvoicingSettings, ForbiddenError } from "@/lib/data/companies";
 import {
   createInvoice,
   issueInvoice,
@@ -19,45 +18,10 @@ import {
 } from "@/lib/data/invoices";
 
 export type InvoiceFormState = { error: string | null };
-export type SettingsFormState = { error: string | null; saved: boolean };
 
 function sessionUserOrThrow(session: Session | null) {
   if (!session?.user.companyId) throw new Error("Neautentificat");
   return { role: session.user.role, companyId: session.user.companyId };
-}
-
-export async function saveInvoicingSettingsAction(
-  _prev: SettingsFormState,
-  formData: FormData
-): Promise<SettingsFormState> {
-  const session = await auth();
-  const sessionUser = sessionUserOrThrow(session);
-
-  const clean = (key: string) => {
-    const v = (formData.get(key) as string | null)?.trim();
-    return v ? v : null;
-  };
-
-  try {
-    await updateCompanyInvoicingSettings(sessionUser, {
-      regCom: clean("regCom"),
-      address: clean("address"),
-      city: clean("city"),
-      county: clean("county"),
-      postalCode: clean("postalCode"),
-      iban: clean("iban"),
-      bankName: clean("bankName"),
-      vatPayer: formData.get("vatPayer") === "on",
-      invoiceSeries: clean("invoiceSeries"),
-    });
-  } catch (error) {
-    if (error instanceof ForbiddenError) return { error: error.message, saved: false };
-    throw error;
-  }
-
-  revalidatePath("/dashboard/facturare");
-  revalidatePath("/dashboard/facturare/setari");
-  return { error: null, saved: true };
 }
 
 export async function createInvoiceAction(

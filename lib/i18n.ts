@@ -502,6 +502,9 @@ export type Dictionary = {
     regCom: string;
     iban: string;
     bank: string;
+    phone: string;
+    email: string;
+    capital: string;
     issueDate: string;
     dueDate: string;
     fromOrder: string;
@@ -626,6 +629,37 @@ export type Dictionary = {
     noExpenses: string;
     recentHeading: string;
     viewAllExpenses: string;
+  };
+  settings: {
+    title: string;
+    description: string;
+    adminOnly: string;
+    sectionIdentity: string;
+    sectionAddress: string;
+    sectionContact: string;
+    sectionBank: string;
+    sectionInvoicing: string;
+    name: string;
+    cui: string;
+    readonlyHint: string;
+    regCom: string;
+    shareCapital: string;
+    address: string;
+    city: string;
+    county: string;
+    postalCode: string;
+    phone: string;
+    email: string;
+    website: string;
+    iban: string;
+    bankName: string;
+    vatPayer: string;
+    vatPayerHint: string;
+    series: string;
+    seriesHint: string;
+    save: string;
+    saving: string;
+    saved: string;
   };
 };
 
@@ -1127,6 +1161,9 @@ const dictionaries: Record<Locale, Dictionary> = {
       regCom: "Reg. Com.",
       iban: "IBAN",
       bank: "Banca",
+      phone: "Tel",
+      email: "Email",
+      capital: "Capital social",
       issueDate: "Data emiterii",
       dueDate: "Scadență",
       fromOrder: "Din comanda",
@@ -1250,6 +1287,37 @@ const dictionaries: Record<Locale, Dictionary> = {
       noExpenses: "Nicio cheltuială înregistrată.",
       recentHeading: "Cheltuieli recente",
       viewAllExpenses: "Vezi toate",
+    },
+    settings: {
+      title: "Setări firmă",
+      description: "Datele firmei tale. Apar pe facturi și în aplicație.",
+      adminOnly: "Doar administratorul firmei poate modifica aceste date.",
+      sectionIdentity: "Identitate",
+      sectionAddress: "Sediu",
+      sectionContact: "Contact",
+      sectionBank: "Bancă",
+      sectionInvoicing: "Facturare",
+      name: "Denumire firmă",
+      cui: "CUI",
+      readonlyHint: "Setate de administratorul platformei.",
+      regCom: "Nr. Reg. Com.",
+      shareCapital: "Capital social",
+      address: "Adresă sediu",
+      city: "Oraș",
+      county: "Județ",
+      postalCode: "Cod poștal",
+      phone: "Telefon",
+      email: "Email",
+      website: "Website",
+      iban: "IBAN",
+      bankName: "Bancă",
+      vatPayer: "Plătitor de TVA",
+      vatPayerHint: "Dacă e dezactivat, facturile se emit fără TVA („Neplătitor de TVA”).",
+      series: "Serie facturi",
+      seriesHint: "Ex. „ONE”. Numerele cresc continuu în cadrul seriei.",
+      save: "Salvează",
+      saving: "Se salvează...",
+      saved: "Datele au fost salvate.",
     },
   },
   en: {
@@ -1749,6 +1817,9 @@ const dictionaries: Record<Locale, Dictionary> = {
       regCom: "Trade Reg.",
       iban: "IBAN",
       bank: "Bank",
+      phone: "Phone",
+      email: "Email",
+      capital: "Share capital",
       issueDate: "Issue date",
       dueDate: "Due date",
       fromOrder: "From load",
@@ -1872,6 +1943,37 @@ const dictionaries: Record<Locale, Dictionary> = {
       noExpenses: "No expenses recorded.",
       recentHeading: "Recent expenses",
       viewAllExpenses: "View all",
+    },
+    settings: {
+      title: "Company settings",
+      description: "Your company's details. They appear on invoices and in the app.",
+      adminOnly: "Only the company admin can change these details.",
+      sectionIdentity: "Identity",
+      sectionAddress: "Registered office",
+      sectionContact: "Contact",
+      sectionBank: "Bank",
+      sectionInvoicing: "Invoicing",
+      name: "Company name",
+      cui: "Reg. no. (CUI)",
+      readonlyHint: "Set by the platform administrator.",
+      regCom: "Trade Register no.",
+      shareCapital: "Share capital",
+      address: "Registered address",
+      city: "City",
+      county: "County",
+      postalCode: "Postal code",
+      phone: "Phone",
+      email: "Email",
+      website: "Website",
+      iban: "IBAN",
+      bankName: "Bank",
+      vatPayer: "VAT payer",
+      vatPayerHint: "If off, invoices are issued without VAT (“Not a VAT payer”).",
+      series: "Invoice series",
+      seriesHint: "E.g. “ONE”. Numbers run continuously within the series.",
+      save: "Save",
+      saving: "Saving...",
+      saved: "Details saved.",
     },
   },
 };

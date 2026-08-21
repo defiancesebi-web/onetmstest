@@ -54,6 +54,12 @@ model Company {
   country       String  @default("România")
   iban          String?
   bankName      String?
+  // General contact / identity, shown on invoices.
+  phone         String?
+  email         String?
+  website       String?
+  /// Capital social — free text (e.g. "200 RON"), optional on invoices.
+  shareCapital  String?
   /// Plătitor de TVA. A non-payer issues invoices with no VAT and the legal
   /// "Neplătitor de TVA" mention instead.
   vatPayer      Boolean @default(true)
@@ -418,6 +424,9 @@ model Invoice {
   sellerCountry  String  @default("România")
   sellerIban     String?
   sellerBank     String?
+  sellerPhone    String?
+  sellerEmail    String?
+  sellerCapital  String?
   sellerVatPayer Boolean @default(true)
 
   // Stored totals (sum of the lines), so lists and reports never recompute.

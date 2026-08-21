@@ -2,35 +2,39 @@
 
 import { useActionState, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
-import { saveInvoicingSettingsAction, type SettingsFormState } from "../actions";
+import { saveCompanySettingsAction, type SettingsFormState } from "./actions";
 import type { Dictionary } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-type Values = {
+export type CompanyValues = {
   name: string;
   cui: string;
   regCom: string;
+  shareCapital: string;
   address: string;
   city: string;
   county: string;
   postalCode: string;
+  phone: string;
+  email: string;
+  website: string;
   iban: string;
   bankName: string;
   vatPayer: boolean;
   invoiceSeries: string;
 };
 
-export function InvoicingSettingsForm({
+export function CompanySettingsForm({
   t,
   values,
 }: {
-  t: Dictionary["invoiceSettings"];
-  values: Values;
+  t: Dictionary["settings"];
+  values: CompanyValues;
 }) {
   const [state, formAction, pending] = useActionState<SettingsFormState, FormData>(
-    saveInvoicingSettingsAction,
+    saveCompanySettingsAction,
     { error: null, saved: false }
   );
   const [vatPayer, setVatPayer] = useState(values.vatPayer);
@@ -54,9 +58,15 @@ export function InvoicingSettingsForm({
             <Input id="regCom" name="regCom" defaultValue={values.regCom} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="postalCode">{t.postalCode}</Label>
-            <Input id="postalCode" name="postalCode" defaultValue={values.postalCode} />
+            <Label htmlFor="shareCapital">{t.shareCapital}</Label>
+            <Input id="shareCapital" name="shareCapital" defaultValue={values.shareCapital} />
           </div>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium">{t.sectionAddress}</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="address">{t.address}</Label>
             <Input id="address" name="address" defaultValue={values.address} />
@@ -68,6 +78,42 @@ export function InvoicingSettingsForm({
           <div className="space-y-1.5">
             <Label htmlFor="county">{t.county}</Label>
             <Input id="county" name="county" defaultValue={values.county} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="postalCode">{t.postalCode}</Label>
+            <Input id="postalCode" name="postalCode" defaultValue={values.postalCode} />
+          </div>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium">{t.sectionContact}</h2>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="phone">{t.phone}</Label>
+            <Input id="phone" name="phone" defaultValue={values.phone} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="email">{t.email}</Label>
+            <Input id="email" name="email" type="email" defaultValue={values.email} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="website">{t.website}</Label>
+            <Input id="website" name="website" defaultValue={values.website} />
+          </div>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium">{t.sectionBank}</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="iban">{t.iban}</Label>
+            <Input id="iban" name="iban" defaultValue={values.iban} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="bankName">{t.bankName}</Label>
+            <Input id="bankName" name="bankName" defaultValue={values.bankName} />
           </div>
         </div>
       </section>
@@ -92,20 +138,6 @@ export function InvoicingSettingsForm({
               {t.vatPayer}
             </Label>
             <p className="text-muted-foreground text-xs">{t.vatPayerHint}</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium">{t.sectionBank}</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="iban">{t.iban}</Label>
-            <Input id="iban" name="iban" defaultValue={values.iban} />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="bankName">{t.bankName}</Label>
-            <Input id="bankName" name="bankName" defaultValue={values.bankName} />
           </div>
         </div>
       </section>

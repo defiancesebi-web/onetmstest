@@ -27,7 +27,7 @@ const COMPANY_NAV: NavDef[] = [
   { key: "expenses", href: "/dashboard/cheltuieli", built: true },
   { key: "analytics", href: "/dashboard/curand/analytics", built: false },
   { key: "team", href: "/dashboard/echipa", built: true, roles: ["COMPANY_ADMIN"] },
-  { key: "settings", href: "/dashboard/curand/settings", built: false },
+  { key: "settings", href: "/dashboard/setari", built: true, roles: ["COMPANY_ADMIN"] },
 ];
 
 const ROLE_LABELS: Record<UserRole, { ro: string; en: string }> = {

@@ -70,6 +70,21 @@ export default async function InvoiceDetailPage({
                 {invoice.sellerBank ? ` · ${t.bank}: ${invoice.sellerBank}` : ""}
               </p>
             )}
+            {(invoice.sellerPhone || invoice.sellerEmail) && (
+              <p className="text-muted-foreground text-sm">
+                {[
+                  invoice.sellerPhone ? `${t.phone}: ${invoice.sellerPhone}` : null,
+                  invoice.sellerEmail ? `${t.email}: ${invoice.sellerEmail}` : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            )}
+            {invoice.sellerCapital && (
+              <p className="text-muted-foreground text-sm">
+                {t.capital}: {invoice.sellerCapital}
+              </p>
+            )}
             {!invoice.sellerVatPayer && (
               <p className="mt-1 text-xs font-medium text-amber-700">{t.nonVatMention}</p>
             )}

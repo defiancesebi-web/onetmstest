@@ -53,7 +53,7 @@ export default async function InvoicesPage({
         description={t.description}
         actions={
           <div className="flex items-center gap-2">
-            <Link href="/dashboard/facturare/setari" className={buttonVariants({ variant: "outline" })}>
+            <Link href="/dashboard/setari" className={buttonVariants({ variant: "outline" })}>
               <Settings className="size-4" />
               {t.settingsLabel}
             </Link>
@@ -69,7 +69,7 @@ export default async function InvoicesPage({
           <TriangleAlert className="size-4 shrink-0" />
           <span className="flex-1">{t.setupNeeded}</span>
           <Link
-            href="/dashboard/facturare/setari"
+            href="/dashboard/setari"
             className={buttonVariants({ variant: "outline", size: "sm" })}
           >
             {t.setupCta}

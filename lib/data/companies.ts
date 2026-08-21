@@ -28,7 +28,7 @@ export async function updateCompanyStatus(
   return prisma.company.update({ where: { id: companyId }, data: { status } });
 }
 
-export type InvoicingSettingsInput = {
+export type CompanySettingsInput = {
   regCom: string | null;
   address: string | null;
   city: string | null;
@@ -36,20 +36,21 @@ export type InvoicingSettingsInput = {
   postalCode: string | null;
   iban: string | null;
   bankName: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  shareCapital: string | null;
   vatPayer: boolean;
   invoiceSeries: string | null;
 };
 
 /**
- * The company edits only its OWN invoicing identity, and only a company admin
- * may. Scoped to session.companyId so one tenant can never write another's
- * legal details. Status/name/CUI stay off-limits here — those are the platform
+ * The company edits only its OWN identity/invoicing details, and only a company
+ * admin may. Scoped to session.companyId so one tenant can never write
+ * another's data. Status/name/CUI stay off-limits here — those are the platform
  * owner's to set from the admin area.
  */
-export async function updateCompanyInvoicingSettings(
-  session: SessionUser,
-  input: InvoicingSettingsInput
-) {
+export async function updateCompanySettings(session: SessionUser, input: CompanySettingsInput) {
   if (session.role !== "COMPANY_ADMIN" || !session.companyId) throw new ForbiddenError();
   return prisma.company.update({
     where: { id: session.companyId },
@@ -61,6 +62,10 @@ export async function updateCompanyInvoicingSettings(
       postalCode: input.postalCode,
       iban: input.iban,
       bankName: input.bankName,
+      phone: input.phone,
+      email: input.email,
+      website: input.website,
+      shareCapital: input.shareCapital,
       vatPayer: input.vatPayer,
       invoiceSeries: input.invoiceSeries,
     },
