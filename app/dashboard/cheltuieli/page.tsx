@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Gauge, Coins, Truck, Fuel, TrendingUp, Info } from "lucide-react";
+import { Gauge, Coins, Truck, Fuel, TrendingUp, Info, Droplets } from "lucide-react";
 import { auth } from "@/auth";
 import { getCostAnalysis, COST_RANGES, type CostRange } from "@/lib/data/expenses";
 import { fixedCostCategoryLabel, expenseCategoryLabel } from "@/lib/labels";
@@ -78,7 +78,7 @@ export default async function ExpensesPage({
       </div>
 
       {/* KPI row */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
         <StatCard
           icon={<Gauge className="size-5" />}
           label={t.kpiCostPerKm}
@@ -104,6 +104,16 @@ export default async function ExpensesPage({
           value={km(data.totalKm)}
           tone="bg-blue-100 text-blue-700"
         />
+        <StatCard
+          icon={<Droplets className="size-5" />}
+          label={t.consumption}
+          value={
+            data.consumptionPer100Km === null
+              ? "—"
+              : `${data.consumptionPer100Km.toLocaleString(locale === "ro" ? "ro-RO" : "en-US")} ${t.colConsumption}`
+          }
+          tone="bg-cyan-100 text-cyan-700"
+        />
       </div>
 
       <p className="text-muted-foreground flex items-start gap-2 text-xs">
@@ -128,7 +138,9 @@ export default async function ExpensesPage({
                   <th className="px-5 py-2.5 text-right font-medium">{t.colFixed}</th>
                   <th className="px-5 py-2.5 text-right font-medium">{t.colVariable}</th>
                   <th className="px-5 py-2.5 text-right font-medium">{t.colTotal}</th>
+                  <th className="px-5 py-2.5 text-right font-medium">{t.colConsumption}</th>
                   <th className="px-5 py-2.5 text-right font-medium">{t.colCostPerKm}</th>
+                  <th className="px-5 py-2.5 text-right font-medium">{t.colCostPerKmFull}</th>
                 </tr>
               </thead>
               <tbody>
@@ -139,14 +151,25 @@ export default async function ExpensesPage({
                     <td className="px-5 py-2.5 text-right tabular-nums">{money(tr.fixed)}</td>
                     <td className="px-5 py-2.5 text-right tabular-nums">{money(tr.variable)}</td>
                     <td className="px-5 py-2.5 text-right tabular-nums">{money(tr.total)}</td>
+                    <td className="px-5 py-2.5 text-right tabular-nums">
+                      {tr.consumptionPer100Km === null
+                        ? "—"
+                        : tr.consumptionPer100Km.toLocaleString(locale === "ro" ? "ro-RO" : "en-US")}
+                    </td>
                     <td className="px-5 py-2.5 text-right font-semibold tabular-nums">
                       {cpk(tr.costPerKm)}
+                    </td>
+                    <td className="px-5 py-2.5 text-right tabular-nums">
+                      {cpk(tr.fullyLoadedCostPerKm)}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+        )}
+        {data.tractors.length > 0 && (
+          <p className="text-muted-foreground border-t px-5 py-3 text-xs">{t.overheadNote}</p>
         )}
       </div>
 

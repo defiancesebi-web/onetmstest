@@ -8,6 +8,7 @@ import type {
   FixedCostCategory,
   FixedCostPeriod,
   ExpenseCategory,
+  Currency,
 } from "@/lib/generated/prisma/enums";
 import {
   createFixedCost,
@@ -33,6 +34,8 @@ function readFixedCost(formData: FormData) {
     category: (formData.get("category") as FixedCostCategory) || "OTHER",
     period: (formData.get("period") as FixedCostPeriod) || "MONTHLY",
     amount: (formData.get("amount") as string) || "",
+    currency: (formData.get("currency") as Currency) || "RON",
+    exchangeRate: (formData.get("exchangeRate") as string) || null,
     vehicleId: (formData.get("vehicleId") as string) || null,
     notes: (formData.get("notes") as string) || null,
   };
@@ -115,6 +118,8 @@ export async function createExpenseAction(
       date: (formData.get("date") as string) || "",
       category: (formData.get("category") as ExpenseCategory) || "OTHER",
       amount: (formData.get("amount") as string) || "",
+      currency: (formData.get("currency") as Currency) || "RON",
+      exchangeRate: (formData.get("exchangeRate") as string) || null,
       liters: (formData.get("liters") as string) || null,
       vehicleId: (formData.get("vehicleId") as string) || null,
       driverId: (formData.get("driverId") as string) || null,

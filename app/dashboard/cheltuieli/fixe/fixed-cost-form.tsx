@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { createFixedCostAction, type ExpenseFormState } from "../actions";
 import type { Dictionary } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ export function FixedCostForm({
     createFixedCostAction,
     { error: null }
   );
+  const [currency, setCurrency] = useState("RON");
 
   return (
     <form action={formAction} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -35,6 +36,26 @@ export function FixedCostForm({
         <Label htmlFor="amount">{t.fAmount}</Label>
         <Input id="amount" name="amount" type="number" step="0.01" min="0" required />
       </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="currency">{t.currency}</Label>
+        <select
+          id="currency"
+          name="currency"
+          value={currency}
+          onChange={(e) => setCurrency(e.target.value)}
+          className="w-full rounded-lg border px-2 py-2 text-sm"
+        >
+          <option value="RON">RON</option>
+          <option value="EUR">EUR</option>
+        </select>
+      </div>
+      {currency === "EUR" && (
+        <div className="space-y-1.5">
+          <Label htmlFor="exchangeRate">{t.rate}</Label>
+          <Input id="exchangeRate" name="exchangeRate" type="number" step="0.0001" min="0" required />
+          <p className="text-muted-foreground text-xs">{t.rateHint}</p>
+        </div>
+      )}
       <div className="space-y-1.5">
         <Label htmlFor="category">{t.fCategory}</Label>
         <select id="category" name="category" className="w-full rounded-lg border px-2 py-2 text-sm">

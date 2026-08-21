@@ -3,6 +3,7 @@ import type {
   FixedCostCategory,
   FixedCostPeriod,
   ExpenseCategory,
+  Currency,
 } from "@/lib/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 import { assertCompanyAccess, type SessionUser } from "@/lib/tenancy";
@@ -41,6 +42,31 @@ function optionalDecimal(value: string | null, field: string): Prisma.Decimal | 
   }
 }
 
+/**
+ * A non-RON amount needs a positive exchange rate; RON never carries one. The
+ * cost analysis always sums the RON equivalent (`amount × rate`).
+ */
+function resolveCurrency(
+  currency: Currency,
+  rawRate: string | null
+): { currency: Currency; exchangeRate: Prisma.Decimal | null } {
+  if (currency === "RON") return { currency, exchangeRate: null };
+  const exchangeRate = optionalDecimal(rawRate, "curs valutar");
+  if (!exchangeRate || exchangeRate.lessThanOrEqualTo(0)) {
+    throw new ExpenseValidationError("Completează cursul valutar (RON) pentru o sumă în valută.");
+  }
+  return { currency, exchangeRate };
+}
+
+/** RON equivalent of a stored amount, used everywhere sums happen. */
+export function amountToRon(
+  amount: Prisma.Decimal,
+  currency: Currency,
+  exchangeRate: Prisma.Decimal | null
+): number {
+  return currency === "RON" ? Number(amount) : Number(amount) * Number(exchangeRate ?? 0);
+}
+
 /* ------------------------------- Fixed costs ------------------------------ */
 
 export type FixedCostInput = {
@@ -48,6 +74,8 @@ export type FixedCostInput = {
   category: FixedCostCategory;
   period: FixedCostPeriod;
   amount: string;
+  currency: Currency;
+  exchangeRate: string | null;
   vehicleId: string | null;
   notes: string | null;
 };
@@ -69,6 +97,7 @@ export async function createFixedCost(
   assertCompanyAccess(session, companyId);
   if (!input.label.trim()) throw new ExpenseValidationError("Completează denumirea.");
   const amount = positiveAmount(input.amount, "sumă");
+  const { currency, exchangeRate } = resolveCurrency(input.currency, input.exchangeRate);
   return prisma.fixedCost.create({
     data: {
       companyId,
@@ -76,6 +105,8 @@ export async function createFixedCost(
       category: input.category,
       period: input.period,
       amount,
+      currency,
+      exchangeRate,
       vehicleId: input.vehicleId || null,
       notes: input.notes?.trim() || null,
     },
@@ -87,6 +118,7 @@ export async function updateFixedCost(session: SessionUser, id: string, input: F
   if (!existing || existing.companyId !== session.companyId) throw new ExpenseNotFoundError();
   if (!input.label.trim()) throw new ExpenseValidationError("Completează denumirea.");
   const amount = positiveAmount(input.amount, "sumă");
+  const { currency, exchangeRate } = resolveCurrency(input.currency, input.exchangeRate);
   return prisma.fixedCost.update({
     where: { id },
     data: {
@@ -94,6 +126,8 @@ export async function updateFixedCost(session: SessionUser, id: string, input: F
       category: input.category,
       period: input.period,
       amount,
+      currency,
+      exchangeRate,
       vehicleId: input.vehicleId || null,
       notes: input.notes?.trim() || null,
     },
@@ -118,6 +152,8 @@ export type ExpenseInput = {
   date: string;
   category: ExpenseCategory;
   amount: string;
+  currency: Currency;
+  exchangeRate: string | null;
   liters: string | null;
   vehicleId: string | null;
   driverId: string | null;
@@ -147,12 +183,15 @@ export async function createExpense(session: SessionUser, companyId: string, inp
   if (!input.date) throw new ExpenseValidationError("Alege o dată.");
   const amount = positiveAmount(input.amount, "sumă");
   const liters = optionalDecimal(input.liters, "litri");
+  const { currency, exchangeRate } = resolveCurrency(input.currency, input.exchangeRate);
   return prisma.expense.create({
     data: {
       companyId,
       date: new Date(`${input.date}T00:00:00Z`),
       category: input.category,
       amount,
+      currency,
+      exchangeRate,
       liters,
       vehicleId: input.vehicleId || null,
       driverId: input.driverId || null,
@@ -181,6 +220,13 @@ export type TractorCost = {
   variable: number;
   total: number;
   costPerKm: number | null;
+  liters: number;
+  /** Fuel consumption in litres / 100 km, when both fuel and km exist. */
+  consumptionPer100Km: number | null;
+  /** This truck's share of general overhead, allocated by km. */
+  allocatedOverhead: number;
+  /** Cost/km including the allocated overhead share. */
+  fullyLoadedCostPerKm: number | null;
 };
 
 export type TrailerCost = {
@@ -200,6 +246,11 @@ export type CostAnalysis = {
   totalCost: number;
   totalKm: number;
   costPerKm: number | null;
+  totalLiters: number;
+  consumptionPer100Km: number | null;
+  /** General (unattributed) costs spread over all km. */
+  generalTotal: number;
+  overheadPerKm: number;
   fixedByCategory: { category: FixedCostCategory; amount: number }[];
   variableByCategory: { category: ExpenseCategory; amount: number }[];
   tractors: TractorCost[];
@@ -239,11 +290,11 @@ export async function getCostAnalysis(
   const [fixedCosts, expenses, trips, vehicles] = await Promise.all([
     prisma.fixedCost.findMany({
       where: { companyId, isActive: true },
-      select: { amount: true, period: true, vehicleId: true, category: true },
+      select: { amount: true, currency: true, exchangeRate: true, period: true, vehicleId: true, category: true },
     }),
     prisma.expense.findMany({
       where: { companyId, date: { gte: start } },
-      select: { amount: true, vehicleId: true, category: true },
+      select: { amount: true, currency: true, exchangeRate: true, liters: true, vehicleId: true, category: true },
     }),
     prisma.trip.findMany({
       where: { companyId, startsAt: { gte: start }, distanceKm: { not: null } },
@@ -256,30 +307,34 @@ export async function getCostAnalysis(
     }),
   ]);
 
-  // A fixed cost's monthly equivalent: a yearly amount is spread over 12 months.
-  const monthlyOf = (amount: Prisma.Decimal, period: FixedCostPeriod) =>
-    period === "YEARLY" ? Number(amount) / 12 : Number(amount);
+  // A fixed cost's monthly RON equivalent: convert to RON, then a yearly amount
+  // is spread over 12 months.
+  const monthlyRon = (f: (typeof fixedCosts)[number]) =>
+    amountToRon(f.amount, f.currency, f.exchangeRate) / (f.period === "YEARLY" ? 12 : 1);
+  const expenseRon = (e: (typeof expenses)[number]) =>
+    amountToRon(e.amount, e.currency, e.exchangeRate);
 
-  const fixedMonthly = fixedCosts.reduce((s, f) => s + monthlyOf(f.amount, f.period), 0);
+  const fixedMonthly = fixedCosts.reduce((s, f) => s + monthlyRon(f), 0);
   const fixedTotal = fixedMonthly * months;
-  const variableTotal = expenses.reduce((s, e) => s + Number(e.amount), 0);
+  const variableTotal = expenses.reduce((s, e) => s + expenseRon(e), 0);
   const totalCost = fixedTotal + variableTotal;
   const totalKm = trips.reduce((s, t) => s + Number(t.distanceKm ?? 0), 0);
+  const totalLiters = expenses.reduce(
+    (s, e) => s + (e.category === "FUEL" ? Number(e.liters ?? 0) : 0),
+    0
+  );
 
   // Breakdowns by category (fixed as a period total, variable as spent).
   const fixedCatMap = new Map<FixedCostCategory, number>();
   for (const f of fixedCosts) {
-    fixedCatMap.set(
-      f.category,
-      (fixedCatMap.get(f.category) ?? 0) + monthlyOf(f.amount, f.period) * months
-    );
+    fixedCatMap.set(f.category, (fixedCatMap.get(f.category) ?? 0) + monthlyRon(f) * months);
   }
   const varCatMap = new Map<ExpenseCategory, number>();
   for (const e of expenses) {
-    varCatMap.set(e.category, (varCatMap.get(e.category) ?? 0) + Number(e.amount));
+    varCatMap.set(e.category, (varCatMap.get(e.category) ?? 0) + expenseRon(e));
   }
 
-  // Per-vehicle direct attribution.
+  // Per-vehicle direct attribution (RON).
   const kmByTractor = new Map<string, number>();
   for (const t of trips) {
     if (t.tractorUnitId) {
@@ -287,20 +342,32 @@ export async function getCostAnalysis(
     }
   }
   const fixedMonthlyByVehicle = new Map<string, number>();
+  let generalFixedMonthly = 0;
   for (const f of fixedCosts) {
     if (f.vehicleId) {
-      fixedMonthlyByVehicle.set(
-        f.vehicleId,
-        (fixedMonthlyByVehicle.get(f.vehicleId) ?? 0) + monthlyOf(f.amount, f.period)
-      );
+      fixedMonthlyByVehicle.set(f.vehicleId, (fixedMonthlyByVehicle.get(f.vehicleId) ?? 0) + monthlyRon(f));
+    } else {
+      generalFixedMonthly += monthlyRon(f);
     }
   }
   const variableByVehicle = new Map<string, number>();
+  const litersByVehicle = new Map<string, number>();
+  let generalVariable = 0;
   for (const e of expenses) {
     if (e.vehicleId) {
-      variableByVehicle.set(e.vehicleId, (variableByVehicle.get(e.vehicleId) ?? 0) + Number(e.amount));
+      variableByVehicle.set(e.vehicleId, (variableByVehicle.get(e.vehicleId) ?? 0) + expenseRon(e));
+      if (e.category === "FUEL") {
+        litersByVehicle.set(e.vehicleId, (litersByVehicle.get(e.vehicleId) ?? 0) + Number(e.liters ?? 0));
+      }
+    } else {
+      generalVariable += expenseRon(e);
     }
   }
+
+  // General (unattributed) costs spread across every km — a truck absorbs
+  // overhead in proportion to how much it drives.
+  const generalTotal = generalFixedMonthly * months + generalVariable;
+  const overheadPerKm = totalKm > 0 ? generalTotal / totalKm : 0;
 
   const tractors: TractorCost[] = vehicles
     .filter((v) => v.type !== "SEMI_TRAILER")
@@ -309,6 +376,8 @@ export async function getCostAnalysis(
       const fixed = round2((fixedMonthlyByVehicle.get(v.id) ?? 0) * months);
       const variable = round2(variableByVehicle.get(v.id) ?? 0);
       const total = round2(fixed + variable);
+      const liters = round2(litersByVehicle.get(v.id) ?? 0);
+      const allocatedOverhead = round2(overheadPerKm * km);
       return {
         id: v.id,
         registrationNumber: v.registrationNumber,
@@ -317,6 +386,10 @@ export async function getCostAnalysis(
         variable,
         total,
         costPerKm: km > 0 ? round2(total / km) : null,
+        liters,
+        consumptionPer100Km: km > 0 && liters > 0 ? round2((liters / km) * 100) : null,
+        allocatedOverhead,
+        fullyLoadedCostPerKm: km > 0 ? round2((total + allocatedOverhead) / km) : null,
       };
     })
     .filter((t) => t.total > 0 || t.km > 0);
@@ -345,6 +418,10 @@ export async function getCostAnalysis(
     totalCost: round2(totalCost),
     totalKm: round2(totalKm),
     costPerKm: totalKm > 0 ? round2(totalCost / totalKm) : null,
+    totalLiters: round2(totalLiters),
+    consumptionPer100Km: totalKm > 0 && totalLiters > 0 ? round2((totalLiters / totalKm) * 100) : null,
+    generalTotal: round2(generalTotal),
+    overheadPerKm: round2(overheadPerKm),
     fixedByCategory: [...fixedCatMap.entries()]
       .map(([category, amount]) => ({ category, amount: round2(amount) }))
       .sort((a, b) => b.amount - a.amount),

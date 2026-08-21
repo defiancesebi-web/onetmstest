@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
-import { listFixedCosts } from "@/lib/data/expenses";
+import { listFixedCosts, amountToRon } from "@/lib/data/expenses";
 import { listVehicles } from "@/lib/data/vehicles";
 import {
   FIXED_COST_CATEGORY_I18N,
@@ -34,8 +34,8 @@ export default async function FixedCostsPage() {
       currency: "RON",
       maximumFractionDigits: 2,
     }).format(n);
-  const monthlyEquiv = (amount: string, period: FixedCostPeriod) =>
-    period === "YEARLY" ? Number(amount) / 12 : Number(amount);
+  const monthlyEquiv = (fc: (typeof fixedCosts)[number]) =>
+    amountToRon(fc.amount, fc.currency, fc.exchangeRate) / (fc.period === "YEARLY" ? 12 : 1);
 
   const categories = (Object.keys(FIXED_COST_CATEGORY_I18N.ro) as FixedCostCategory[]).map((v) => ({
     value: v,
@@ -89,8 +89,13 @@ export default async function FixedCostsPage() {
                     {fixedCostPeriodLabel(fc.period, locale)}
                   </td>
                   <td className="px-4 py-2 text-right tabular-nums">
-                    {money(monthlyEquiv(fc.amount.toString(), fc.period))}
+                    {money(monthlyEquiv(fc))}
                     {t.perMonth}
+                    {fc.currency !== "RON" && (
+                      <span className="text-muted-foreground block text-xs">
+                        {fc.amount.toString()} {fc.currency}
+                      </span>
+                    )}
                   </td>
                   <td className="text-muted-foreground px-4 py-2">
                     {fc.vehicle?.registrationNumber ?? t.generalOption}

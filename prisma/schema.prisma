@@ -508,19 +508,22 @@ enum ExpenseCategory {
 /// cost/km analysis always uses the MONTHLY equivalent (a YEARLY amount ÷ 12),
 /// so an annual RCA/ITP/tax is spread across the year automatically. Optionally
 /// attributed to one vehicle (tractor or trailer); null = general overhead.
-/// Amounts are RON.
+/// `amount` is in `currency`; a non-RON amount carries the `exchangeRate` (RON
+/// per unit) frozen at entry, and the cost analysis always computes in RON.
 model FixedCost {
-  id         String            @id @default(cuid())
-  companyId  String
-  label      String
-  category   FixedCostCategory @default(OTHER)
-  period     FixedCostPeriod   @default(MONTHLY)
-  amount     Decimal           @db.Decimal(12, 2)
-  vehicleId  String?
-  isActive   Boolean           @default(true)
-  notes      String?
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
+  id           String            @id @default(cuid())
+  companyId    String
+  label        String
+  category     FixedCostCategory @default(OTHER)
+  period       FixedCostPeriod   @default(MONTHLY)
+  amount       Decimal           @db.Decimal(12, 2)
+  currency     Currency          @default(RON)
+  exchangeRate Decimal?          @db.Decimal(10, 4)
+  vehicleId    String?
+  isActive     Boolean           @default(true)
+  notes        String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   company Company  @relation(fields: [companyId], references: [id])
   vehicle Vehicle? @relation(fields: [vehicleId], references: [id])
@@ -531,21 +534,24 @@ model FixedCost {
 
 /// A one-off variable cost (cheltuială variabilă) with a date. Optionally tied
 /// to a vehicle (tractor or trailer), a driver, and/or a trip. `liters` is only
-/// meaningful for FUEL, kept for a future consumption (l/100km) report. Amounts
-/// are RON.
+/// meaningful for FUEL, feeding the l/100km consumption report. `amount` is in
+/// `currency`; a non-RON amount carries the `exchangeRate` (RON per unit) frozen
+/// at entry, and the cost analysis always computes in RON.
 model Expense {
-  id         String          @id @default(cuid())
-  companyId  String
-  date       DateTime        @db.Date
-  category   ExpenseCategory @default(OTHER)
-  amount     Decimal         @db.Decimal(12, 2)
-  liters     Decimal?        @db.Decimal(10, 2)
-  vehicleId  String?
-  driverId   String?
-  tripId     String?
-  notes      String?
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
+  id           String          @id @default(cuid())
+  companyId    String
+  date         DateTime        @db.Date
+  category     ExpenseCategory @default(OTHER)
+  amount       Decimal         @db.Decimal(12, 2)
+  currency     Currency        @default(RON)
+  exchangeRate Decimal?        @db.Decimal(10, 4)
+  liters       Decimal?        @db.Decimal(10, 2)
+  vehicleId    String?
+  driverId     String?
+  tripId       String?
+  notes        String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
   company Company  @relation(fields: [companyId], references: [id])
   vehicle Vehicle? @relation(fields: [vehicleId], references: [id])

@@ -95,7 +95,11 @@ export default async function VariableExpensesPage() {
                     {e.vehicle?.registrationNumber ??
                       (e.driver ? `${e.driver.lastName} ${e.driver.firstName}` : "—")}
                   </td>
-                  <td className="px-4 py-2 text-right tabular-nums">{money(Number(e.amount))}</td>
+                  <td className="px-4 py-2 text-right tabular-nums">
+                    {e.currency === "RON"
+                      ? money(Number(e.amount))
+                      : `${e.amount.toString()} ${e.currency}`}
+                  </td>
                   <td className="px-4 py-2 text-right">
                     <ExpenseDeleteButton
                       id={e.id}

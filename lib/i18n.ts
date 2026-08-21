@@ -594,6 +594,13 @@ export type Dictionary = {
     fCategory: string;
     fPeriod: string;
     fAmount: string;
+    currency: string;
+    rate: string;
+    rateHint: string;
+    consumption: string;
+    colConsumption: string;
+    colCostPerKmFull: string;
+    overheadNote: string;
     fVehicle: string;
     generalOption: string;
     fNotes: string;
@@ -1252,7 +1259,15 @@ const dictionaries: Record<Locale, Dictionary> = {
       fLabel: "Denumire",
       fCategory: "Categorie",
       fPeriod: "Frecvență",
-      fAmount: "Sumă (RON)",
+      fAmount: "Sumă",
+      currency: "Monedă",
+      rate: "Curs (RON)",
+      rateHint: "Cursul RON pentru 1 unitate de valută. Se folosește pentru cost/km.",
+      consumption: "Consum",
+      colConsumption: "l/100km",
+      colCostPerKmFull: "Cost/km cu regie",
+      overheadNote:
+        "„Cost/km cu regie” adaugă și partea din cheltuielile generale, alocată pe km rulați.",
       fVehicle: "Vehicul",
       generalOption: "General (toată firma)",
       fNotes: "Observații",
@@ -1276,7 +1291,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       varNewHeading: "Adaugă o cheltuială",
       eDate: "Data",
       eCategory: "Categorie",
-      eAmount: "Sumă (RON)",
+      eAmount: "Sumă",
       eLiters: "Litri (opțional)",
       eVehicle: "Vehicul",
       eDriver: "Șofer",
@@ -1908,7 +1923,15 @@ const dictionaries: Record<Locale, Dictionary> = {
       fLabel: "Label",
       fCategory: "Category",
       fPeriod: "Frequency",
-      fAmount: "Amount (RON)",
+      fAmount: "Amount",
+      currency: "Currency",
+      rate: "Rate (RON)",
+      rateHint: "RON for 1 unit of the currency. Used for cost/km.",
+      consumption: "Consumption",
+      colConsumption: "l/100km",
+      colCostPerKmFull: "Cost/km w/ overhead",
+      overheadNote:
+        "“Cost/km w/ overhead” adds each truck's share of general costs, allocated by km driven.",
       fVehicle: "Vehicle",
       generalOption: "General (whole company)",
       fNotes: "Notes",
@@ -1932,7 +1955,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       varNewHeading: "Add an expense",
       eDate: "Date",
       eCategory: "Category",
-      eAmount: "Amount (RON)",
+      eAmount: "Amount",
       eLiters: "Liters (optional)",
       eVehicle: "Vehicle",
       eDriver: "Driver",
