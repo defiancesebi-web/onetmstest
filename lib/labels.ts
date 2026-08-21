@@ -8,6 +8,9 @@ import type {
   DocumentType,
   InvoiceStatus,
   EfacturaStatus,
+  FixedCostCategory,
+  FixedCostPeriod,
+  ExpenseCategory,
 } from "@/lib/generated/prisma/enums";
 
 /**
@@ -129,6 +132,70 @@ export const EFACTURA_STATUS_I18N: Record<Locale, Record<EfacturaStatus, string>
     REJECTED: "Rejected",
   },
 };
+
+export const FIXED_COST_CATEGORY_I18N: Record<Locale, Record<FixedCostCategory, string>> = {
+  ro: {
+    LEASING: "Leasing / rată",
+    INSURANCE: "Asigurare",
+    TAX: "Impozit / taxă",
+    ROVINIETA: "Rovinietă",
+    ITP: "ITP",
+    RENT: "Chirie",
+    SALARY: "Salariu",
+    ADMIN: "Administrativ",
+    OTHER: "Altele",
+  },
+  en: {
+    LEASING: "Leasing / loan",
+    INSURANCE: "Insurance",
+    TAX: "Tax / duty",
+    ROVINIETA: "Road tax",
+    ITP: "Roadworthiness",
+    RENT: "Rent",
+    SALARY: "Salary",
+    ADMIN: "Administrative",
+    OTHER: "Other",
+  },
+};
+
+export const FIXED_COST_PERIOD_I18N: Record<Locale, Record<FixedCostPeriod, string>> = {
+  ro: { MONTHLY: "Lunară", YEARLY: "Anuală" },
+  en: { MONTHLY: "Monthly", YEARLY: "Yearly" },
+};
+
+export const EXPENSE_CATEGORY_I18N: Record<Locale, Record<ExpenseCategory, string>> = {
+  ro: {
+    FUEL: "Combustibil",
+    ADBLUE: "AdBlue",
+    TOLL: "Taxe drum",
+    MAINTENANCE: "Reparații / mentenanță",
+    TIRES: "Anvelope",
+    PERDIEM: "Diurnă",
+    PARKING: "Parcare",
+    WASH: "Spălare",
+    FINE: "Amendă",
+    OTHER: "Altele",
+  },
+  en: {
+    FUEL: "Fuel",
+    ADBLUE: "AdBlue",
+    TOLL: "Road tolls",
+    MAINTENANCE: "Repairs / maintenance",
+    TIRES: "Tires",
+    PERDIEM: "Per diem",
+    PARKING: "Parking",
+    WASH: "Wash",
+    FINE: "Fine",
+    OTHER: "Other",
+  },
+};
+
+export const fixedCostCategoryLabel = (s: FixedCostCategory, locale: Locale) =>
+  FIXED_COST_CATEGORY_I18N[locale][s];
+export const fixedCostPeriodLabel = (s: FixedCostPeriod, locale: Locale) =>
+  FIXED_COST_PERIOD_I18N[locale][s];
+export const expenseCategoryLabel = (s: ExpenseCategory, locale: Locale) =>
+  EXPENSE_CATEGORY_I18N[locale][s];
 
 export const invoiceStatusLabel = (s: InvoiceStatus, locale: Locale) =>
   INVOICE_STATUS_I18N[locale][s];

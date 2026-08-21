@@ -70,6 +70,8 @@ model Company {
   documents   Document[]
   trips       Trip[]
   invoices    Invoice[]
+  fixedCosts  FixedCost[]
+  expenses    Expense[]
 }
 
 model User {
@@ -242,6 +244,8 @@ model Vehicle {
   documents Document[]
   tripsAsTractorUnit Trip[] @relation("TripTractorUnit")
   tripsAsTrailer     Trip[] @relation("TripTrailer")
+  fixedCosts FixedCost[]
+  expenses   Expense[]
 
   @@unique([companyId, registrationNumber])
   @@index([companyId, isActive])
@@ -265,6 +269,7 @@ model Driver {
   documents Document[]
   tripsAsPrimaryDriver Trip[] @relation("TripPrimaryDriver")
   tripsAsSecondDriver  Trip[] @relation("TripSecondDriver")
+  expenses Expense[]
 
   @@index([companyId, lastName])
 }
@@ -328,6 +333,9 @@ model Trip {
   /// which is exactly the date overlap detection reads.
   datesEditedManually Boolean    @default(false)
   status              TripStatus @default(PLANNED)
+  /// Kilometres driven on this trip, entered by the dispatcher. Feeds the
+  /// cost-per-km analysis, attributed to the trip's tractor unit.
+  distanceKm          Decimal?   @db.Decimal(10, 1)
   notes               String?
   createdAt           DateTime   @default(now())
   updatedAt           DateTime   @updatedAt
@@ -338,6 +346,7 @@ model Trip {
   primaryDriver Driver? @relation("TripPrimaryDriver", fields: [primaryDriverId], references: [id])
   secondDriver  Driver? @relation("TripSecondDriver", fields: [secondDriverId], references: [id])
   orders      Order[]
+  expenses    Expense[]
 
   @@unique([companyId, year, sequence])
   @@unique([companyId, tripNumber])
@@ -454,4 +463,86 @@ model InvoiceLine {
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@unique([invoiceId, sequence])
+}
+
+enum FixedCostPeriod {
+  MONTHLY
+  YEARLY
+}
+
+enum FixedCostCategory {
+  LEASING
+  INSURANCE
+  TAX
+  ROVINIETA
+  ITP
+  RENT
+  SALARY
+  ADMIN
+  OTHER
+}
+
+enum ExpenseCategory {
+  FUEL
+  ADBLUE
+  TOLL
+  MAINTENANCE
+  TIRES
+  PERDIEM
+  PARKING
+  WASH
+  FINE
+  OTHER
+}
+
+/// A recurring fixed cost (cheltuială fixă). `period` is MONTHLY or YEARLY; the
+/// cost/km analysis always uses the MONTHLY equivalent (a YEARLY amount ÷ 12),
+/// so an annual RCA/ITP/tax is spread across the year automatically. Optionally
+/// attributed to one vehicle (tractor or trailer); null = general overhead.
+/// Amounts are RON.
+model FixedCost {
+  id         String            @id @default(cuid())
+  companyId  String
+  label      String
+  category   FixedCostCategory @default(OTHER)
+  period     FixedCostPeriod   @default(MONTHLY)
+  amount     Decimal           @db.Decimal(12, 2)
+  vehicleId  String?
+  isActive   Boolean           @default(true)
+  notes      String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  company Company  @relation(fields: [companyId], references: [id])
+  vehicle Vehicle? @relation(fields: [vehicleId], references: [id])
+
+  @@index([companyId, isActive])
+  @@index([companyId, vehicleId])
+}
+
+/// A one-off variable cost (cheltuială variabilă) with a date. Optionally tied
+/// to a vehicle (tractor or trailer), a driver, and/or a trip. `liters` is only
+/// meaningful for FUEL, kept for a future consumption (l/100km) report. Amounts
+/// are RON.
+model Expense {
+  id         String          @id @default(cuid())
+  companyId  String
+  date       DateTime        @db.Date
+  category   ExpenseCategory @default(OTHER)
+  amount     Decimal         @db.Decimal(12, 2)
+  liters     Decimal?        @db.Decimal(10, 2)
+  vehicleId  String?
+  driverId   String?
+  tripId     String?
+  notes      String?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  company Company  @relation(fields: [companyId], references: [id])
+  vehicle Vehicle? @relation(fields: [vehicleId], references: [id])
+  driver  Driver?  @relation(fields: [driverId], references: [id])
+  trip    Trip?    @relation(fields: [tripId], references: [id])
+
+  @@index([companyId, date])
+  @@index([companyId, vehicleId])
 }
