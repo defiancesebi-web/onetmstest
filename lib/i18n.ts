@@ -26,6 +26,7 @@ export type Dictionary = {
     invoices: string;
     documents: string;
     reports: string;
+    expenses: string;
     analytics: string;
     team: string;
     settings: string;
@@ -253,6 +254,7 @@ export type Dictionary = {
     none: string;
     noneFem: string;
     notes: string;
+    distanceKm: string;
     conflictsTitle: string;
     conflictTrip: string;
     conflictAgain: string;
@@ -550,6 +552,81 @@ export type Dictionary = {
     daysWord: string;
     noOverdue: string;
   };
+  expenses: {
+    title: string;
+    subtitle: string;
+    rangeMonth: string;
+    rangeYear: string;
+    rangeRolling12: string;
+    kpiCostPerKm: string;
+    kpiTotal: string;
+    kpiFixed: string;
+    kpiVariable: string;
+    kpiKm: string;
+    perKm: string;
+    kmUnit: string;
+    basisNote: string;
+    manageFixed: string;
+    addExpense: string;
+    perTractorHeading: string;
+    colTruck: string;
+    colKm: string;
+    colFixed: string;
+    colVariable: string;
+    colTotal: string;
+    colCostPerKm: string;
+    noTractors: string;
+    trailersHeading: string;
+    colTrailer: string;
+    noTrailers: string;
+    breakdownHeading: string;
+    fixedLabel: string;
+    variableLabel: string;
+    noData: string;
+    // Fixed costs screen
+    fixedTitle: string;
+    back: string;
+    fixedNewHeading: string;
+    fLabel: string;
+    fCategory: string;
+    fPeriod: string;
+    fAmount: string;
+    fVehicle: string;
+    generalOption: string;
+    fNotes: string;
+    fAdd: string;
+    saving: string;
+    colLabel: string;
+    colCategory: string;
+    colPeriod: string;
+    colAmountMonthly: string;
+    colVehicle: string;
+    colActive: string;
+    activate: string;
+    deactivate: string;
+    delete: string;
+    confirmDelete: string;
+    noFixed: string;
+    perMonth: string;
+    active: string;
+    inactive: string;
+    // Variable expenses screen
+    varTitle: string;
+    varNewHeading: string;
+    eDate: string;
+    eCategory: string;
+    eAmount: string;
+    eLiters: string;
+    eVehicle: string;
+    eDriver: string;
+    eNotes: string;
+    eNone: string;
+    eAdd: string;
+    colDate: string;
+    noExpenses: string;
+    recentHeading: string;
+    viewAllExpenses: string;
+  };
 };
 
 const dictionaries: Record<Locale, Dictionary> = {
@@ -567,6 +644,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       invoices: "Facturi",
       documents: "Documente",
       reports: "Rapoarte",
+      expenses: "Cheltuieli",
       analytics: "Analiză",
       team: "Echipă",
       settings: "Setări",
@@ -798,6 +876,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       none: "— niciunul —",
       noneFem: "— niciuna —",
       notes: "Observații",
+      distanceKm: "Kilometri (total cursă)",
       conflictsTitle: "Resurse deja ocupate în acest interval:",
       conflictTrip: "cursa",
       conflictAgain: "Apasă din nou pe buton dacă vrei să continui oricum.",
@@ -1098,6 +1177,80 @@ const dictionaries: Record<Locale, Dictionary> = {
       daysWord: "zile",
       noOverdue: "Nicio factură restantă.",
     },
+    expenses: {
+      title: "Cheltuieli",
+      subtitle: "Costuri, cost pe km și cost pe fiecare cap tractor.",
+      rangeMonth: "Luna curentă",
+      rangeYear: "Anul curent",
+      rangeRolling12: "Ultimele 12 luni",
+      kpiCostPerKm: "Cost pe km",
+      kpiTotal: "Total cheltuieli",
+      kpiFixed: "Fixe",
+      kpiVariable: "Variabile",
+      kpiKm: "Total km",
+      perKm: "/km",
+      kmUnit: "km",
+      basisNote:
+        "Costurile fixe anuale sunt împărțite automat la lună. „Cost pe km general” include toate cheltuielile; pe fiecare cap tractor apar doar costurile alocate direct lui.",
+      manageFixed: "Cheltuieli fixe",
+      addExpense: "Adaugă cheltuială",
+      perTractorHeading: "Cost pe km — pe cap tractor",
+      colTruck: "Cap tractor",
+      colKm: "Km",
+      colFixed: "Fixe",
+      colVariable: "Variabile",
+      colTotal: "Total",
+      colCostPerKm: "Cost/km",
+      noTractors: "Niciun cap tractor cu costuri sau km în perioadă.",
+      trailersHeading: "Costuri remorci",
+      colTrailer: "Remorcă",
+      noTrailers: "Nicio remorcă cu costuri în perioadă.",
+      breakdownHeading: "Defalcare pe categorii",
+      fixedLabel: "Fixe",
+      variableLabel: "Variabile",
+      noData: "Nu există date încă.",
+      fixedTitle: "Cheltuieli fixe",
+      back: "← Înapoi la cheltuieli",
+      fixedNewHeading: "Adaugă o cheltuială fixă",
+      fLabel: "Denumire",
+      fCategory: "Categorie",
+      fPeriod: "Frecvență",
+      fAmount: "Sumă (RON)",
+      fVehicle: "Vehicul",
+      generalOption: "General (toată firma)",
+      fNotes: "Observații",
+      fAdd: "Adaugă",
+      saving: "Se salvează...",
+      colLabel: "Denumire",
+      colCategory: "Categorie",
+      colPeriod: "Frecvență",
+      colAmountMonthly: "Echiv. lunar",
+      colVehicle: "Vehicul",
+      colActive: "Stare",
+      activate: "Activează",
+      deactivate: "Dezactivează",
+      delete: "Șterge",
+      confirmDelete: "Ștergi această înregistrare?",
+      noFixed: "Nicio cheltuială fixă. Adaugă leasing, asigurări, salarii etc.",
+      perMonth: "/lună",
+      active: "Activă",
+      inactive: "Inactivă",
+      varTitle: "Cheltuieli variabile",
+      varNewHeading: "Adaugă o cheltuială",
+      eDate: "Data",
+      eCategory: "Categorie",
+      eAmount: "Sumă (RON)",
+      eLiters: "Litri (opțional)",
+      eVehicle: "Vehicul",
+      eDriver: "Șofer",
+      eNotes: "Observații",
+      eNone: "— niciunul —",
+      eAdd: "Adaugă",
+      colDate: "Data",
+      noExpenses: "Nicio cheltuială înregistrată.",
+      recentHeading: "Cheltuieli recente",
+      viewAllExpenses: "Vezi toate",
+    },
   },
   en: {
     nav: {
@@ -1113,6 +1266,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       invoices: "Invoices",
       documents: "Documents",
       reports: "Reports",
+      expenses: "Expenses",
       analytics: "Analytics",
       team: "Team",
       settings: "Settings",
@@ -1344,6 +1498,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       none: "— none —",
       noneFem: "— none —",
       notes: "Notes",
+      distanceKm: "Kilometers (trip total)",
       conflictsTitle: "Resources already busy in this interval:",
       conflictTrip: "trip",
       conflictAgain: "Press the button again if you want to continue anyway.",
@@ -1643,6 +1798,80 @@ const dictionaries: Record<Locale, Dictionary> = {
       colAmount: "Amount",
       daysWord: "days",
       noOverdue: "No overdue invoices.",
+    },
+    expenses: {
+      title: "Expenses",
+      subtitle: "Costs, cost per km, and cost for each tractor unit.",
+      rangeMonth: "This month",
+      rangeYear: "This year",
+      rangeRolling12: "Last 12 months",
+      kpiCostPerKm: "Cost per km",
+      kpiTotal: "Total costs",
+      kpiFixed: "Fixed",
+      kpiVariable: "Variable",
+      kpiKm: "Total km",
+      perKm: "/km",
+      kmUnit: "km",
+      basisNote:
+        "Yearly fixed costs are spread to a monthly amount automatically. “Overall cost per km” includes every cost; each tractor shows only the costs attributed directly to it.",
+      manageFixed: "Fixed costs",
+      addExpense: "Add expense",
+      perTractorHeading: "Cost per km — by tractor unit",
+      colTruck: "Tractor unit",
+      colKm: "Km",
+      colFixed: "Fixed",
+      colVariable: "Variable",
+      colTotal: "Total",
+      colCostPerKm: "Cost/km",
+      noTractors: "No tractor unit with costs or km in this period.",
+      trailersHeading: "Trailer costs",
+      colTrailer: "Trailer",
+      noTrailers: "No trailer with costs in this period.",
+      breakdownHeading: "Breakdown by category",
+      fixedLabel: "Fixed",
+      variableLabel: "Variable",
+      noData: "No data yet.",
+      fixedTitle: "Fixed costs",
+      back: "← Back to expenses",
+      fixedNewHeading: "Add a fixed cost",
+      fLabel: "Label",
+      fCategory: "Category",
+      fPeriod: "Frequency",
+      fAmount: "Amount (RON)",
+      fVehicle: "Vehicle",
+      generalOption: "General (whole company)",
+      fNotes: "Notes",
+      fAdd: "Add",
+      saving: "Saving...",
+      colLabel: "Label",
+      colCategory: "Category",
+      colPeriod: "Frequency",
+      colAmountMonthly: "Monthly equiv.",
+      colVehicle: "Vehicle",
+      colActive: "Status",
+      activate: "Activate",
+      deactivate: "Deactivate",
+      delete: "Delete",
+      confirmDelete: "Delete this record?",
+      noFixed: "No fixed costs. Add leasing, insurance, salaries, etc.",
+      perMonth: "/mo",
+      active: "Active",
+      inactive: "Inactive",
+      varTitle: "Variable expenses",
+      varNewHeading: "Add an expense",
+      eDate: "Date",
+      eCategory: "Category",
+      eAmount: "Amount (RON)",
+      eLiters: "Liters (optional)",
+      eVehicle: "Vehicle",
+      eDriver: "Driver",
+      eNotes: "Notes",
+      eNone: "— none —",
+      eAdd: "Add",
+      colDate: "Date",
+      noExpenses: "No expenses recorded.",
+      recentHeading: "Recent expenses",
+      viewAllExpenses: "View all",
     },
   },
 };

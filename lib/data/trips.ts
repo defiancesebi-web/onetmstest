@@ -46,7 +46,13 @@ export type CreateTripInput = TripResourceInput & {
   startsAt: Date;
   endsAt: Date;
   notes?: string | null;
+  distanceKm?: string | null;
 };
+
+/** A blank km input clears the value; a filled one stores a Decimal. */
+function parseKm(value?: string | null): Prisma.Decimal | null {
+  return value != null && value.trim() !== "" ? new Prisma.Decimal(value) : null;
+}
 
 // Mirrors the budget in lib/data/orders.ts: the advisory lock below is the real
 // serialization, and the two unique constraints are the real guard. This retry
@@ -174,6 +180,7 @@ export async function createTrip(session: SessionUser, input: CreateTripInput) {
             startsAt: input.startsAt,
             endsAt: input.endsAt,
             notes: input.notes ?? null,
+            distanceKm: parseKm(input.distanceKm),
           },
         });
       });
@@ -370,7 +377,8 @@ export async function findResourceConflicts(
 export async function updateTripResources(
   session: SessionUser,
   tripId: string,
-  input: TripResourceInput
+  input: TripResourceInput,
+  distanceKm?: string | null
 ) {
   const trip = await assertOwnTrip(session, tripId);
   assertTripEditable(trip);
@@ -404,6 +412,7 @@ export async function updateTripResources(
       trailerId: input.trailerId ?? null,
       primaryDriverId: input.primaryDriverId ?? null,
       secondDriverId: input.secondDriverId ?? null,
+      ...(distanceKm !== undefined ? { distanceKm: parseKm(distanceKm) } : {}),
     },
   });
 }

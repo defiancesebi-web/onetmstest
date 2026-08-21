@@ -82,6 +82,7 @@ export async function createTripAction(
       endsAt,
       ...resources,
       notes: (formData.get("notes") as string) || null,
+      distanceKm: (formData.get("distanceKm") as string) || null,
     });
     tripId = trip.id;
   } catch (error) {
@@ -156,7 +157,12 @@ export async function updateTripResourcesAction(
   }
 
   try {
-    await updateTripResources(sessionUser, tripId, resources);
+    await updateTripResources(
+      sessionUser,
+      tripId,
+      resources,
+      (formData.get("distanceKm") as string) ?? null
+    );
     if (formData.get("datesChanged") === "true") {
       await updateTripDates(sessionUser, tripId, startsAt, endsAt);
     }

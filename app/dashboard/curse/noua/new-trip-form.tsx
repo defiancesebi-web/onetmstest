@@ -40,6 +40,7 @@ export function NewTripForm({
     trailerId: "",
     primaryDriverId: "",
     secondDriverId: "",
+    distanceKm: "",
     notes: "",
   });
 
@@ -70,8 +71,8 @@ export function NewTripForm({
 
   function update<K extends keyof typeof fields>(key: K, value: string) {
     setFields((prev) => ({ ...prev, [key]: value }));
-    // Notes do not feed findResourceConflicts, so they cannot stale an acceptance.
-    if (key !== "notes") setEditedAgainst(state);
+    // Notes and km do not feed findResourceConflicts, so they cannot stale an acceptance.
+    if (key !== "notes" && key !== "distanceKm") setEditedAgainst(state);
   }
 
   return (
@@ -178,6 +179,18 @@ export function NewTripForm({
         </select>
       </div>
 
+      <div className="space-y-1.5">
+        <Label htmlFor="distanceKm">{t.distanceKm}</Label>
+        <Input
+          id="distanceKm"
+          name="distanceKm"
+          type="number"
+          step="0.1"
+          min="0"
+          value={fields.distanceKm}
+          onChange={(e) => update("distanceKm", e.target.value)}
+        />
+      </div>
       <div className="space-y-1.5 sm:col-span-2">
         <Label htmlFor="notes">{t.notes}</Label>
         <Input

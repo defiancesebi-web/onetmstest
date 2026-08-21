@@ -24,6 +24,7 @@ const COMPANY_NAV: NavDef[] = [
   { key: "invoices", href: "/dashboard/facturare", built: true },
   { key: "documents", href: "/dashboard/documente", built: true },
   { key: "reports", href: "/dashboard/rapoarte", built: true },
+  { key: "expenses", href: "/dashboard/cheltuieli", built: true },
   { key: "analytics", href: "/dashboard/curand/analytics", built: false },
   { key: "team", href: "/dashboard/echipa", built: true, roles: ["COMPANY_ADMIN"] },
   { key: "settings", href: "/dashboard/curand/settings", built: false },

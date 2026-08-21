@@ -27,6 +27,7 @@ export function TripResourcesForm({
     trailerId: string;
     primaryDriverId: string;
     secondDriverId: string;
+    distanceKm: string;
   };
   t: Dictionary["tripForm"];
 }) {
@@ -64,8 +65,8 @@ export function TripResourcesForm({
   function update<K extends keyof typeof fields>(key: K, value: string) {
     setFields((prev) => ({ ...prev, [key]: value }));
     if (key === "startsAt" || key === "endsAt") setDatesChanged(true);
-    // Every field on this form feeds findResourceConflicts.
-    setEditedAgainst(state);
+    // Every field except km feeds findResourceConflicts; km cannot stale an acceptance.
+    if (key !== "distanceKm") setEditedAgainst(state);
   }
 
   return (
@@ -173,6 +174,19 @@ export function TripResourcesForm({
             </option>
           ))}
         </select>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="distanceKm">{t.distanceKm}</Label>
+        <Input
+          id="distanceKm"
+          name="distanceKm"
+          type="number"
+          step="0.1"
+          min="0"
+          value={fields.distanceKm}
+          onChange={(e) => update("distanceKm", e.target.value)}
+        />
       </div>
 
       {state.conflicts.length > 0 && (

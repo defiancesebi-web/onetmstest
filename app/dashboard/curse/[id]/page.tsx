@@ -150,6 +150,7 @@ export default async function TripDetailPage({
               trailerId: trip.trailerId ?? "",
               primaryDriverId: trip.primaryDriverId ?? "",
               secondDriverId: trip.secondDriverId ?? "",
+              distanceKm: trip.distanceKm?.toString() ?? "",
             }}
             t={dict.tripForm}
           />
