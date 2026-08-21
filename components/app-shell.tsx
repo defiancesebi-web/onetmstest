@@ -1,8 +1,13 @@
 import { auth } from "@/auth";
 import { getCompanyForSession } from "@/lib/data/companies";
+import { getNotifications } from "@/lib/data/notifications";
 import { type Dictionary } from "@/lib/i18n";
 import { getDictionary, getLocale } from "@/lib/i18n-server";
-import { DashboardChrome, type ChromeNavItem } from "@/components/dashboard-chrome";
+import {
+  DashboardChrome,
+  type ChromeNavItem,
+  type ChromeNotification,
+} from "@/components/dashboard-chrome";
 import type { UserRole } from "@/lib/generated/prisma/enums";
 
 type NavKey = keyof Dictionary["nav"];
@@ -47,10 +52,25 @@ export async function AppShell({
   const role = session!.user.role;
   const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
 
-  const company =
-    area === "company"
-      ? await getCompanyForSession({ role, companyId: session!.user.companyId })
-      : null;
+  const sessionUser = { role, companyId: session!.user.companyId };
+  const company = area === "company" ? await getCompanyForSession(sessionUser) : null;
+
+  // Live, action-oriented notifications for the bell (company area only).
+  const money = new Intl.NumberFormat(locale === "ro" ? "ro-RO" : "en-US", {
+    style: "currency",
+    currency: "RON",
+    maximumFractionDigits: 0,
+  });
+  const notifications: ChromeNotification[] =
+    area === "company" && session!.user.companyId
+      ? (await getNotifications(sessionUser, session!.user.companyId)).map((n) => ({
+          kind: n.kind,
+          severity: n.severity,
+          href: n.href,
+          title: dict.notifications[n.kind].replace("{n}", String(n.count)),
+          subtitle: n.amount != null ? money.format(n.amount) : undefined,
+        }))
+      : [];
 
   const items: ChromeNavItem[] =
     area === "admin"
@@ -75,6 +95,7 @@ export async function AppShell({
       brandSub={area === "admin" ? dict.topbar.platform : (company?.name ?? "")}
       user={{ name: session!.user.name ?? "", roleLabel: ROLE_LABELS[role][locale] }}
       locale={locale}
+      notifications={notifications}
       labels={{
         search: dict.topbar.search,
         collapse: dict.nav.collapse,
@@ -82,6 +103,8 @@ export async function AppShell({
         soon: dict.nav.soon,
         logout: dict.topbar.logout,
         changePassword: dict.topbar.changePassword,
+        notifications: dict.notifications.title,
+        notificationsEmpty: dict.notifications.empty,
       }}
     >
       {children}

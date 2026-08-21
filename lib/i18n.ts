@@ -668,6 +668,15 @@ export type Dictionary = {
     saving: string;
     saved: string;
   };
+  notifications: {
+    title: string;
+    empty: string;
+    docsExpired: string;
+    docsExpiring: string;
+    invoicesOverdue: string;
+    invoicesDueSoon: string;
+    ordersToInvoice: string;
+  };
 };
 
 const dictionaries: Record<Locale, Dictionary> = {
@@ -1334,6 +1343,15 @@ const dictionaries: Record<Locale, Dictionary> = {
       saving: "Se salvează...",
       saved: "Datele au fost salvate.",
     },
+    notifications: {
+      title: "Notificări",
+      empty: "Nicio notificare. Totul e în regulă.",
+      docsExpired: "{n} documente expirate",
+      docsExpiring: "{n} documente expiră curând",
+      invoicesOverdue: "{n} facturi restante",
+      invoicesDueSoon: "{n} facturi scadente în 7 zile",
+      ordersToInvoice: "{n} comenzi de facturat",
+    },
   },
   en: {
     nav: {
@@ -1997,6 +2015,15 @@ const dictionaries: Record<Locale, Dictionary> = {
       save: "Save",
       saving: "Saving...",
       saved: "Details saved.",
+    },
+    notifications: {
+      title: "Notifications",
+      empty: "No notifications. All clear.",
+      docsExpired: "{n} expired documents",
+      docsExpiring: "{n} documents expiring soon",
+      invoicesOverdue: "{n} overdue invoices",
+      invoicesDueSoon: "{n} invoices due in 7 days",
+      ordersToInvoice: "{n} loads to invoice",
     },
   },
 };

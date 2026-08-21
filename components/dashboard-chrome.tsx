@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -23,6 +23,7 @@ import {
   Menu,
   Search,
   Bell,
+  TriangleAlert,
   MessageSquare,
   ChevronsLeft,
   ChevronsRight,
@@ -38,6 +39,14 @@ export type ChromeNavItem = {
   href: string;
   label: string;
   built: boolean;
+};
+
+export type ChromeNotification = {
+  kind: string;
+  severity: "critical" | "warning" | "info";
+  title: string;
+  subtitle?: string;
+  href: string;
 };
 
 const ICONS: Record<string, LucideIcon> = {
@@ -78,6 +87,7 @@ export function DashboardChrome({
   brandSub,
   user,
   locale,
+  notifications = [],
   labels,
   children,
 }: {
@@ -85,6 +95,7 @@ export function DashboardChrome({
   brandSub: string;
   user: { name: string; roleLabel: string };
   locale: Locale;
+  notifications?: ChromeNotification[];
   labels: {
     search: string;
     collapse: string;
@@ -92,11 +103,19 @@ export function DashboardChrome({
     soon: string;
     logout: string;
     changePassword: string;
+    notifications: string;
+    notificationsEmpty: string;
   };
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+
+  // The bell reflects the current pathname's data; close the panel on navigate.
+  useEffect(() => {
+    setNotifOpen(false);
+  }, [pathname]);
 
   const active = items.find((it) => isActive(pathname, it.href));
   const sectionTitle = active?.label ?? "";
@@ -206,14 +225,78 @@ export function DashboardChrome({
 
           <div className="ml-auto flex items-center gap-1.5 sm:gap-2.5">
             <LanguageSwitcher locale={locale} />
-            <button
-              type="button"
-              className="text-muted-foreground hover:bg-muted hover:text-foreground relative grid size-9 place-items-center rounded-lg"
-              aria-label="Notificări"
-            >
-              <Bell className="size-5" />
-              <span className="bg-destructive absolute top-1.5 right-1.5 size-2 rounded-full ring-2 ring-card" />
-            </button>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setNotifOpen((o) => !o)}
+                className="text-muted-foreground hover:bg-muted hover:text-foreground relative grid size-9 place-items-center rounded-lg"
+                aria-label={labels.notifications}
+                aria-expanded={notifOpen}
+              >
+                <Bell className="size-5" />
+                {notifications.length > 0 && (
+                  <span className="bg-destructive absolute top-1 right-1 grid size-4 place-items-center rounded-full text-[10px] font-bold text-white ring-2 ring-card">
+                    {notifications.length}
+                  </span>
+                )}
+              </button>
+
+              {notifOpen && (
+                <>
+                  <button
+                    type="button"
+                    aria-hidden
+                    tabIndex={-1}
+                    className="fixed inset-0 z-20 cursor-default"
+                    onClick={() => setNotifOpen(false)}
+                  />
+                  <div className="bg-card absolute right-0 z-30 mt-2 w-80 overflow-hidden rounded-xl border shadow-lg">
+                    <div className="border-b px-4 py-2.5 text-sm font-semibold">
+                      {labels.notifications}
+                    </div>
+                    {notifications.length === 0 ? (
+                      <p className="text-muted-foreground p-4 text-sm">{labels.notificationsEmpty}</p>
+                    ) : (
+                      <ul className="max-h-96 overflow-y-auto py-1">
+                        {notifications.map((n, i) => (
+                          <li key={i}>
+                            <Link
+                              href={n.href}
+                              onClick={() => setNotifOpen(false)}
+                              className="hover:bg-muted flex items-start gap-3 px-4 py-2.5"
+                            >
+                              <span
+                                className={`mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg ${
+                                  n.severity === "critical"
+                                    ? "bg-rose-100 text-rose-600"
+                                    : n.severity === "warning"
+                                      ? "bg-amber-100 text-amber-600"
+                                      : "bg-blue-100 text-blue-600"
+                                }`}
+                              >
+                                {n.severity === "info" ? (
+                                  <FileText className="size-4" />
+                                ) : (
+                                  <TriangleAlert className="size-4" />
+                                )}
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className="block text-sm font-medium">{n.title}</span>
+                                {n.subtitle && (
+                                  <span className="text-muted-foreground block text-xs tabular-nums">
+                                    {n.subtitle}
+                                  </span>
+                                )}
+                              </span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
             <button
               type="button"
               className="text-muted-foreground hover:bg-muted hover:text-foreground grid size-9 place-items-center rounded-lg"
