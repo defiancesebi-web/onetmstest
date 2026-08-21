@@ -14,9 +14,11 @@ export class InvoiceValidationError extends Error {
 
 /** Thrown when issuing needs seller legal data (or a series) the company lacks. */
 export class InvoiceIssuerIncompleteError extends Error {
-  constructor() {
+  constructor(missing?: string[]) {
     super(
-      "Completează datele de facturare ale firmei (serie, sediu, CUI) înainte de a emite o factură."
+      missing && missing.length > 0
+        ? `Completează în Setări: ${missing.join(", ")} — înainte de a emite factura.`
+        : "Completează datele firmei în Setări (serie, sediu) înainte de a emite o factură."
     );
     this.name = "InvoiceIssuerIncompleteError";
   }
@@ -160,8 +162,14 @@ function assertIssuerComplete(company: {
   city: string;
   invoiceSeries: string;
 } {
-  if (!company.invoiceSeries || !company.address || !company.city || !company.name || !company.cui) {
-    throw new InvoiceIssuerIncompleteError();
+  const missing: string[] = [];
+  if (!company.invoiceSeries?.trim()) missing.push("serie facturi");
+  if (!company.address?.trim()) missing.push("adresă sediu");
+  if (!company.city?.trim()) missing.push("oraș");
+  if (!company.name?.trim()) missing.push("denumire firmă");
+  if (!company.cui?.trim()) missing.push("CUI");
+  if (missing.length > 0) {
+    throw new InvoiceIssuerIncompleteError(missing);
   }
 }
 
