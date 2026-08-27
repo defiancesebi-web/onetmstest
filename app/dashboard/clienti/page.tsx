@@ -4,8 +4,11 @@ import { listClients } from "@/lib/data/clients";
 import { getDictionary } from "@/lib/i18n-server";
 import { PageHeader } from "@/components/page-header";
 import { ActivePill } from "@/components/active-pill";
+import { DataTable, Toolbar, type Column } from "@/components/ui/data-table";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+type Client = Awaited<ReturnType<typeof listClients>>[number];
 
 export default async function ClientiPage({
   searchParams,
@@ -22,11 +25,41 @@ export default async function ClientiPage({
   const clients = await listClients(
     { role: session!.user.role, companyId: session!.user.companyId },
     session!.user.companyId!,
-    { search: q, includeInactive }
+    { search: q, includeInactive },
   );
 
+  const columns: Column<Client>[] = [
+    {
+      key: "name",
+      header: d.colName,
+      cell: (client) => (
+        <Link href={`/dashboard/clienti/${client.id}`} className="text-primary font-semibold">
+          {client.name}
+        </Link>
+      ),
+    },
+    {
+      key: "cui",
+      header: d.colCui,
+      cell: (client) => <span className="text-muted-foreground">{client.cui}</span>,
+    },
+    { key: "city", header: d.colCity, cell: (client) => client.city },
+    {
+      key: "term",
+      header: d.colPaymentTerm,
+      cell: (client) => `${client.paymentTermDays} ${c.days}`,
+    },
+    {
+      key: "status",
+      header: c.status,
+      cell: (client) => (
+        <ActivePill active={client.isActive} activeLabel={c.active} inactiveLabel={c.inactive} />
+      ),
+    },
+  ];
+
   return (
-    <div className="max-w-4xl">
+    <div className="space-y-4">
       <PageHeader
         title={d.title}
         description={d.description}
@@ -37,61 +70,29 @@ export default async function ClientiPage({
         }
       />
 
-      <form className="mb-4 flex items-center gap-2">
-        <Input name="q" placeholder={d.searchPlaceholder} defaultValue={q ?? ""} />
-        {includeInactive && <input type="hidden" name="inactivi" value="1" />}
-        <Button type="submit" variant="outline">
-          {c.search}
-        </Button>
-      </form>
-
-      <p className="mb-4 text-sm">
+      <Toolbar>
+        <form className="flex items-center gap-2">
+          <Input name="q" placeholder={d.searchPlaceholder} defaultValue={q ?? ""} className="max-w-xs" />
+          {includeInactive && <input type="hidden" name="inactivi" value="1" />}
+          <Button type="submit" variant="outline">
+            {c.search}
+          </Button>
+        </form>
         <Link
           href={includeInactive ? "/dashboard/clienti" : "/dashboard/clienti?inactivi=1"}
-          className="text-primary"
+          className="text-primary ml-auto text-sm font-medium"
         >
           {includeInactive ? d.hideInactive : d.showInactive}
         </Link>
-      </p>
+      </Toolbar>
 
-      {clients.length === 0 ? (
-        <p className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
-          {d.notFound}
-        </p>
-      ) : (
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-muted/50">
-              <tr className="border-b">
-                <th className="px-4 py-2 font-medium">{d.colName}</th>
-                <th className="px-4 py-2 font-medium">{d.colCui}</th>
-                <th className="px-4 py-2 font-medium">{d.colCity}</th>
-                <th className="px-4 py-2 font-medium">{d.colPaymentTerm}</th>
-                <th className="px-4 py-2 font-medium">{c.status}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {clients.map((client) => (
-                <tr key={client.id} className="border-b last:border-0">
-                  <td className="px-4 py-2">
-                    <Link href={`/dashboard/clienti/${client.id}`} className="text-primary font-medium">
-                      {client.name}
-                    </Link>
-                  </td>
-                  <td className="text-muted-foreground px-4 py-2">{client.cui}</td>
-                  <td className="px-4 py-2">{client.city}</td>
-                  <td className="px-4 py-2">
-                    {client.paymentTermDays} {c.days}
-                  </td>
-                  <td className="px-4 py-2">
-                    <ActivePill active={client.isActive} activeLabel={c.active} inactiveLabel={c.inactive} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <DataTable
+        columns={columns}
+        rows={clients}
+        getKey={(client) => client.id}
+        onRowHref={(client) => `/dashboard/clienti/${client.id}`}
+        empty={d.notFound}
+      />
     </div>
   );
 }

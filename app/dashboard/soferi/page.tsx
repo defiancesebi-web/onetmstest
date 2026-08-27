@@ -6,8 +6,11 @@ import { getDictionary, getLocale } from "@/lib/i18n-server";
 import { PageHeader } from "@/components/page-header";
 import { DocumentStatusBadge } from "@/components/document-status-badge";
 import { ActivePill } from "@/components/active-pill";
+import { DataTable, Toolbar, type Column } from "@/components/ui/data-table";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+type Driver = Awaited<ReturnType<typeof listDrivers>>[number];
 
 export default async function SoferiPage({
   searchParams,
@@ -27,8 +30,42 @@ export default async function SoferiPage({
     getOwnerStatuses(sessionUser, session!.user.companyId!),
   ]);
 
+  const columns: Column<Driver>[] = [
+    {
+      key: "name",
+      header: d.colName,
+      cell: (driver) => (
+        <Link href={`/dashboard/soferi/${driver.id}`} className="text-primary font-semibold">
+          {driver.lastName} {driver.firstName}
+        </Link>
+      ),
+    },
+    {
+      key: "phone",
+      header: d.colPhone,
+      cell: (driver) => <span className="text-muted-foreground">{driver.phone ?? "—"}</span>,
+    },
+    {
+      key: "documents",
+      header: c.documents,
+      cell: (driver) => (
+        <DocumentStatusBadge
+          status={statuses.drivers[driver.id] ?? "NO_DOCUMENTS"}
+          locale={locale}
+        />
+      ),
+    },
+    {
+      key: "status",
+      header: c.status,
+      cell: (driver) => (
+        <ActivePill active={driver.isActive} activeLabel={c.active} inactiveLabel={c.inactive} />
+      ),
+    },
+  ];
+
   return (
-    <div className="max-w-4xl">
+    <div className="space-y-4">
       <PageHeader
         title={d.title}
         description={d.description}
@@ -39,62 +76,29 @@ export default async function SoferiPage({
         }
       />
 
-      <form className="mb-4 flex items-center gap-2">
-        <Input name="q" placeholder={d.searchPlaceholder} defaultValue={q ?? ""} className="max-w-xs" />
-        {includeInactive && <input type="hidden" name="inactive" value="1" />}
-        <Button type="submit" variant="outline">
-          {c.search}
-        </Button>
-      </form>
-
-      <p className="mb-4 text-sm">
+      <Toolbar>
+        <form className="flex items-center gap-2">
+          <Input name="q" placeholder={d.searchPlaceholder} defaultValue={q ?? ""} className="max-w-xs" />
+          {includeInactive && <input type="hidden" name="inactive" value="1" />}
+          <Button type="submit" variant="outline">
+            {c.search}
+          </Button>
+        </form>
         <Link
           href={includeInactive ? "/dashboard/soferi" : "/dashboard/soferi?inactive=1"}
-          className="text-primary"
+          className="text-primary ml-auto text-sm font-medium"
         >
           {includeInactive ? d.hideInactive : d.showInactive}
         </Link>
-      </p>
+      </Toolbar>
 
-      {drivers.length === 0 ? (
-        <p className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
-          {d.notFound}
-        </p>
-      ) : (
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-muted/50">
-              <tr className="border-b">
-                <th className="px-4 py-2 font-medium">{d.colName}</th>
-                <th className="px-4 py-2 font-medium">{d.colPhone}</th>
-                <th className="px-4 py-2 font-medium">{c.documents}</th>
-                <th className="px-4 py-2 font-medium">{c.status}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {drivers.map((driver) => (
-                <tr key={driver.id} className="border-b last:border-0">
-                  <td className="px-4 py-2">
-                    <Link href={`/dashboard/soferi/${driver.id}`} className="text-primary font-medium">
-                      {driver.lastName} {driver.firstName}
-                    </Link>
-                  </td>
-                  <td className="text-muted-foreground px-4 py-2">{driver.phone ?? "—"}</td>
-                  <td className="px-4 py-2">
-                    <DocumentStatusBadge
-                      status={statuses.drivers[driver.id] ?? "NO_DOCUMENTS"}
-                      locale={locale}
-                    />
-                  </td>
-                  <td className="px-4 py-2">
-                    <ActivePill active={driver.isActive} activeLabel={c.active} inactiveLabel={c.inactive} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <DataTable
+        columns={columns}
+        rows={drivers}
+        getKey={(driver) => driver.id}
+        onRowHref={(driver) => `/dashboard/soferi/${driver.id}`}
+        empty={d.notFound}
+      />
     </div>
   );
 }

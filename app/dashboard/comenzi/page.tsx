@@ -6,10 +6,13 @@ import { ORDER_STATUS_I18N, orderStatusLabel } from "@/lib/labels";
 import type { OrderStatus } from "@/lib/generated/prisma/enums";
 import { PageHeader } from "@/components/page-header";
 import { OrderStatusPill } from "@/components/dashboard/order-status-pill";
+import { DataTable, Toolbar, FilterTabs, type Column } from "@/components/ui/data-table";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const STATUS_VALUES = Object.keys(ORDER_STATUS_I18N.ro) as OrderStatus[];
+
+type Order = Awaited<ReturnType<typeof listOrders>>[number];
 
 export default async function ComenziPage({
   searchParams,
@@ -21,18 +24,62 @@ export default async function ComenziPage({
   const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
   const d = dict.loads;
 
-  const status = STATUS_VALUES.includes(stare as OrderStatus)
-    ? (stare as OrderStatus)
-    : undefined;
+  const status = STATUS_VALUES.includes(stare as OrderStatus) ? (stare as OrderStatus) : undefined;
 
   const orders = await listOrders(
     { role: session!.user.role, companyId: session!.user.companyId },
     session!.user.companyId!,
-    { search: q, status }
+    { search: q, status },
   );
 
+  // Status filter pills (All + each status), preserving the current search.
+  const qs = (v: string) => {
+    const p = new URLSearchParams();
+    if (q) p.set("q", q);
+    if (v) p.set("stare", v);
+    const s = p.toString();
+    return `/dashboard/comenzi${s ? `?${s}` : ""}`;
+  };
+  const filterOptions = [
+    { value: "", label: d.allStatuses },
+    ...STATUS_VALUES.map((v) => ({ value: v, label: orderStatusLabel(v, locale) })),
+  ];
+
+  const columns: Column<Order>[] = [
+    {
+      key: "number",
+      header: d.colNumber,
+      cell: (o) => (
+        <Link href={`/dashboard/comenzi/${o.id}`} className="text-primary font-semibold">
+          {o.orderNumber}
+        </Link>
+      ),
+    },
+    { key: "client", header: d.colClient, cell: (o) => o.client.name },
+    {
+      key: "ref",
+      header: d.colRef,
+      cell: (o) => <span className="text-muted-foreground">{o.clientReference}</span>,
+    },
+    {
+      key: "price",
+      header: d.colPrice,
+      align: "right",
+      cell: (o) => (
+        <span className="font-semibold">
+          {o.salePrice.toString()} {o.currency}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: d.colStatus,
+      cell: (o) => <OrderStatusPill status={o.status} locale={locale} />,
+    },
+  ];
+
   return (
-    <div className="max-w-5xl">
+    <div className="space-y-4">
       <PageHeader
         title={d.title}
         description={d.description}
@@ -43,68 +90,30 @@ export default async function ComenziPage({
         }
       />
 
-      <form className="mb-4 flex flex-wrap items-center gap-2">
-        <Input
-          name="q"
-          placeholder={d.searchPlaceholder}
-          defaultValue={q ?? ""}
-          className="max-w-xs"
-        />
-        <select
-          name="stare"
-          defaultValue={stare ?? ""}
-          className="rounded-lg border px-2 py-2 text-sm"
-        >
-          <option value="">{d.allStatuses}</option>
-          {STATUS_VALUES.map((value) => (
-            <option key={value} value={value}>
-              {orderStatusLabel(value, locale)}
-            </option>
-          ))}
-        </select>
-        <Button type="submit" variant="outline">
-          {d.filter}
-        </Button>
-      </form>
+      <Toolbar>
+        <form className="flex items-center gap-2">
+          <Input
+            name="q"
+            placeholder={d.searchPlaceholder}
+            defaultValue={q ?? ""}
+            className="max-w-xs"
+          />
+          {status && <input type="hidden" name="stare" value={status} />}
+          <Button type="submit" variant="outline">
+            {d.filter}
+          </Button>
+        </form>
+      </Toolbar>
 
-      {orders.length === 0 ? (
-        <p className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
-          {d.notFound}
-        </p>
-      ) : (
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-muted/50">
-              <tr className="border-b">
-                <th className="px-4 py-2 font-medium">{d.colNumber}</th>
-                <th className="px-4 py-2 font-medium">{d.colClient}</th>
-                <th className="px-4 py-2 font-medium">{d.colRef}</th>
-                <th className="px-4 py-2 font-medium">{d.colPrice}</th>
-                <th className="px-4 py-2 font-medium">{d.colStatus}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => (
-                <tr key={order.id} className="border-b last:border-0">
-                  <td className="px-4 py-2">
-                    <Link href={`/dashboard/comenzi/${order.id}`} className="text-primary font-medium">
-                      {order.orderNumber}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2">{order.client.name}</td>
-                  <td className="text-muted-foreground px-4 py-2">{order.clientReference}</td>
-                  <td className="px-4 py-2">
-                    {order.salePrice.toString()} {order.currency}
-                  </td>
-                  <td className="px-4 py-2">
-                    <OrderStatusPill status={order.status} locale={locale} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <FilterTabs options={filterOptions} active={status ?? ""} hrefFor={qs} />
+
+      <DataTable
+        columns={columns}
+        rows={orders}
+        getKey={(o) => o.id}
+        onRowHref={(o) => `/dashboard/comenzi/${o.id}`}
+        empty={d.notFound}
+      />
     </div>
   );
 }
