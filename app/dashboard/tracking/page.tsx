@@ -6,6 +6,8 @@ import { getDictionary, getLocale } from "@/lib/i18n-server";
 import type { Locale } from "@/lib/i18n";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { TripStatusBadge } from "@/components/trip-status-badge";
+import { LiveFleetMap } from "@/components/dashboard/live-fleet-map";
+import { buildFleetPositions } from "@/lib/geo/cities";
 
 function formatDateKey(dateKey: string, locale: Locale) {
   // Bare "YYYY-MM-DD" — read back in UTC so a browser west of Bucharest keeps
@@ -144,6 +146,7 @@ export default async function TrackingPage() {
   const t = dict.tracking;
 
   const board = await getTrackingBoard(sessionUser, companyId);
+  const fleet = buildFleetPositions(board.trips);
 
   return (
     <div className="space-y-6">
@@ -176,6 +179,27 @@ export default async function TrackingPage() {
           label={t.kpiFleet}
           value={String(board.fleetSize)}
           tone="bg-violet-100 text-violet-700"
+        />
+      </div>
+
+      <div>
+        <div className="mb-2 flex items-center justify-between">
+          <h3 className="font-semibold">{t.mapHeading}</h3>
+          <span className="text-muted-foreground inline-flex items-center gap-1.5 text-xs">
+            <Satellite className="size-3.5" />
+            {t.estimated}
+          </span>
+        </div>
+        <LiveFleetMap
+          trucks={fleet}
+          height={360}
+          liveLabel={t.mapLiveTrucks}
+          emptyLabel={t.mapEmpty}
+          legend={{
+            in_transit: t.mapLegendInTransit,
+            assigned: t.mapLegendAssigned,
+            route: t.mapLegendRoute,
+          }}
         />
       </div>
 

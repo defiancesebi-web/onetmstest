@@ -401,6 +401,12 @@ export type Dictionary = {
     gpsNote: string;
     openTrip: string;
     estimated: string;
+    mapHeading: string;
+    mapLegendInTransit: string;
+    mapLegendAssigned: string;
+    mapLegendRoute: string;
+    mapLiveTrucks: string;
+    mapEmpty: string;
   };
   invoices: {
     title: string;
@@ -1075,6 +1081,12 @@ const dictionaries: Record<Locale, Dictionary> = {
         "Pozițiile sunt estimate din progresul curselor. Urmărirea GPS în timp real sosește într-o etapă următoare.",
       openTrip: "Deschide cursa",
       estimated: "estimat",
+      mapHeading: "Harta flotei",
+      mapLegendInTransit: "În cursă",
+      mapLegendAssigned: "Alocat",
+      mapLegendRoute: "Rută estimată",
+      mapLiveTrucks: "camioane",
+      mapEmpty: "Nicio cursă activă de afișat pe hartă.",
     },
     invoices: {
       title: "Facturi",
@@ -1748,6 +1760,12 @@ const dictionaries: Record<Locale, Dictionary> = {
         "Positions are estimated from trip progress. Real-time GPS tracking arrives in a later stage.",
       openTrip: "Open trip",
       estimated: "estimated",
+      mapHeading: "Fleet map",
+      mapLegendInTransit: "In transit",
+      mapLegendAssigned: "Assigned",
+      mapLegendRoute: "Estimated route",
+      mapLiveTrucks: "trucks",
+      mapEmpty: "No active trips to show on the map.",
     },
     invoices: {
       title: "Invoices",

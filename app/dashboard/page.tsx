@@ -9,13 +9,14 @@ import {
   Users,
   Route,
   ArrowRight,
-  MapPin,
   TriangleAlert,
 } from "lucide-react";
 import { auth } from "@/auth";
 import { getCompanyForSession } from "@/lib/data/companies";
 import { getExpiringDocuments } from "@/lib/data/documents";
 import { getDashboardStats } from "@/lib/data/dashboard";
+import { getTrackingBoard } from "@/lib/data/tracking";
+import { buildFleetPositions } from "@/lib/geo/cities";
 import { toDateKey, formatDateKey, DOCUMENT_TYPE_LABELS } from "@/lib/documentStatus";
 import { orderStatusLabel } from "@/lib/labels";
 import { getDictionary, getLocale } from "@/lib/i18n-server";
@@ -24,6 +25,7 @@ import { DonutChart } from "@/components/dashboard/donut-chart";
 import { AreaChart } from "@/components/dashboard/area-chart";
 import { OrderStatusPill, STATUS_HEX } from "@/components/dashboard/order-status-pill";
 import { DocumentStatusBadge } from "@/components/document-status-badge";
+import { LiveFleetMap } from "@/components/dashboard/live-fleet-map";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -32,11 +34,14 @@ export default async function DashboardPage() {
   const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
   const d = dict.dashboard;
 
-  const [company, stats, expiring] = await Promise.all([
+  const [company, stats, expiring, board] = await Promise.all([
     getCompanyForSession(sessionUser),
     getDashboardStats(sessionUser, companyId),
     getExpiringDocuments(sessionUser, companyId),
+    getTrackingBoard(sessionUser, companyId),
   ]);
+  const fleet = buildFleetPositions(board.trips);
+  const t = dict.tracking;
 
   const money = new Intl.NumberFormat(locale === "ro" ? "ro-RO" : "en-US", {
     style: "currency",
@@ -212,12 +217,24 @@ export default async function DashboardPage() {
 
       {/* Live map placeholder + alerts */}
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="bg-card rounded-xl border p-5 shadow-sm lg:col-span-2">
-          <h3 className="mb-3 font-semibold">{d.liveMap}</h3>
-          <div className="bg-muted/50 text-muted-foreground flex h-56 flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-center text-sm">
-            <MapPin className="size-7" />
-            <span className="max-w-xs">{d.mapSoon}</span>
+        <div className="lg:col-span-2">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="font-semibold">{d.liveMap}</h3>
+            <Link href="/dashboard/tracking" className="text-primary inline-flex items-center gap-1 text-sm font-medium">
+              {t.title} <ArrowRight className="size-4" />
+            </Link>
           </div>
+          <LiveFleetMap
+            trucks={fleet}
+            height={224}
+            liveLabel={t.mapLiveTrucks}
+            emptyLabel={t.mapEmpty}
+            legend={{
+              in_transit: t.mapLegendInTransit,
+              assigned: t.mapLegendAssigned,
+              route: t.mapLegendRoute,
+            }}
+          />
         </div>
 
         <div className="bg-card rounded-xl border p-5 shadow-sm">
