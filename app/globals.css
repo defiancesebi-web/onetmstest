@@ -2,14 +2,19 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Design converted from the ONE TMS mockup: grey rail, green action accent,
+   light-grey canvas, white rounded cards. Every component reads these tokens,
+   so replacing this one file re-skins the whole app. Figtree is loaded via
+   next/font in app/layout.tsx (variable --font-figtree). */
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-inter);
-  --font-heading: var(--font-inter);
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, monospace;
+  --font-heading: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,78 +54,77 @@
 }
 
 :root {
-  /* ONE TMS — light. Navy sidebar, blue action accent, light-grey canvas,
+  /* ONE TMS — light. Dark-grey rail, green action accent, light-grey canvas,
      white rounded cards with soft shadows. */
-  --background: #f6f8fb;
-  --foreground: #0f172a;
+  --background: #f6f7f8;
+  --foreground: #1a1d23;
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: #1a1d23;
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #2563eb;
+  --popover-foreground: #1a1d23;
+  --primary: #16a34a;
   --primary-foreground: #ffffff;
-  --secondary: #eef2f7;
-  --secondary-foreground: #0f172a;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #eff4ff;
-  --accent-foreground: #1d4ed8;
-  --destructive: #ef4444;
-  --border: #e5e9f0;
-  --input: #e5e9f0;
-  --ring: #2563eb;
-  /* Chart series: blue / green / amber / red / violet — match the dashboard mock. */
-  --chart-1: #2563eb;
-  --chart-2: #16a34a;
+  --secondary: #eef2f5;
+  --secondary-foreground: #1a1d23;
+  --muted: #f1f4f6;
+  --muted-foreground: #6b7280;
+  --accent: #ecfdf3;
+  --accent-foreground: #15803d;
+  --destructive: #e5484d;
+  --border: #e8eaed;
+  --input: #e8eaed;
+  --ring: #16a34a;
+  /* Chart series: green / blue / amber / red / violet. */
+  --chart-1: #16a34a;
+  --chart-2: #2563eb;
   --chart-3: #f59e0b;
-  --chart-4: #ef4444;
+  --chart-4: #e5484d;
   --chart-5: #8b5cf6;
   --radius: 0.75rem;
-  /* The deep navy rail. Its gradient is applied in the component; this solid is
-     the fallback and the token other components read. */
-  --sidebar: #0b1836;
-  --sidebar-foreground: #94a3b8;
-  --sidebar-primary: #2563eb;
+  /* The dark-grey rail. The gradient below overrides the hardcoded navy
+     gradient in dashboard-chrome.tsx so you don't have to touch that file. */
+  --sidebar: #1c1e22;
+  --sidebar-foreground: #949aa4;
+  --sidebar-primary: #16a34a;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: rgba(255, 255, 255, 0.06);
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #2563eb;
+  --sidebar-ring: #16a34a;
 }
 
 .dark {
-  /* ONE TMS — dark canvas (the navy rail stays; the content area goes dark slate). */
-  --background: #0b1120;
-  --foreground: #e8edf5;
-  --card: #111a2e;
-  --card-foreground: #e8edf5;
-  --popover: #111a2e;
-  --popover-foreground: #e8edf5;
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  --secondary: #1c2740;
-  --secondary-foreground: #e8edf5;
-  --muted: #1a2338;
-  --muted-foreground: #93a1b8;
-  --accent: #16233f;
-  --accent-foreground: #93b4ff;
+  --background: #0f1114;
+  --foreground: #e7e9ec;
+  --card: #17191e;
+  --card-foreground: #e7e9ec;
+  --popover: #17191e;
+  --popover-foreground: #e7e9ec;
+  --primary: #22c55e;
+  --primary-foreground: #04120a;
+  --secondary: #232730;
+  --secondary-foreground: #e7e9ec;
+  --muted: #1d2027;
+  --muted-foreground: #969ba5;
+  --accent: #14311f;
+  --accent-foreground: #86efac;
   --destructive: #f87171;
   --border: rgba(255, 255, 255, 0.10);
   --input: rgba(255, 255, 255, 0.14);
-  --ring: #3b82f6;
-  --chart-1: #3b82f6;
-  --chart-2: #22c55e;
+  --ring: #22c55e;
+  --chart-1: #22c55e;
+  --chart-2: #3b82f6;
   --chart-3: #fbbf24;
   --chart-4: #f87171;
   --chart-5: #a78bfa;
-  --sidebar: #070f22;
-  --sidebar-foreground: #94a3b8;
-  --sidebar-primary: #3b82f6;
-  --sidebar-primary-foreground: #ffffff;
+  --sidebar: #131418;
+  --sidebar-foreground: #949aa4;
+  --sidebar-primary: #22c55e;
+  --sidebar-primary-foreground: #04120a;
   --sidebar-accent: rgba(255, 255, 255, 0.06);
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #3b82f6;
+  --sidebar-ring: #22c55e;
 }
 
 @layer base {
@@ -132,5 +136,11 @@
   }
   html {
     @apply font-sans;
+  }
+
+  /* Override the hardcoded navy gradient rail in dashboard-chrome.tsx
+     (`bg-[linear-gradient(...)]`) so the sidebar follows the grey token. */
+  aside[class*="linear-gradient"] {
+    background: var(--sidebar) !important;
   }
 }
