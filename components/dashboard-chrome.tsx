@@ -137,6 +137,7 @@ export function DashboardChrome({
             <Link
               href={homeHref}
               className="truncate text-[16px] font-bold leading-tight tracking-[-0.005em]"
+              style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}
               title={brandSub}
             >
               {brandSub || "ONE TMS"}
@@ -156,7 +157,7 @@ export function DashboardChrome({
                 aria-current={on ? "page" : undefined}
                 className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-[13.5px] font-medium transition-colors ${
                   on
-                    ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+                    ? "bg-white/10 text-white font-semibold"
                     : "hover:bg-white/6 hover:text-white"
                 } ${collapsed ? "justify-center px-0" : ""}`}
               >
