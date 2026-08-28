@@ -8,7 +8,9 @@
  * bumps its version; keep ANAF_ENDPOINT easy to change.
  */
 
-const ANAF_ENDPOINT = "https://webservicesp.anaf.ro/PlatitorTvaRest/api/v9/ws/tva";
+// Current endpoint (mandatory since May 2025). Note the path order:
+// /api/PlatitorTvaRest/v9/tva — NOT the older /PlatitorTvaRest/api/v9/ws/tva.
+const ANAF_ENDPOINT = "https://webservicesp.anaf.ro/api/PlatitorTvaRest/v9/tva";
 
 export type AnafCompany = {
   cui: string;
@@ -76,7 +78,9 @@ function toCompany(cui: string, found: AnafFound): AnafCompany {
     .join(" ")
     .trim();
   const address = titleCaseRo(street || (g.adresa ?? "").trim());
-  const city = titleCaseRo(cleanLocality(s.sdenumire_Localitate));
+  let city = titleCaseRo(cleanLocality(s.sdenumire_Localitate));
+  // Bucharest comes back as "Sector 6 Mun. Bucureşti" — collapse to the city.
+  if (/bucure[sșş]ti/i.test(city)) city = "București";
   const county = s.sdenumire_Judet ? titleCaseRo(cleanLocality(s.sdenumire_Judet)) : null;
 
   return {
@@ -108,7 +112,7 @@ export async function lookupCompanyByCui(rawCui: string): Promise<AnafLookupResu
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        "User-Agent": "ONE-TMS/1.0",
+        "User-Agent": "Mozilla/5.0 (compatible; ONE-TMS/1.0)",
       },
       body: JSON.stringify([{ cui: Number(cui), data: today }]),
       signal: controller.signal,
