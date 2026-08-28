@@ -27,7 +27,7 @@ export type AnafCompany = {
 
 export type AnafLookupResult =
   | { ok: true; company: AnafCompany }
-  | { ok: false; reason: "invalid" | "notfound" | "unreachable" };
+  | { ok: false; reason: "invalid" | "notfound" | "unreachable"; detail?: string };
 
 /** Keep only the digits — strips a leading "RO", spaces, dots, dashes. */
 export function normalizeCui(raw: string): string {
@@ -118,15 +118,25 @@ export async function lookupCompanyByCui(rawCui: string): Promise<AnafLookupResu
       signal: controller.signal,
       cache: "no-store",
     });
-    if (!res.ok) return { ok: false, reason: "unreachable" };
+    if (!res.ok) {
+      console.error(`[anaf] HTTP ${res.status} from ${ANAF_ENDPOINT}`);
+      return { ok: false, reason: "unreachable", detail: `HTTP ${res.status}` };
+    }
 
     const json = (await res.json()) as { found?: AnafFound[]; notfound?: unknown[] };
     const found = json.found?.[0];
     if (!found) return { ok: false, reason: "notfound" };
 
     return { ok: true, company: toCompany(cui, found) };
-  } catch {
-    return { ok: false, reason: "unreachable" };
+  } catch (err) {
+    const detail =
+      err instanceof Error
+        ? err.name === "AbortError"
+          ? "timeout"
+          : `${err.name}: ${err.message}`
+        : String(err);
+    console.error(`[anaf] fetch failed: ${detail}`);
+    return { ok: false, reason: "unreachable", detail };
   } finally {
     clearTimeout(timeout);
   }

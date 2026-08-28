@@ -108,7 +108,7 @@ export function ClientForm({
             ? t.cuiInvalid
             : res.reason === "notfound"
               ? t.cuiNotFound
-              : t.cuiUnreachable;
+              : t.cuiUnreachable + (res.detail ? ` [${res.detail}]` : "");
         setCuiMsg({ text, tone: "err" });
       }
     } finally {
