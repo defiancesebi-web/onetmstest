@@ -143,6 +143,16 @@ export type Dictionary = {
     noTrips: string;
     noTruck: string;
     noOrders: string;
+    tabDrivers: string;
+    tabTrucks: string;
+    tabTrailers: string;
+    tabPlanning: string;
+    today: string;
+    sendDispatch: string;
+    unassignedLoads: string;
+    noDriver: string;
+    noTrailer: string;
+    weekLabel: string;
   };
   loads: {
     title: string;
@@ -821,6 +831,16 @@ const dictionaries: Record<Locale, Dictionary> = {
       noTrips: "Nicio cursă.",
       noTruck: "fără camion",
       noOrders: "fără comenzi",
+      tabDrivers: "Șoferi",
+      tabTrucks: "Camioane",
+      tabTrailers: "Remorci",
+      tabPlanning: "Planificare",
+      today: "Azi",
+      sendDispatch: "Trimite dispecerizare",
+      unassignedLoads: "Comenzi nealocate",
+      noDriver: "Fără șofer",
+      noTrailer: "Fără remorcă",
+      weekLabel: "Săptămână",
     },
     loads: {
       title: "Comenzi",
@@ -1500,6 +1520,16 @@ const dictionaries: Record<Locale, Dictionary> = {
       noTrips: "No trips.",
       noTruck: "no truck",
       noOrders: "no loads",
+      tabDrivers: "Drivers",
+      tabTrucks: "Trucks",
+      tabTrailers: "Trailers",
+      tabPlanning: "Planning",
+      today: "Today",
+      sendDispatch: "Send Dispatch",
+      unassignedLoads: "Unassigned Loads",
+      noDriver: "No driver",
+      noTrailer: "No trailer",
+      weekLabel: "Week",
     },
     loads: {
       title: "Loads",
