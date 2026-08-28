@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Dictionary } from "@/lib/i18n";
 import type { ClientFormState } from "./actions";
+import { lookupCuiAction } from "./actions";
 
 type Values = {
   name?: string;
@@ -77,8 +78,42 @@ export function ClientForm({
   // React's own reset can't win — the next render reapplies our state.
   const [fields, setFields] = useState<FormFields>(() => toFormFields(values));
 
+  // CUI → ANAF prefill (Romanian companies).
+  const [looking, setLooking] = useState(false);
+  const [cuiMsg, setCuiMsg] = useState<{ text: string; tone: "ok" | "err" } | null>(null);
+
   function update<K extends keyof FormFields>(key: K, value: FormFields[K]) {
     setFields((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function lookupCui() {
+    setCuiMsg(null);
+    setLooking(true);
+    try {
+      const res = await lookupCuiAction(fields.cui);
+      if (res.ok) {
+        const c = res.company;
+        setFields((prev) => ({
+          ...prev,
+          name: c.name || prev.name,
+          address: c.address || prev.address,
+          city: c.city || prev.city,
+          contactPhone: c.phone || prev.contactPhone,
+          country: "România",
+        }));
+        setCuiMsg({ text: t.cuiFilled, tone: "ok" });
+      } else {
+        const text =
+          res.reason === "invalid"
+            ? t.cuiInvalid
+            : res.reason === "notfound"
+              ? t.cuiNotFound
+              : t.cuiUnreachable;
+        setCuiMsg({ text, tone: "err" });
+      }
+    } finally {
+      setLooking(false);
+    }
   }
 
   return (
@@ -96,13 +131,32 @@ export function ClientForm({
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="cui">{t.cui}</Label>
-          <Input
-            id="cui"
-            name="cui"
-            value={fields.cui}
-            onChange={(e) => update("cui", e.target.value)}
-            required
-          />
+          <div className="flex items-center gap-2">
+            <Input
+              id="cui"
+              name="cui"
+              value={fields.cui}
+              onChange={(e) => {
+                update("cui", e.target.value);
+                setCuiMsg(null);
+              }}
+              required
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={lookupCui}
+              disabled={looking || fields.cui.trim() === ""}
+              className="shrink-0"
+            >
+              {looking ? t.cuiLooking : t.cuiLookup}
+            </Button>
+          </div>
+          {cuiMsg && (
+            <p className={`text-xs ${cuiMsg.tone === "ok" ? "text-emerald-600" : "text-amber-700"}`}>
+              {cuiMsg.text}
+            </p>
+          )}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="address">{t.address}</Label>

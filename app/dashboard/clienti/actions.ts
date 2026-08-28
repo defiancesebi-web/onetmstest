@@ -9,11 +9,22 @@ import {
   setClientActive,
   DuplicateCuiError,
 } from "@/lib/data/clients";
+import { lookupCompanyByCui, type AnafLookupResult } from "@/lib/data/anaf";
 
 export type ClientFormState = {
   error: string | null;
   duplicateWarning: string | null;
 };
+
+/**
+ * Prefill helper: look up a Romanian company at ANAF by CUI. Requires a signed-
+ * in company user so the endpoint isn't an open proxy; only the CUI is sent.
+ */
+export async function lookupCuiAction(cui: string): Promise<AnafLookupResult> {
+  const session = await auth();
+  if (!session?.user.companyId) return { ok: false, reason: "unreachable" };
+  return lookupCompanyByCui(cui);
+}
 
 function readClientFields(formData: FormData) {
   return {

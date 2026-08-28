@@ -324,6 +324,12 @@ export type Dictionary = {
     colRef: string;
     colPrice: string;
     colStatus: string;
+    cuiLookup: string;
+    cuiLooking: string;
+    cuiNotFound: string;
+    cuiInvalid: string;
+    cuiUnreachable: string;
+    cuiFilled: string;
   };
   vehicleForm: {
     back: string;
@@ -1013,6 +1019,12 @@ const dictionaries: Record<Locale, Dictionary> = {
       colRef: "Referință",
       colPrice: "Preț",
       colStatus: "Stare",
+      cuiLookup: "Completează din CUI",
+      cuiLooking: "Se caută la ANAF...",
+      cuiNotFound: "CUI negăsit la ANAF. Completează manual.",
+      cuiInvalid: "CUI invalid. Introdu doar cifrele (ex. 12345678).",
+      cuiUnreachable: "Serviciul ANAF nu răspunde acum. Completează manual.",
+      cuiFilled: "Date completate din ANAF. Verifică-le înainte de salvare.",
     },
     vehicleForm: {
       back: "← Înapoi la flotă",
@@ -1702,6 +1714,12 @@ const dictionaries: Record<Locale, Dictionary> = {
       colRef: "Reference",
       colPrice: "Price",
       colStatus: "Status",
+      cuiLookup: "Fill from VAT code",
+      cuiLooking: "Looking up ANAF...",
+      cuiNotFound: "VAT code not found at ANAF. Fill in manually.",
+      cuiInvalid: "Invalid VAT code. Enter digits only (e.g. 12345678).",
+      cuiUnreachable: "The ANAF service is not responding. Fill in manually.",
+      cuiFilled: "Filled from ANAF. Please review before saving.",
     },
     vehicleForm: {
       back: "← Back to fleet",
