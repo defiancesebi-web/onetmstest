@@ -197,7 +197,7 @@ export function CompanySettingsForm({
             <p className="text-muted-foreground text-xs">{t.seriesHint}</p>
           </div>
           <div className="space-y-1.5">
-            <Label className="flex items-center gap-2">
+            <Label className="flex items-center gap-2 text-sm font-medium normal-case tracking-normal text-foreground">
               <input
                 type="checkbox"
                 name="vatPayer"

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Figtree } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-// ONE TMS design: one clean UI sans (Figtree) across the app, matching the
-// mockup. latin-ext covers Romanian diacritics (ă â î ș ț).
-const figtree = Figtree({
-  variable: "--font-figtree",
+// ONE TMS design: Inter as the UI sans across the app (Helvetica is the
+// fallback). latin-ext covers Romanian diacritics (ă â î ș ț).
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin", "latin-ext"],
   display: "swap",
 });
@@ -19,7 +19,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ro"
-      className={`${figtree.variable} h-full antialiased`}
+      className={`${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
