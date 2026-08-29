@@ -1,14 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { type MouseEvent as ReactMouseEvent, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Search, ArrowRight, Truck, User, Package, X } from "lucide-react";
 import { Combobox } from "@/components/ui/combobox";
+import { Button } from "@/components/ui/button";
 import { OrderStatusPill } from "@/components/dashboard/order-status-pill";
 import { ORDER_STATUS_I18N, orderStatusLabel } from "@/lib/labels";
 import type { OrderStatus } from "@/lib/generated/prisma/enums";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { bulkSetOrderStatusAction } from "./actions";
 
 export type OrderRow = {
   id: string;
@@ -54,6 +57,20 @@ export function OrdersList({
   const [truckId, setTruckId] = useState("");
   const [commodity, setCommodity] = useState("");
 
+  const router = useRouter();
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkStatus, setBulkStatus] = useState<OrderStatus | "">("");
+  const [pending, startTransition] = useTransition();
+
+  function toggle(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
   const clientOpts = useMemo(() => dedupe(rows.map((r) => ({ value: r.clientId, label: r.clientName }))), [rows]);
   const driverOpts = useMemo(
     () => dedupe(rows.filter((r) => r.driverId).map((r) => ({ value: r.driverId!, label: r.driverName ?? "—" }))),
@@ -98,6 +115,34 @@ export function OrdersList({
     setDriverId("");
     setTruckId("");
     setCommodity("");
+  }
+
+  const allSelected = filtered.length > 0 && filtered.every((r) => selected.has(r.id));
+  function toggleAll() {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allSelected) filtered.forEach((r) => next.delete(r.id));
+      else filtered.forEach((r) => next.add(r.id));
+      return next;
+    });
+  }
+
+  const statusOptions = STATUS_VALUES.map((s) => ({ value: s, label: orderStatusLabel(s, locale) }));
+
+  function applyBulk() {
+    if (!bulkStatus || selected.size === 0) return;
+    const ids = [...selected];
+    startTransition(async () => {
+      await bulkSetOrderStatusAction(ids, bulkStatus as OrderStatus);
+      setSelected(new Set());
+      setBulkStatus("");
+      router.refresh();
+    });
+  }
+
+  function rowClick(e: ReactMouseEvent, id: string) {
+    if ((e.target as HTMLElement).closest("input,a,button,label")) return;
+    router.push(`/dashboard/comenzi/${id}`);
   }
 
   return (
@@ -147,21 +192,72 @@ export function OrdersList({
         </span>
       </div>
 
+      {/* Bulk action bar */}
+      {selected.size > 0 && (
+        <div className="border-primary/30 bg-primary/5 flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2">
+          <span className="text-sm font-semibold">
+            {t.selectedCount.replace("{n}", String(selected.size))}
+          </span>
+          <div className="w-48">
+            <Combobox
+              value={bulkStatus}
+              onChange={(v) => setBulkStatus(v as OrderStatus | "")}
+              options={statusOptions}
+              placeholder={t.bulkStatus}
+            />
+          </div>
+          <Button size="sm" onClick={applyBulk} disabled={!bulkStatus || pending}>
+            {t.bulkApply}
+          </Button>
+          <button
+            type="button"
+            onClick={() => setSelected(new Set())}
+            className="text-muted-foreground hover:text-foreground ml-auto text-sm"
+          >
+            {t.bulkDeselect}
+          </button>
+        </div>
+      )}
+
       {/* Rows */}
       <div className="bg-card overflow-hidden rounded-xl border shadow-sm">
         {filtered.length === 0 ? (
           <p className="text-muted-foreground p-8 text-center text-sm">{t.notFound}</p>
         ) : (
-          filtered.map((r) => (
-            <Link
+          <>
+            <div className="bg-muted/40 flex items-center gap-3 border-b px-4 py-2">
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={toggleAll}
+                className="size-4 accent-[#16a34a]"
+                aria-label="select all"
+              />
+              <span className="text-muted-foreground text-[11px] font-bold tracking-[0.05em] uppercase">
+                {t.title}
+              </span>
+            </div>
+            {filtered.map((r) => (
+            <div
               key={r.id}
-              href={`/dashboard/comenzi/${r.id}`}
-              className="hover:bg-muted/40 grid grid-cols-1 gap-3 border-b px-4 py-3 transition-colors last:border-0 md:grid-cols-[150px_1fr_190px] md:items-center"
+              onClick={(e) => rowClick(e, r.id)}
+              className="hover:bg-muted/40 flex cursor-pointer items-center gap-3 border-b px-4 py-3 transition-colors last:border-0 md:grid md:grid-cols-[auto_150px_1fr_190px] md:items-center"
             >
+              <input
+                type="checkbox"
+                checked={selected.has(r.id)}
+                onChange={() => toggle(r.id)}
+                onClick={(e) => e.stopPropagation()}
+                className="size-4 shrink-0 accent-[#16a34a]"
+                aria-label={r.orderNumber}
+              />
+              <div className="min-w-0 flex-1 space-y-1 md:contents">
               {/* ID + status */}
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-primary font-semibold">{r.orderNumber}</span>
+                  <Link href={`/dashboard/comenzi/${r.id}`} className="text-primary font-semibold hover:underline">
+                    {r.orderNumber}
+                  </Link>
                   <OrderStatusPill status={r.status} locale={locale} />
                 </div>
                 {r.clientReference && (
@@ -207,8 +303,10 @@ export function OrdersList({
                 <div className="truncate text-sm font-medium">{r.clientName}</div>
                 <div className="text-sm font-semibold tabular-nums">{r.priceLabel}</div>
               </div>
-            </Link>
-          ))
+              </div>
+            </div>
+            ))}
+          </>
         )}
       </div>
     </div>

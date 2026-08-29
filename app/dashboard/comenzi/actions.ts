@@ -183,3 +183,29 @@ export async function updateOrderDetailsAction(
   revalidatePath("/dashboard/comenzi");
   return { error: null, needsManualRate: false };
 }
+
+/**
+ * Bulk status change from the orders list. Best-effort: each order is validated
+ * independently (assertTransitionAllowed), and any that can't legally move to
+ * `status` from their current state are skipped rather than failing the batch.
+ */
+export async function bulkSetOrderStatusAction(
+  ids: string[],
+  status: OrderStatus
+): Promise<{ changed: number; total: number }> {
+  const session = await auth();
+  if (!session?.user.companyId) throw new Error("Neautentificat");
+  const sessionUser = { role: session.user.role, companyId: session.user.companyId };
+
+  let changed = 0;
+  for (const id of ids) {
+    try {
+      await updateOrderStatus(sessionUser, id, status);
+      changed++;
+    } catch {
+      // Invalid transition or not this tenant's order — skip it.
+    }
+  }
+  revalidatePath("/dashboard/comenzi");
+  return { changed, total: ids.length };
+}

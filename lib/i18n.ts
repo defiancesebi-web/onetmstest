@@ -177,6 +177,11 @@ export type Dictionary = {
     allCommodities: string;
     clearFilters: string;
     showingCount: string;
+    selectedCount: string;
+    bulkStatus: string;
+    bulkApply: string;
+    bulkDeselect: string;
+    bulkDone: string;
   };
   crud: {
     search: string;
@@ -891,6 +896,11 @@ const dictionaries: Record<Locale, Dictionary> = {
       allCommodities: "Toată marfa",
       clearFilters: "Resetează",
       showingCount: "{n} comenzi",
+      selectedCount: "{n} selectate",
+      bulkStatus: "Schimbă starea…",
+      bulkApply: "Aplică",
+      bulkDeselect: "Deselectează",
+      bulkDone: "{n} din {total} actualizate",
     },
     crud: {
       search: "Caută",
@@ -1606,6 +1616,11 @@ const dictionaries: Record<Locale, Dictionary> = {
       allCommodities: "All commodities",
       clearFilters: "Clear",
       showingCount: "{n} loads",
+      selectedCount: "{n} selected",
+      bulkStatus: "Change status…",
+      bulkApply: "Apply",
+      bulkDeselect: "Deselect",
+      bulkDone: "{n} of {total} updated",
     },
     crud: {
       search: "Search",
