@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
+import { Combobox } from "@/components/ui/combobox";
 import { Label } from "@/components/ui/label";
 import { createOrderAction, type OrderFormState } from "../actions";
 import { stopTypeLabel } from "@/lib/labels";
@@ -97,11 +98,9 @@ export function OrderForm({
   // whenever the action settles — see vehicle-form.tsx / documents-section.tsx
   // for the same pattern, and the currency case for why it matters: a stale
   // RON selection here would silently persist the wrong money.
-  const clientSelectRef = useRef<HTMLSelectElement>(null);
+  // The client picker is a Combobox (renders from `value`), so only the native
+  // currency <select> still needs its DOM value forced back after a re-render.
   const currencySelectRef = useRef<HTMLSelectElement>(null);
-  useEffect(() => {
-    if (clientSelectRef.current) clientSelectRef.current.value = clientId;
-  }, [state, clientId]);
   useEffect(() => {
     if (currencySelectRef.current) currencySelectRef.current.value = currency;
   }, [state, currency]);
@@ -131,25 +130,19 @@ export function OrderForm({
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="clientId">{t.client}</Label>
-            <select
-              ref={clientSelectRef}
+            <Combobox
               id="clientId"
               name="clientId"
-              required
               value={clientId}
-              className="w-full select-native"
-              onChange={(e) => {
-                setClientId(e.target.value);
-                const client = clients.find((c) => c.id === e.target.value);
+              onChange={(v) => {
+                setClientId(v);
+                const client = clients.find((c) => c.id === v);
                 if (client) setPaymentTermDays(String(client.paymentTermDays));
               }}
-            >
-              {clients.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.name}
-                </option>
-              ))}
-            </select>
+              options={clients.map((c) => ({ value: c.id, label: c.name }))}
+              placeholder={t.client}
+              showAvatars
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="clientReference">{t.clientReference}</Label>

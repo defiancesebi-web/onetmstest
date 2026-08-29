@@ -5,6 +5,7 @@ import { updateTripResourcesAction, type TripFormState } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
+import { Combobox } from "@/components/ui/combobox";
 import { Label } from "@/components/ui/label";
 import type { Dictionary } from "@/lib/i18n";
 import type { ResourceOption } from "../noua/new-trip-form";
@@ -43,14 +44,13 @@ export function TripResourcesForm({
 
   const tractorRef = useRef<HTMLSelectElement>(null);
   const trailerRef = useRef<HTMLSelectElement>(null);
-  const primaryRef = useRef<HTMLSelectElement>(null);
-  const secondRef = useRef<HTMLSelectElement>(null);
 
   useEffect(() => {
+    // Native <select>s can desync from controlled state after the conflict
+    // re-render; force the DOM value back. Driver pickers are Comboboxes, which
+    // always render from `value`, so they need no such sync.
     if (tractorRef.current) tractorRef.current.value = fields.tractorUnitId;
     if (trailerRef.current) trailerRef.current.value = fields.trailerId;
-    if (primaryRef.current) primaryRef.current.value = fields.primaryDriverId;
-    if (secondRef.current) secondRef.current.value = fields.secondDriverId;
   }, [state, fields]);
 
   // The acceptance belongs to the selection that was warned about, not to the
@@ -138,39 +138,27 @@ export function TripResourcesForm({
 
       <div className="space-y-1.5">
         <Label htmlFor="primaryDriverId">{t.primaryDriver}</Label>
-        <select
+        <Combobox
           id="primaryDriverId"
           name="primaryDriverId"
-          ref={primaryRef}
           value={fields.primaryDriverId}
-          onChange={(e) => update("primaryDriverId", e.target.value)}
-          className="w-full select-native"
-        >
-          <option value="">{t.none}</option>
-          {drivers.map((v) => (
-            <option key={v.id} value={v.id}>
-              {v.label}
-            </option>
-          ))}
-        </select>
+          onChange={(v) => update("primaryDriverId", v)}
+          options={drivers.map((d) => ({ value: d.id, label: d.label }))}
+          noneLabel={t.none}
+          showAvatars
+        />
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="secondDriverId">{t.secondDriver}</Label>
-        <select
+        <Combobox
           id="secondDriverId"
           name="secondDriverId"
-          ref={secondRef}
           value={fields.secondDriverId}
-          onChange={(e) => update("secondDriverId", e.target.value)}
-          className="w-full select-native"
-        >
-          <option value="">{t.none}</option>
-          {drivers.map((v) => (
-            <option key={v.id} value={v.id}>
-              {v.label}
-            </option>
-          ))}
-        </select>
+          onChange={(v) => update("secondDriverId", v)}
+          options={drivers.map((d) => ({ value: d.id, label: d.label }))}
+          noneLabel={t.none}
+          showAvatars
+        />
       </div>
 
       <div className="space-y-1.5">
