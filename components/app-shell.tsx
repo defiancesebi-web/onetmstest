@@ -93,6 +93,7 @@ export async function AppShell({
     <DashboardChrome
       items={items}
       brandSub={area === "admin" ? dict.topbar.platform : (company?.name ?? "")}
+      brandLogo={area === "admin" ? null : (company?.logo ?? null)}
       user={{ name: session!.user.name ?? "", roleLabel: ROLE_LABELS[role][locale] }}
       locale={locale}
       notifications={notifications}

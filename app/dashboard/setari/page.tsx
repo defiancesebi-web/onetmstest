@@ -27,6 +27,7 @@ export default async function CompanySettingsPage() {
         t={t}
         values={{
           name: company?.name ?? "",
+          logo: company?.logo ?? null,
           cui: company?.cui ?? "",
           regCom: company?.regCom ?? "",
           shareCapital: company?.shareCapital ?? "",

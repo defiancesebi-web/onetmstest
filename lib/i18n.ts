@@ -663,6 +663,11 @@ export type Dictionary = {
     title: string;
     description: string;
     adminOnly: string;
+    sectionLogo: string;
+    logoHint: string;
+    logoUpload: string;
+    logoChange: string;
+    logoRemove: string;
     sectionIdentity: string;
     sectionAddress: string;
     sectionContact: string;
@@ -1360,6 +1365,11 @@ const dictionaries: Record<Locale, Dictionary> = {
       title: "Setări firmă",
       description: "Datele firmei tale. Apar pe facturi și în aplicație.",
       adminOnly: "Doar administratorul firmei poate modifica aceste date.",
+      sectionLogo: "Logo firmă",
+      logoHint: "Apare în bara laterală, lângă numele firmei. Pătrat, imagine mică.",
+      logoUpload: "Încarcă logo",
+      logoChange: "Schimbă",
+      logoRemove: "Elimină",
       sectionIdentity: "Identitate",
       sectionAddress: "Sediu",
       sectionContact: "Contact",
@@ -2055,6 +2065,11 @@ const dictionaries: Record<Locale, Dictionary> = {
       title: "Company settings",
       description: "Your company's details. They appear on invoices and in the app.",
       adminOnly: "Only the company admin can change these details.",
+      sectionLogo: "Company logo",
+      logoHint: "Shown in the sidebar next to the company name. Square, small image.",
+      logoUpload: "Upload logo",
+      logoChange: "Change",
+      logoRemove: "Remove",
       sectionIdentity: "Identity",
       sectionAddress: "Registered office",
       sectionContact: "Contact",

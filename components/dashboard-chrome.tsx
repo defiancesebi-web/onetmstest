@@ -86,6 +86,7 @@ function initials(name: string) {
 export function DashboardChrome({
   items,
   brandSub,
+  brandLogo = null,
   user,
   locale,
   notifications = [],
@@ -94,6 +95,7 @@ export function DashboardChrome({
 }: {
   items: ChromeNavItem[];
   brandSub: string;
+  brandLogo?: string | null;
   user: { name: string; roleLabel: string };
   locale: Locale;
   notifications?: ChromeNotification[];
@@ -127,16 +129,26 @@ export function DashboardChrome({
       <aside
         className={`${collapsed ? "w-[74px]" : "w-[236px]"} bg-sidebar text-sidebar-foreground border-sidebar-border sticky top-0 flex h-screen shrink-0 flex-col border-r transition-[width] duration-200`}
       >
-        {/* Company name */}
-        <div className="border-sidebar-border flex h-[60px] items-center border-b px-[18px]">
-          {collapsed ? (
-            <Link href={homeHref} aria-label="ONE TMS" className="mx-auto">
-              <span className="text-primary text-lg font-extrabold">O</span>
-            </Link>
-          ) : (
+        {/* Company logo + name */}
+        <div
+          className={`border-sidebar-border flex h-[60px] items-center gap-2.5 border-b ${collapsed ? "justify-center px-2" : "px-3.5"}`}
+        >
+          <Link
+            href={homeHref}
+            aria-label={brandSub || "ONE TMS"}
+            className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-md bg-white/10 text-sm font-bold text-white"
+          >
+            {brandLogo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={brandLogo} alt="" className="size-full object-cover" />
+            ) : (
+              (brandSub.trim().charAt(0).toUpperCase() || "O")
+            )}
+          </Link>
+          {!collapsed && (
             <Link
               href={homeHref}
-              className="truncate text-[16px] font-bold leading-tight tracking-[-0.005em]"
+              className="min-w-0 truncate text-[15px] font-bold leading-tight tracking-[-0.005em] text-white"
               style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}
               title={brandSub}
             >

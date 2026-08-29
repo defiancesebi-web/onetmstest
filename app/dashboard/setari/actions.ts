@@ -23,6 +23,21 @@ export async function saveCompanySettingsAction(
     return v ? v : null;
   };
 
+  // Logo: a client-resized square image data URL, or empty to clear. Reject
+  // anything that isn't an image data URL, and cap the size (a 128px webp is a
+  // few KB; ~400 KB is generous headroom before it bloats the row).
+  const logoRaw = ((formData.get("logo") as string | null) ?? "").trim();
+  let logo: string | null = null;
+  if (logoRaw) {
+    if (!logoRaw.startsWith("data:image/")) {
+      return { error: "Logo invalid. Încarcă un fișier imagine.", saved: false };
+    }
+    if (logoRaw.length > 400_000) {
+      return { error: "Logo prea mare. Alege o imagine mai mică.", saved: false };
+    }
+    logo = logoRaw;
+  }
+
   try {
     await updateCompanySettings(sessionUser, {
       regCom: clean("regCom"),
@@ -38,6 +53,7 @@ export async function saveCompanySettingsAction(
       shareCapital: clean("shareCapital"),
       vatPayer: formData.get("vatPayer") === "on",
       invoiceSeries: clean("invoiceSeries"),
+      logo,
     });
   } catch (error) {
     if (error instanceof ForbiddenError) return { error: error.message, saved: false };
@@ -46,5 +62,7 @@ export async function saveCompanySettingsAction(
 
   revalidatePath("/dashboard/setari");
   revalidatePath("/dashboard/facturare");
+  // The sidebar (in the dashboard layout) shows the company logo/name.
+  revalidatePath("/dashboard", "layout");
   return { error: null, saved: true };
 }

@@ -43,6 +43,10 @@ model Company {
   status    CompanyStatus @default(TRIAL)
   createdAt DateTime      @default(now())
 
+  /// Company logo shown in the sidebar next to the name. A small square image
+  /// data URL (resized client-side on upload), so no file storage is needed.
+  logo String?
+
   // Invoicing / legal identity of the issuer (furnizor). Filled once from the
   // in-app invoicing settings screen; required before an invoice can be issued.
   // Kept nullable so existing companies migrate cleanly and can fill them later.

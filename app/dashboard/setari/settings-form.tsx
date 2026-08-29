@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { CheckCircle2 } from "lucide-react";
+import { type ChangeEvent, useActionState, useRef, useState } from "react";
+import { CheckCircle2, ImagePlus, Trash2 } from "lucide-react";
 import { saveCompanySettingsAction, type SettingsFormState } from "./actions";
 import type { Dictionary } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 
 export type CompanyValues = {
   name: string;
+  logo: string | null;
   cui: string;
   regCom: string;
   shareCapital: string;
@@ -38,9 +39,78 @@ export function CompanySettingsForm({
     { error: null, saved: false }
   );
   const [vatPayer, setVatPayer] = useState(values.vatPayer);
+  const [logo, setLogo] = useState<string | null>(values.logo);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  // Resize the picked image to a small square data URL, entirely in the
+  // browser — no upload service needed, and the stored value stays tiny.
+  function onPickLogo(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-picking the same file
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const size = 128;
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        const scale = Math.max(size / img.width, size / img.height);
+        const w = img.width * scale;
+        const h = img.height * scale;
+        ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+        setLogo(canvas.toDataURL("image/webp", 0.85));
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  const initial = values.name.trim().charAt(0).toUpperCase() || "O";
 
   return (
     <form action={formAction} className="space-y-8">
+      <input type="hidden" name="logo" value={logo ?? ""} />
+
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium">{t.sectionLogo}</h2>
+        <div className="flex items-center gap-4">
+          <span className="bg-muted grid size-16 shrink-0 place-items-center overflow-hidden rounded-lg border">
+            {logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logo} alt="" className="size-full object-cover" />
+            ) : (
+              <span className="text-muted-foreground text-xl font-bold">{initial}</span>
+            )}
+          </span>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
+                <ImagePlus className="mr-1.5 size-4" />
+                {logo ? t.logoChange : t.logoUpload}
+              </Button>
+              {logo && (
+                <Button type="button" variant="outline" size="sm" onClick={() => setLogo(null)}>
+                  <Trash2 className="mr-1.5 size-4" />
+                  {t.logoRemove}
+                </Button>
+              )}
+            </div>
+            <p className="text-muted-foreground text-xs">{t.logoHint}</p>
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            onChange={onPickLogo}
+            className="hidden"
+          />
+        </div>
+      </section>
+
       <section className="space-y-4">
         <h2 className="text-sm font-medium">{t.sectionIdentity}</h2>
         <div className="grid gap-4 sm:grid-cols-2">

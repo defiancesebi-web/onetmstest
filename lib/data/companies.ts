@@ -42,6 +42,8 @@ export type CompanySettingsInput = {
   shareCapital: string | null;
   vatPayer: boolean;
   invoiceSeries: string | null;
+  /** Square image data URL, or null to clear. Validated by the caller. */
+  logo: string | null;
 };
 
 /**
@@ -68,6 +70,7 @@ export async function updateCompanySettings(session: SessionUser, input: Company
       shareCapital: input.shareCapital,
       vatPayer: input.vatPayer,
       invoiceSeries: input.invoiceSeries,
+      logo: input.logo,
     },
   });
 }
