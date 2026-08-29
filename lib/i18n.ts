@@ -271,6 +271,11 @@ export type Dictionary = {
     create: string;
     saving: string;
     saveAllocation: string;
+    stepWord: string;
+    step1: string;
+    step2: string;
+    wizardNext: string;
+    wizardBack: string;
   };
   tripDetail: {
     back: string;
@@ -970,6 +975,11 @@ const dictionaries: Record<Locale, Dictionary> = {
       create: "Creează cursa",
       saving: "Se salvează...",
       saveAllocation: "Salvează alocarea",
+      stepWord: "Pasul",
+      step1: "Detalii cursă",
+      step2: "Alocare resurse",
+      wizardNext: "Continuă",
+      wizardBack: "Înapoi",
     },
     tripDetail: {
       back: "← Înapoi la dispecerat",
@@ -1670,6 +1680,11 @@ const dictionaries: Record<Locale, Dictionary> = {
       create: "Create trip",
       saving: "Saving...",
       saveAllocation: "Save allocation",
+      stepWord: "Step",
+      step1: "Trip details",
+      step2: "Assign resources",
+      wizardNext: "Continue",
+      wizardBack: "Back",
     },
     tripDetail: {
       back: "← Back to dispatch",
