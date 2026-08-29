@@ -7,6 +7,7 @@ import { INVOICE_UNITS } from "@/lib/invoice-constants";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
 
 export type ClientOption = {
@@ -242,24 +243,20 @@ export function InvoiceForm({
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-1.5">
             <Label htmlFor="issueDate">{t.issueDate}</Label>
-            <Input
+            <DatePicker
               id="issueDate"
               name="issueDate"
-              type="date"
-              required
               value={issueDate}
-              onChange={(e) => setIssueDate(e.target.value)}
+              onChange={(v) => setIssueDate(v)}
             />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="dueDate">{t.dueDate}</Label>
-            <Input
+            <DatePicker
               id="dueDate"
               name="dueDate"
-              type="date"
-              required
               value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
+              onChange={(v) => setDueDate(v)}
             />
           </div>
           <div className="space-y-1.5">

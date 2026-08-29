@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
 import { DocumentStatusBadge } from "@/components/document-status-badge";
 import { formatDateKey, type DocumentStatus } from "@/lib/documentStatus";
@@ -69,14 +70,11 @@ function DocumentRenewal({
 
   return (
     <form action={formAction} className="flex items-center gap-1">
-      <Input
+      <DatePicker
         name="expiresAt"
-        type="date"
         value={expiresAt}
-        onChange={(e) => setExpiresAt(e.target.value)}
-        required
-        className="w-36"
-        aria-label={labels.newExpiryAria}
+        onChange={(v) => setExpiresAt(v)}
+        className="w-40"
       />
       <Button type="submit" size="sm" variant="outline" disabled={pending}>
         {pending ? "..." : labels.renew}
@@ -213,23 +211,20 @@ export function DocumentsSection({
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="issuedAt">{labels.issuedAt}</Label>
-          <Input
+          <DatePicker
             id="issuedAt"
             name="issuedAt"
-            type="date"
             value={issuedAt}
-            onChange={(e) => setIssuedAt(e.target.value)}
+            onChange={(v) => setIssuedAt(v)}
           />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="expiresAt">{labels.expiresAt}</Label>
-          <Input
+          <DatePicker
             id="expiresAt"
             name="expiresAt"
-            type="date"
             value={expiresAt}
-            onChange={(e) => setExpiresAt(e.target.value)}
-            required
+            onChange={(v) => setExpiresAt(v)}
           />
         </div>
 

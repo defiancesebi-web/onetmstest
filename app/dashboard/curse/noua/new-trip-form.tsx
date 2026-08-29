@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { createTripAction, type TripFormState } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
 import type { Dictionary } from "@/lib/i18n";
 
@@ -84,24 +85,20 @@ export function NewTripForm({
 
       <div className="space-y-1.5">
         <Label htmlFor="startsAt">{t.start}</Label>
-        <Input
+        <DatePicker
           id="startsAt"
           name="startsAt"
-          type="date"
           value={fields.startsAt}
-          onChange={(e) => update("startsAt", e.target.value)}
-          required
+          onChange={(v) => update("startsAt", v)}
         />
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="endsAt">{t.end}</Label>
-        <Input
+        <DatePicker
           id="endsAt"
           name="endsAt"
-          type="date"
           value={fields.endsAt}
-          onChange={(e) => update("endsAt", e.target.value)}
-          required
+          onChange={(v) => update("endsAt", v)}
         />
       </div>
 

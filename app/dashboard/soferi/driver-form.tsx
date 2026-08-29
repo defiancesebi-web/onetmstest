@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
 import type { Dictionary } from "@/lib/i18n";
 import type { DriverFormState } from "./actions";
@@ -96,12 +97,11 @@ export function DriverForm({
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="hiredAt">{t.hiredAt}</Label>
-        <Input
+        <DatePicker
           id="hiredAt"
           name="hiredAt"
-          type="date"
           value={fields.hiredAt}
-          onChange={(e) => update("hiredAt", e.target.value)}
+          onChange={(v) => update("hiredAt", v)}
         />
       </div>
       <div className="space-y-1.5">

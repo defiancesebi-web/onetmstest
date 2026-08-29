@@ -5,6 +5,7 @@ import { createExpenseAction, type ExpenseFormState } from "../actions";
 import type { Dictionary } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
 
 export type Option = { value: string; label: string };
@@ -32,7 +33,7 @@ export function ExpenseForm({
     <form action={formAction} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <div className="space-y-1.5">
         <Label htmlFor="date">{t.eDate}</Label>
-        <Input id="date" name="date" type="date" defaultValue={today} required />
+        <DatePicker id="date" name="date" defaultValue={today} />
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="category">{t.eCategory}</Label>

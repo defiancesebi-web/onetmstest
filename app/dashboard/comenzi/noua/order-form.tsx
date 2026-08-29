@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
 import { createOrderAction, type OrderFormState } from "../actions";
 import { stopTypeLabel } from "@/lib/labels";
@@ -248,11 +249,9 @@ export function OrderForm({
                 value={stop.city}
                 onChange={(e) => updateStop(index, { city: e.target.value })}
               />
-              <Input
-                type="date"
-                required
+              <DatePicker
                 value={stop.scheduledDate}
-                onChange={(e) => updateStop(index, { scheduledDate: e.target.value })}
+                onChange={(v) => updateStop(index, { scheduledDate: v })}
               />
               <div className="flex gap-2">
                 <Input
