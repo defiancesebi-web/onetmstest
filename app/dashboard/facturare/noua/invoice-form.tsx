@@ -21,13 +21,13 @@ export type ClientOption = {
 };
 
 export type InvoicePrefill = {
-  orderId: string;
-  orderNumber: string;
+  orderIds: string[];
+  orderNumbers: string[];
   clientId: string;
   currency: "RON" | "EUR";
   exchangeRate: string;
   dueDate: string;
-  line: { description: string; unitPrice: string };
+  lines: { description: string; unitPrice: string }[];
 };
 
 type Line = {
@@ -83,15 +83,17 @@ export function InvoiceForm({
   const [currency, setCurrency] = useState<"RON" | "EUR">(prefill?.currency ?? "RON");
   const [exchangeRate, setExchangeRate] = useState(prefill?.exchangeRate ?? "");
   const [notes, setNotes] = useState("");
-  const [lines, setLines] = useState<Line[]>([
-    {
-      description: prefill?.line.description ?? "",
-      unit: "cursă",
-      quantity: "1",
-      unitPrice: prefill?.line.unitPrice ?? "",
-      vatRate: defaultVat,
-    },
-  ]);
+  const [lines, setLines] = useState<Line[]>(
+    prefill && prefill.lines.length
+      ? prefill.lines.map((l) => ({
+          description: l.description,
+          unit: "cursă",
+          quantity: "1",
+          unitPrice: l.unitPrice,
+          vatRate: defaultVat,
+        }))
+      : [{ description: "", unit: "cursă", quantity: "1", unitPrice: "", vatRate: defaultVat }]
+  );
 
   function selectClient(id: string) {
     setClientId(id);
@@ -147,7 +149,7 @@ export function InvoiceForm({
     <form action={formAction} className="max-w-3xl space-y-8">
       <input type="hidden" name="lines" value={JSON.stringify(lines)} />
       <input type="hidden" name="clientId" value={clientId} />
-      {prefill && <input type="hidden" name="orderId" value={prefill.orderId} />}
+      {prefill && <input type="hidden" name="orderIds" value={prefill.orderIds.join(",")} />}
 
       {/* Buyer */}
       <section className="space-y-4">

@@ -21,6 +21,7 @@ export type OrderRow = {
   clientName: string;
   status: OrderStatus;
   cargo: string;
+  currency: string;
   priceLabel: string;
   originCity: string | null;
   originDate: string | null;
@@ -145,6 +146,17 @@ export function OrdersList({
     router.push(`/dashboard/comenzi/${id}`);
   }
 
+  // One invoice needs one buyer + one currency, so multi-billing is only offered
+  // when every selected order shares a client and a currency.
+  const selectedRows = rows.filter((r) => selected.has(r.id));
+  const canInvoice =
+    selectedRows.length > 0 &&
+    selectedRows.every((r) => r.clientId === selectedRows[0].clientId && r.currency === selectedRows[0].currency);
+  function invoiceSelected() {
+    if (!canInvoice) return;
+    router.push(`/dashboard/facturare/noua?comenzi=${selectedRows.map((r) => r.id).join(",")}`);
+  }
+
   return (
     <div className="space-y-4">
       {/* Toolbar */}
@@ -198,6 +210,11 @@ export function OrdersList({
           <span className="text-sm font-semibold">
             {t.selectedCount.replace("{n}", String(selected.size))}
           </span>
+          <Button size="sm" onClick={invoiceSelected} disabled={!canInvoice}>
+            {t.bulkInvoice}
+          </Button>
+          {!canInvoice && <span className="text-xs text-amber-700">{t.invoiceMixed}</span>}
+          <span className="bg-border mx-1 h-6 w-px" />
           <div className="w-48">
             <Combobox
               value={bulkStatus}

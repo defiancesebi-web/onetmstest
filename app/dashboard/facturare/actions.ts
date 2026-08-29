@@ -58,7 +58,10 @@ export async function createInvoiceAction(
       dueDate: formData.get("dueDate") as string,
       currency: (formData.get("currency") as Currency) || "RON",
       exchangeRate: (formData.get("exchangeRate") as string) || null,
-      orderId: (formData.get("orderId") as string) || null,
+      orderIds: ((formData.get("orderIds") as string) || "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
       notes: (formData.get("notes") as string) || null,
       lines,
       issueNow,

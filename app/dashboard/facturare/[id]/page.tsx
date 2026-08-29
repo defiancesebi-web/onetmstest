@@ -120,12 +120,17 @@ export default async function InvoiceDetailPage({
               1 {invoice.currency} = {invoice.exchangeRate.toString()} RON
             </div>
           )}
-          {invoice.order && (
+          {invoice.orders.length > 0 && (
             <div className="print:hidden">
               <span className="text-muted-foreground">{t.fromOrder}: </span>
-              <Link href={`/dashboard/comenzi/${invoice.order.id}`} className="text-primary">
-                {invoice.order.orderNumber}
-              </Link>
+              {invoice.orders.map((o, i) => (
+                <span key={o.id}>
+                  {i > 0 && ", "}
+                  <Link href={`/dashboard/comenzi/${o.id}`} className="text-primary">
+                    {o.orderNumber}
+                  </Link>
+                </span>
+              ))}
             </div>
           )}
         </div>

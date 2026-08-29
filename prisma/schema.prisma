@@ -439,7 +439,6 @@ model Invoice {
   grossTotal Decimal @db.Decimal(12, 2)
 
   notes          String?
-  orderId        String?
   efacturaStatus EfacturaStatus @default(NOT_SENT)
   issuedAt       DateTime?
   paidAt         DateTime?
@@ -448,7 +447,7 @@ model Invoice {
 
   company Company       @relation(fields: [companyId], references: [id])
   client  Client?       @relation(fields: [clientId], references: [id])
-  order   Order?        @relation(fields: [orderId], references: [id])
+  orders  Order[]
   lines   InvoiceLine[]
 
   @@unique([companyId, invoiceNumber])

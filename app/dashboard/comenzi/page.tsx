@@ -39,6 +39,7 @@ export default async function ComenziPage() {
       clientName: o.client.name,
       status: o.status,
       cargo: o.cargoDescription,
+      currency: o.currency,
       priceLabel: `${money.format(Number(o.salePrice))} ${o.currency}`,
       originCity: loading?.city ?? null,
       originDate: loading ? toDateKey(loading.scheduledDate) : null,

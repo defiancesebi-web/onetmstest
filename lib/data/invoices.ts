@@ -63,7 +63,7 @@ export type CreateInvoiceInput = {
   dueDate: string;
   currency: Currency;
   exchangeRate: string | null;
-  orderId: string | null;
+  orderIds: string[];
   notes: string | null;
   lines: InvoiceLineInput[];
   /** true → assign a number and mark ISSUED in the same transaction. */
@@ -286,7 +286,9 @@ export async function createInvoice(
         dueDate: new Date(`${input.dueDate}T00:00:00Z`),
         currency: input.currency,
         exchangeRate,
-        orderId: input.orderId,
+        orders: input.orderIds.length
+          ? { connect: input.orderIds.map((id) => ({ id })) }
+          : undefined,
         notes: input.notes?.trim() || null,
         netTotal: totals.netTotal,
         vatTotal: totals.vatTotal,
@@ -356,7 +358,7 @@ export async function getInvoiceById(session: SessionUser, invoiceId: string) {
     include: {
       lines: { orderBy: { sequence: "asc" } },
       client: { select: { id: true, name: true } },
-      order: { select: { id: true, orderNumber: true } },
+      orders: { select: { id: true, orderNumber: true }, orderBy: { orderNumber: "asc" } },
     },
   });
   if (!invoice) return null;

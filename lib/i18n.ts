@@ -196,6 +196,8 @@ export type Dictionary = {
     bulkApply: string;
     bulkDeselect: string;
     bulkDone: string;
+    bulkInvoice: string;
+    invoiceMixed: string;
   };
   crud: {
     search: string;
@@ -929,6 +931,8 @@ const dictionaries: Record<Locale, Dictionary> = {
       bulkApply: "Aplică",
       bulkDeselect: "Deselectează",
       bulkDone: "{n} din {total} actualizate",
+      bulkInvoice: "Facturează",
+      invoiceMixed: "Alege comenzi de la același client și cu aceeași monedă.",
     },
     crud: {
       search: "Caută",
@@ -1663,6 +1667,8 @@ const dictionaries: Record<Locale, Dictionary> = {
       bulkApply: "Apply",
       bulkDeselect: "Deselect",
       bulkDone: "{n} of {total} updated",
+      bulkInvoice: "Invoice",
+      invoiceMixed: "Pick orders with the same customer and currency.",
     },
     crud: {
       search: "Search",
