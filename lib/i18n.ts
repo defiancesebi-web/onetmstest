@@ -167,6 +167,16 @@ export type Dictionary = {
     colRef: string;
     colPrice: string;
     colStatus: string;
+    filterClient: string;
+    filterDriver: string;
+    filterTruck: string;
+    filterCommodity: string;
+    allClients: string;
+    allDrivers: string;
+    allTrucks: string;
+    allCommodities: string;
+    clearFilters: string;
+    showingCount: string;
   };
   crud: {
     search: string;
@@ -871,6 +881,16 @@ const dictionaries: Record<Locale, Dictionary> = {
       colRef: "Referință",
       colPrice: "Preț",
       colStatus: "Stare",
+      filterClient: "Client",
+      filterDriver: "Șofer",
+      filterTruck: "Camion",
+      filterCommodity: "Marfă",
+      allClients: "Toți clienții",
+      allDrivers: "Toți șoferii",
+      allTrucks: "Toate camioanele",
+      allCommodities: "Toată marfa",
+      clearFilters: "Resetează",
+      showingCount: "{n} comenzi",
     },
     crud: {
       search: "Caută",
@@ -1576,6 +1596,16 @@ const dictionaries: Record<Locale, Dictionary> = {
       colRef: "Reference",
       colPrice: "Price",
       colStatus: "Status",
+      filterClient: "Customer",
+      filterDriver: "Driver",
+      filterTruck: "Truck",
+      filterCommodity: "Commodity",
+      allClients: "All customers",
+      allDrivers: "All drivers",
+      allTrucks: "All trucks",
+      allCommodities: "All commodities",
+      clearFilters: "Clear",
+      showingCount: "{n} loads",
     },
     crud: {
       search: "Search",

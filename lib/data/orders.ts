@@ -276,6 +276,37 @@ export async function listOrders(
   });
 }
 
+/**
+ * Every order for the company with the data the rich list needs: stops (for
+ * origin → destination + dates), cargo, and the assigned trip's driver/truck
+ * (for filtering). Filtering/searching happens client-side on this set.
+ */
+export async function listOrdersRich(
+  session: SessionUser,
+  companyId: string
+): Promise<OrderWithStopsAndClient[]> {
+  assertCompanyAccess(session, companyId);
+
+  return prisma.order.findMany({
+    where: { companyId },
+    include: {
+      stops: { orderBy: { sequence: "asc" } },
+      client: true,
+      trip: {
+        select: {
+          id: true,
+          tripNumber: true,
+          status: true,
+          tractorUnit: { select: { registrationNumber: true } },
+          trailer: { select: { registrationNumber: true } },
+          primaryDriver: { select: { firstName: true, lastName: true } },
+        },
+      },
+    },
+    orderBy: [{ year: "desc" }, { sequence: "desc" }],
+  });
+}
+
 export async function getOrderById(
   session: SessionUser,
   orderId: string

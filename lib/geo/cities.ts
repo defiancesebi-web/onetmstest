@@ -208,6 +208,29 @@ export function geocodeCity(city: string | null | undefined): LatLng | null {
   return CITIES[head] ?? null;
 }
 
+/** Great-circle distance in km between two points. */
+export function haversineKm(a: LatLng, b: LatLng): number {
+  const R = 6371;
+  const dLat = ((b[0] - a[0]) * Math.PI) / 180;
+  const dLng = ((b[1] - a[1]) * Math.PI) / 180;
+  const la1 = (a[0] * Math.PI) / 180;
+  const la2 = (b[0] * Math.PI) / 180;
+  const h =
+    Math.sin(dLat / 2) ** 2 + Math.cos(la1) * Math.cos(la2) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+/**
+ * Rough ROAD distance between two city names, or null if either can't be
+ * geocoded. Straight-line × 1.3 is a crude detour factor — presented with a "~".
+ */
+export function approxRoadKm(cityA: string | null, cityB: string | null): number | null {
+  const a = geocodeCity(cityA);
+  const b = geocodeCity(cityB);
+  if (!a || !b) return null;
+  return Math.round((haversineKm(a, b) * 1.3) / 5) * 5;
+}
+
 // --- Turning trips into map markers -----------------------------------------
 
 export type FleetStatus = "in_transit" | "assigned" | "idle";
