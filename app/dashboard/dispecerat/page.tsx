@@ -174,12 +174,6 @@ export default async function DispeceratPage({
             {tabLabel(v)}
           </Link>
         ))}
-        <Link
-          href="/dashboard/planning"
-          className="text-muted-foreground hover:text-foreground -mb-px border-b-2 border-transparent px-3.5 py-2 text-sm font-semibold"
-        >
-          {d.tabPlanning}
-        </Link>
       </div>
 
       <div className="flex flex-col gap-4 lg:flex-row">

@@ -19,7 +19,6 @@ type NavDef = { key: NavKey; href: string; built: boolean; roles?: UserRole[] };
 const COMPANY_NAV: NavDef[] = [
   { key: "dashboard", href: "/dashboard", built: true },
   { key: "loads", href: "/dashboard/comenzi", built: true },
-  { key: "planning", href: "/dashboard/planning", built: true },
   { key: "dispatch", href: "/dashboard/dispecerat", built: true },
   { key: "tracking", href: "/dashboard/tracking", built: true },
   { key: "vehicles", href: "/dashboard/flota", built: true },
