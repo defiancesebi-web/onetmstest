@@ -136,7 +136,7 @@ export function OrderForm({
               name="clientId"
               required
               value={clientId}
-              className="w-full rounded-lg border px-2 py-2 text-sm"
+              className="w-full select-native"
               onChange={(e) => {
                 setClientId(e.target.value);
                 const client = clients.find((c) => c.id === e.target.value);
@@ -305,7 +305,7 @@ export function OrderForm({
               name="currency"
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
-              className="w-full rounded-lg border px-2 py-2 text-sm"
+              className="w-full select-native"
             >
               <option value="RON">RON</option>
               <option value="EUR">EUR</option>

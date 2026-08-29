@@ -110,7 +110,7 @@ export function TripResourcesForm({
           ref={tractorRef}
           value={fields.tractorUnitId}
           onChange={(e) => update("tractorUnitId", e.target.value)}
-          className="w-full rounded-lg border px-2 py-2 text-sm"
+          className="w-full select-native"
         >
           <option value="">{t.none}</option>
           {tractorUnits.map((v) => (
@@ -128,7 +128,7 @@ export function TripResourcesForm({
           ref={trailerRef}
           value={fields.trailerId}
           onChange={(e) => update("trailerId", e.target.value)}
-          className="w-full rounded-lg border px-2 py-2 text-sm"
+          className="w-full select-native"
         >
           <option value="">{t.noneFem}</option>
           {trailers.map((v) => (
@@ -147,7 +147,7 @@ export function TripResourcesForm({
           ref={primaryRef}
           value={fields.primaryDriverId}
           onChange={(e) => update("primaryDriverId", e.target.value)}
-          className="w-full rounded-lg border px-2 py-2 text-sm"
+          className="w-full select-native"
         >
           <option value="">{t.none}</option>
           {drivers.map((v) => (
@@ -165,7 +165,7 @@ export function TripResourcesForm({
           ref={secondRef}
           value={fields.secondDriverId}
           onChange={(e) => update("secondDriverId", e.target.value)}
-          className="w-full rounded-lg border px-2 py-2 text-sm"
+          className="w-full select-native"
         >
           <option value="">{t.none}</option>
           {drivers.map((v) => (

@@ -43,7 +43,7 @@ export function FixedCostForm({
           name="currency"
           value={currency}
           onChange={(e) => setCurrency(e.target.value)}
-          className="w-full rounded-lg border px-2 py-2 text-sm"
+          className="w-full select-native"
         >
           <option value="RON">RON</option>
           <option value="EUR">EUR</option>
@@ -58,7 +58,7 @@ export function FixedCostForm({
       )}
       <div className="space-y-1.5">
         <Label htmlFor="category">{t.fCategory}</Label>
-        <select id="category" name="category" className="w-full rounded-lg border px-2 py-2 text-sm">
+        <select id="category" name="category" className="w-full select-native">
           {categories.map((c) => (
             <option key={c.value} value={c.value}>
               {c.label}
@@ -68,7 +68,7 @@ export function FixedCostForm({
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="period">{t.fPeriod}</Label>
-        <select id="period" name="period" className="w-full rounded-lg border px-2 py-2 text-sm">
+        <select id="period" name="period" className="w-full select-native">
           {periods.map((p) => (
             <option key={p.value} value={p.value}>
               {p.label}
@@ -78,7 +78,7 @@ export function FixedCostForm({
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="vehicleId">{t.fVehicle}</Label>
-        <select id="vehicleId" name="vehicleId" className="w-full rounded-lg border px-2 py-2 text-sm">
+        <select id="vehicleId" name="vehicleId" className="w-full select-native">
           <option value="">{t.generalOption}</option>
           {vehicles.map((v) => (
             <option key={v.value} value={v.value}>

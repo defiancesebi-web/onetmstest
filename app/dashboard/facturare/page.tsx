@@ -82,7 +82,7 @@ export default async function InvoicesPage({
         <select
           name="status"
           defaultValue={statusFilter ?? ""}
-          className="rounded-lg border px-2 py-2 text-sm"
+          className="select-native"
         >
           <option value="">{t.allStatuses}</option>
           {STATUS_VALUES.map((s) => (

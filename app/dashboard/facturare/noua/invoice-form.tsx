@@ -157,7 +157,7 @@ export function InvoiceForm({
             id="clientPick"
             value={clientId}
             onChange={(e) => selectClient(e.target.value)}
-            className="w-full max-w-sm rounded-lg border px-2 py-2 text-sm"
+            className="w-full max-w-sm select-native"
           >
             <option value="">{t.chooseClient}</option>
             {clients.map((c) => (
@@ -269,7 +269,7 @@ export function InvoiceForm({
               name="currency"
               value={currency}
               onChange={(e) => setCurrency(e.target.value as "RON" | "EUR")}
-              className="w-full rounded-lg border px-2 py-2 text-sm"
+              className="w-full select-native"
             >
               <option value="RON">RON</option>
               <option value="EUR">EUR</option>
@@ -331,7 +331,7 @@ export function InvoiceForm({
                     aria-label={t.lineUnit}
                     value={line.unit}
                     onChange={(e) => updateLine(i, { unit: e.target.value })}
-                    className="w-full rounded-lg border px-2 py-2 text-sm"
+                    className="w-full select-native"
                   >
                     {INVOICE_UNITS.map((u) => (
                       <option key={u} value={u}>

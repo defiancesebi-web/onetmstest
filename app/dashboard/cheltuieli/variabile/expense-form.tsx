@@ -36,7 +36,7 @@ export function ExpenseForm({
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="category">{t.eCategory}</Label>
-        <select id="category" name="category" className="w-full rounded-lg border px-2 py-2 text-sm">
+        <select id="category" name="category" className="w-full select-native">
           {categories.map((c) => (
             <option key={c.value} value={c.value}>
               {c.label}
@@ -55,7 +55,7 @@ export function ExpenseForm({
           name="currency"
           value={currency}
           onChange={(e) => setCurrency(e.target.value)}
-          className="w-full rounded-lg border px-2 py-2 text-sm"
+          className="w-full select-native"
         >
           <option value="RON">RON</option>
           <option value="EUR">EUR</option>
@@ -70,7 +70,7 @@ export function ExpenseForm({
       )}
       <div className="space-y-1.5">
         <Label htmlFor="vehicleId">{t.eVehicle}</Label>
-        <select id="vehicleId" name="vehicleId" className="w-full rounded-lg border px-2 py-2 text-sm">
+        <select id="vehicleId" name="vehicleId" className="w-full select-native">
           <option value="">{t.eNone}</option>
           {vehicles.map((v) => (
             <option key={v.value} value={v.value}>
@@ -81,7 +81,7 @@ export function ExpenseForm({
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="driverId">{t.eDriver}</Label>
-        <select id="driverId" name="driverId" className="w-full rounded-lg border px-2 py-2 text-sm">
+        <select id="driverId" name="driverId" className="w-full select-native">
           <option value="">{t.eNone}</option>
           {drivers.map((d) => (
             <option key={d.value} value={d.value}>

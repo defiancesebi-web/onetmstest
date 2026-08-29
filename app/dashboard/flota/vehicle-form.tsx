@@ -96,7 +96,7 @@ export function VehicleForm({
           name="type"
           value={fields.type}
           onChange={(e) => update("type", e.target.value as VehicleType)}
-          className="w-full rounded-lg border px-2 py-2 text-sm"
+          className="w-full select-native"
         >
           {(Object.keys(VEHICLE_TYPE_LABELS) as VehicleType[]).map((type) => (
             <option key={type} value={type}>

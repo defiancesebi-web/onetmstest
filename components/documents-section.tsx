@@ -198,7 +198,7 @@ export function DocumentsSection({
             name="type"
             value={type}
             onChange={(e) => setType(e.target.value as DocumentType)}
-            className="w-full rounded-lg border px-2 py-2 text-sm"
+            className="w-full select-native"
           >
             {availableTypes.map((value) => (
               <option key={value} value={value}>

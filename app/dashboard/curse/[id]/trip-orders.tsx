@@ -94,7 +94,7 @@ export function TripOrders({
               ref={selectRef}
               value={orderId}
               onChange={(e) => setOrderId(e.target.value)}
-              className="rounded-lg border px-2 py-2 text-sm"
+              className="select-native"
             >
               <option value="">{t.chooseOrder}</option>
               {attachable.map((o) => (
