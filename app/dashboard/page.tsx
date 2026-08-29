@@ -19,12 +19,9 @@ import { getTrackingBoard } from "@/lib/data/tracking";
 import { getLaneOrders } from "@/lib/data/lanes";
 import { buildFleetPositions } from "@/lib/geo/cities";
 import { toDateKey, formatDateKey, DOCUMENT_TYPE_LABELS } from "@/lib/documentStatus";
-import { orderStatusLabel } from "@/lib/labels";
 import { getDictionary, getLocale } from "@/lib/i18n-server";
 import { StatCard } from "@/components/dashboard/stat-card";
-import { DonutChart } from "@/components/dashboard/donut-chart";
-import { AreaChart } from "@/components/dashboard/area-chart";
-import { OrderStatusPill, STATUS_HEX } from "@/components/dashboard/order-status-pill";
+import { OrderStatusPill } from "@/components/dashboard/order-status-pill";
 import { DocumentStatusBadge } from "@/components/document-status-badge";
 import { LiveFleetMap } from "@/components/dashboard/live-fleet-map";
 import { LaneVisualizer } from "@/components/dashboard/lane-visualizer";
@@ -51,18 +48,6 @@ export default async function DashboardPage() {
     currency: "RON",
     maximumFractionDigits: 0,
   });
-  const weekday = new Intl.DateTimeFormat(locale === "ro" ? "ro-RO" : "en-US", { weekday: "short" });
-
-  const donutSegments = stats.byStatus
-    .filter((s) => s.count > 0)
-    .map((s) => ({ label: orderStatusLabel(s.status, locale), value: s.count, color: STATUS_HEX[s.status] }));
-
-  const areaPoints = stats.series.map((p) => ({
-    label: weekday.format(new Date(`${p.key}T00:00:00`)),
-    total: p.total,
-    delivered: p.delivered,
-  }));
-
   const deliveredPct = stats.total > 0 ? Math.round((stats.delivered / stats.total) * 100) : 0;
 
   const quickActions = [
@@ -124,36 +109,6 @@ export default async function DashboardPage() {
 
       {/* Lane visualizer */}
       <LaneVisualizer orders={laneOrders} t={dict.laneViz} locale={locale} />
-
-      {/* Overview + status */}
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="bg-card rounded-xl border p-5 shadow-sm lg:col-span-2">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-semibold">{d.overview}</h3>
-            <span className="text-muted-foreground text-xs">{d.last7days}</span>
-          </div>
-          <div className="h-52">
-            <AreaChart points={areaPoints} />
-          </div>
-        </div>
-
-        <div className="bg-card rounded-xl border p-5 shadow-sm">
-          <h3 className="mb-2 font-semibold">{d.byStatus}</h3>
-          <div className="flex items-center justify-center py-1">
-            <DonutChart segments={donutSegments} centerValue={String(stats.total)} centerLabel={d.total} />
-          </div>
-          <ul className="mt-3 space-y-1.5">
-            {donutSegments.length === 0 && <li className="text-muted-foreground text-sm">{d.noLoads}</li>}
-            {donutSegments.map((s) => (
-              <li key={s.label} className="flex items-center gap-2 text-sm">
-                <span className="size-2.5 rounded-full" style={{ background: s.color }} />
-                <span className="flex-1">{s.label}</span>
-                <span className="text-muted-foreground tabular-nums">{s.value}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
 
       {/* Recent loads + quick actions */}
       <div className="grid gap-4 lg:grid-cols-3">
