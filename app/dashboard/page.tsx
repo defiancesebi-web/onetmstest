@@ -16,6 +16,7 @@ import { getCompanyForSession } from "@/lib/data/companies";
 import { getExpiringDocuments } from "@/lib/data/documents";
 import { getDashboardStats } from "@/lib/data/dashboard";
 import { getTrackingBoard } from "@/lib/data/tracking";
+import { getLaneOrders } from "@/lib/data/lanes";
 import { buildFleetPositions } from "@/lib/geo/cities";
 import { toDateKey, formatDateKey, DOCUMENT_TYPE_LABELS } from "@/lib/documentStatus";
 import { orderStatusLabel } from "@/lib/labels";
@@ -26,6 +27,7 @@ import { AreaChart } from "@/components/dashboard/area-chart";
 import { OrderStatusPill, STATUS_HEX } from "@/components/dashboard/order-status-pill";
 import { DocumentStatusBadge } from "@/components/document-status-badge";
 import { LiveFleetMap } from "@/components/dashboard/live-fleet-map";
+import { LaneVisualizer } from "@/components/dashboard/lane-visualizer";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -34,11 +36,12 @@ export default async function DashboardPage() {
   const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
   const d = dict.dashboard;
 
-  const [company, stats, expiring, board] = await Promise.all([
+  const [company, stats, expiring, board, laneOrders] = await Promise.all([
     getCompanyForSession(sessionUser),
     getDashboardStats(sessionUser, companyId),
     getExpiringDocuments(sessionUser, companyId),
     getTrackingBoard(sessionUser, companyId),
+    getLaneOrders(sessionUser, companyId),
   ]);
   const fleet = buildFleetPositions(board.trips);
   const t = dict.tracking;
@@ -118,6 +121,9 @@ export default async function DashboardPage() {
           tone="bg-amber-100 text-amber-700"
         />
       </div>
+
+      {/* Lane visualizer */}
+      <LaneVisualizer orders={laneOrders} t={dict.laneViz} locale={locale} />
 
       {/* Overview + status */}
       <div className="grid gap-4 lg:grid-cols-3">

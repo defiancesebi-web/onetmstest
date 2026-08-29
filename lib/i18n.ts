@@ -44,6 +44,20 @@ export type Dictionary = {
     changePassword: string;
   };
   soon: { title: string; body: string };
+  laneViz: {
+    title: string;
+    rangeWeek: string;
+    rangeMonth: string;
+    rangeAll: string;
+    tabFrequency: string;
+    tabRevenue: string;
+    tabProfit: string;
+    colLane: string;
+    colFreq: string;
+    colAvgRevenue: string;
+    colProfit: string;
+    empty: string;
+  };
   dashboard: {
     greeting: string;
     trialNotice: string;
@@ -761,6 +775,20 @@ const dictionaries: Record<Locale, Dictionary> = {
     soon: {
       title: "În curând",
       body: "Acest modul face parte din design și va fi construit într-o etapă următoare.",
+    },
+    laneViz: {
+      title: "Vizualizator rute",
+      rangeWeek: "Săptămâna aceasta",
+      rangeMonth: "Luna aceasta",
+      rangeAll: "Tot",
+      tabFrequency: "Frecvență",
+      tabRevenue: "Venit",
+      tabProfit: "Profit est.",
+      colLane: "Rută",
+      colFreq: "Frecv.",
+      colAvgRevenue: "Venit mediu",
+      colProfit: "Profit",
+      empty: "Nicio rută de afișat în intervalul ales.",
     },
     dashboard: {
       greeting: "Bine ai venit",
@@ -1481,6 +1509,20 @@ const dictionaries: Record<Locale, Dictionary> = {
     soon: {
       title: "Coming soon",
       body: "This screen is part of the design and will be built in a later stage.",
+    },
+    laneViz: {
+      title: "Lane Visualizer",
+      rangeWeek: "This week",
+      rangeMonth: "This month",
+      rangeAll: "All",
+      tabFrequency: "Frequency",
+      tabRevenue: "Revenue",
+      tabProfit: "Est. profit",
+      colLane: "Lane",
+      colFreq: "Freq.",
+      colAvgRevenue: "Avg. revenue",
+      colProfit: "Profit",
+      empty: "No lanes to show in the selected range.",
     },
     dashboard: {
       greeting: "Welcome",
