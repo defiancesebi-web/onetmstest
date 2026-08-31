@@ -44,6 +44,34 @@ export type Dictionary = {
     changePassword: string;
   };
   soon: { title: string; body: string };
+  analytics: {
+    title: string;
+    description: string;
+    periodMonth: string;
+    periodYear: string;
+    periodRolling: string;
+    kpiRevenue: string;
+    kpiCost: string;
+    kpiProfit: string;
+    kpiMargin: string;
+    kpiCostPerKm: string;
+    kpiConsumption: string;
+    kpiKm: string;
+    perTractorHeading: string;
+    colTruck: string;
+    colKm: string;
+    colCostPerKm: string;
+    colFullCostPerKm: string;
+    colConsumption: string;
+    colTotal: string;
+    noTractors: string;
+    breakdownHeading: string;
+    fixedLabel: string;
+    variableLabel: string;
+    revenueTrendHeading: string;
+    topClientsHeading: string;
+    noData: string;
+  };
   chat: {
     title: string;
     driversHeading: string;
@@ -810,6 +838,34 @@ const dictionaries: Record<Locale, Dictionary> = {
     soon: {
       title: "În curând",
       body: "Acest modul face parte din design și va fi construit într-o etapă următoare.",
+    },
+    analytics: {
+      title: "Analiză",
+      description: "Cost, eficiență și profitabilitate — pe perioada aleasă.",
+      periodMonth: "Luna curentă",
+      periodYear: "Anul curent",
+      periodRolling: "Ultimele 12 luni",
+      kpiRevenue: "Venituri (net)",
+      kpiCost: "Costuri",
+      kpiProfit: "Profit",
+      kpiMargin: "Marjă",
+      kpiCostPerKm: "Cost / km",
+      kpiConsumption: "Consum",
+      kpiKm: "Kilometri",
+      perTractorHeading: "Cost pe km, per cap tractor",
+      colTruck: "Cap tractor",
+      colKm: "Km",
+      colCostPerKm: "Cost/km",
+      colFullCostPerKm: "Cost/km cu regie",
+      colConsumption: "Consum",
+      colTotal: "Total cost",
+      noTractors: "Niciun cap tractor cu km în perioada aleasă.",
+      breakdownHeading: "Structura costurilor",
+      fixedLabel: "Cheltuieli fixe",
+      variableLabel: "Cheltuieli variabile",
+      revenueTrendHeading: "Venituri pe luni",
+      topClientsHeading: "Top clienți",
+      noData: "Nu sunt date suficiente.",
     },
     chat: {
       title: "Mesaje șoferi",
@@ -1579,6 +1635,34 @@ const dictionaries: Record<Locale, Dictionary> = {
     soon: {
       title: "Coming soon",
       body: "This screen is part of the design and will be built in a later stage.",
+    },
+    analytics: {
+      title: "Analytics",
+      description: "Cost, efficiency and profitability — for the chosen period.",
+      periodMonth: "This month",
+      periodYear: "This year",
+      periodRolling: "Last 12 months",
+      kpiRevenue: "Revenue (net)",
+      kpiCost: "Costs",
+      kpiProfit: "Profit",
+      kpiMargin: "Margin",
+      kpiCostPerKm: "Cost / km",
+      kpiConsumption: "Consumption",
+      kpiKm: "Kilometers",
+      perTractorHeading: "Cost per km, by tractor unit",
+      colTruck: "Tractor unit",
+      colKm: "Km",
+      colCostPerKm: "Cost/km",
+      colFullCostPerKm: "Cost/km incl. overhead",
+      colConsumption: "Consumption",
+      colTotal: "Total cost",
+      noTractors: "No tractor unit has km in the chosen period.",
+      breakdownHeading: "Cost breakdown",
+      fixedLabel: "Fixed costs",
+      variableLabel: "Variable costs",
+      revenueTrendHeading: "Revenue by month",
+      topClientsHeading: "Top customers",
+      noData: "Not enough data yet.",
     },
     chat: {
       title: "Driver messages",
