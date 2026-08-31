@@ -14,7 +14,7 @@ export default async function CompanySettingsPage() {
   const company = await getCompanyForSession(sessionUser);
 
   return (
-    <div className="max-w-5xl space-y-4">
+    <div className="mx-auto max-w-5xl space-y-4">
       <PageHeader title={t.title} description={t.description} />
 
       {!isAdmin && (
