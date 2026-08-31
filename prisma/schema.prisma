@@ -82,6 +82,7 @@ model Company {
   invoices    Invoice[]
   fixedCosts  FixedCost[]
   expenses    Expense[]
+  messages    Message[]
 }
 
 model User {
@@ -280,8 +281,27 @@ model Driver {
   tripsAsPrimaryDriver Trip[] @relation("TripPrimaryDriver")
   tripsAsSecondDriver  Trip[] @relation("TripSecondDriver")
   expenses Expense[]
+  messages Message[]
 
   @@index([companyId, lastName])
+}
+
+/// Internal dispatcher ↔ driver chat. `fromDriver` marks the direction; drivers
+/// can't send yet (no driver app), so today every message is dispatcher → driver
+/// and is stored for delivery once the mobile app ships.
+model Message {
+  id         String   @id @default(cuid())
+  companyId  String
+  driverId   String
+  fromDriver Boolean  @default(false)
+  body       String
+  senderName String?
+  createdAt  DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+  driver  Driver  @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, driverId, createdAt])
 }
 
 enum DocumentType {

@@ -44,6 +44,18 @@ export type Dictionary = {
     changePassword: string;
   };
   soon: { title: string; body: string };
+  chat: {
+    title: string;
+    driversHeading: string;
+    noDrivers: string;
+    noMessages: string;
+    inputPlaceholder: string;
+    send: string;
+    driverAppNote: string;
+    open: string;
+    close: string;
+    back: string;
+  };
   laneViz: {
     title: string;
     rangeWeek: string;
@@ -777,6 +789,18 @@ const dictionaries: Record<Locale, Dictionary> = {
     soon: {
       title: "În curând",
       body: "Acest modul face parte din design și va fi construit într-o etapă următoare.",
+    },
+    chat: {
+      title: "Mesaje șoferi",
+      driversHeading: "Șoferi",
+      noDrivers: "Niciun șofer activ.",
+      noMessages: "Niciun mesaj încă. Scrie primul.",
+      inputPlaceholder: "Scrie un mesaj…",
+      send: "Trimite",
+      driverAppNote: "Șoferii vor primi mesajele în aplicația de telefon (în curând).",
+      open: "Mesaje",
+      close: "Închide",
+      back: "Înapoi",
     },
     laneViz: {
       title: "Vizualizator rute",
@@ -1513,6 +1537,18 @@ const dictionaries: Record<Locale, Dictionary> = {
     soon: {
       title: "Coming soon",
       body: "This screen is part of the design and will be built in a later stage.",
+    },
+    chat: {
+      title: "Driver messages",
+      driversHeading: "Drivers",
+      noDrivers: "No active drivers.",
+      noMessages: "No messages yet. Write the first one.",
+      inputPlaceholder: "Type a message…",
+      send: "Send",
+      driverAppNote: "Drivers will receive messages in the mobile app (coming soon).",
+      open: "Messages",
+      close: "Close",
+      back: "Back",
     },
     laneViz: {
       title: "Lane Visualizer",
