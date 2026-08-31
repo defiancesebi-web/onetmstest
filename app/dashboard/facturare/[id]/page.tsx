@@ -38,7 +38,7 @@ export default async function InvoiceDetailPage({
     <div className="max-w-3xl">
       <Link
         href="/dashboard/facturare"
-        className="text-muted-foreground mb-4 inline-block text-sm underline print:hidden"
+        className="text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-sm font-medium shadow-sm transition-colors hover:bg-muted print:hidden"
       >
         {t.back}
       </Link>

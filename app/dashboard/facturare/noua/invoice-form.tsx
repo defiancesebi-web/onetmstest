@@ -146,7 +146,7 @@ export function InvoiceForm({
   };
 
   return (
-    <form action={formAction} className="max-w-3xl space-y-8">
+    <form action={formAction} className="w-full space-y-8 rounded-xl border bg-card p-6 shadow-sm sm:p-8">
       <input type="hidden" name="lines" value={JSON.stringify(lines)} />
       <input type="hidden" name="clientId" value={clientId} />
       {prefill && <input type="hidden" name="orderIds" value={prefill.orderIds.join(",")} />}

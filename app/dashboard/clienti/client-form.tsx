@@ -117,7 +117,7 @@ export function ClientForm({
   }
 
   return (
-    <form action={formAction} className="max-w-xl space-y-4">
+    <form action={formAction} className="w-full space-y-6 rounded-xl border bg-card p-6 shadow-sm sm:p-8">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="name">{t.companyName}</Label>

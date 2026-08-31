@@ -63,10 +63,10 @@ export default async function CursaNouaPage({
       : today;
 
   return (
-    <div>
+    <div className="mx-auto max-w-2xl">
       <Link
         href="/dashboard/dispecerat"
-        className="text-muted-foreground mb-4 inline-block text-sm underline"
+        className="text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-sm font-medium shadow-sm transition-colors hover:bg-muted"
       >
         {t.back}
       </Link>

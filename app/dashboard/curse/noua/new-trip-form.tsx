@@ -82,7 +82,7 @@ export function NewTripForm({
   }
 
   return (
-    <form action={formAction} className="max-w-2xl space-y-6">
+    <form action={formAction} className="w-full space-y-6 rounded-xl border bg-card p-6 shadow-sm sm:p-8">
       {orderId && <input type="hidden" name="orderId" value={orderId} />}
       {/* Set once the user has seen the warning for *these* resources and dates:
           the next submit goes through. Changing either drops it again. */}

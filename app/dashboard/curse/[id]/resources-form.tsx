@@ -71,7 +71,7 @@ export function TripResourcesForm({
   }
 
   return (
-    <form action={formAction} className="grid max-w-2xl gap-4 sm:grid-cols-2">
+    <form action={formAction} className="grid w-full gap-4 sm:grid-cols-2 rounded-xl border bg-card p-6 shadow-sm sm:p-8">
       {/* Bound to the resources and dates that were warned about, not to the
           form: changing any of them drops the acceptance so the replacement is
           checked too. */}

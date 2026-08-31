@@ -121,7 +121,7 @@ export function OrderForm({
   }
 
   return (
-    <form action={formAction} className="max-w-3xl space-y-8">
+    <form action={formAction} className="w-full space-y-8 rounded-xl border bg-card p-6 shadow-sm sm:p-8">
       {/* Stops live in React state; this hidden field is how they reach the server. */}
       <input type="hidden" name="stops" value={JSON.stringify(stops)} />
 
