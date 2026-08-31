@@ -173,7 +173,7 @@ export function DocumentsList({
 
       {viewing && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6"
+          className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/70 p-6"
           onClick={() => setViewing(null)}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}

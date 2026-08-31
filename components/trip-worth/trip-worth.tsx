@@ -94,14 +94,14 @@ export function TripWorth({ t, locale }: { t: Dictionary["tripWorth"]; locale: L
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="bg-primary text-primary-foreground hover:bg-primary/90 fixed bottom-[92px] right-6 z-40 inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm font-semibold shadow-lg transition-colors"
+        className="bg-primary text-primary-foreground hover:bg-primary/90 fixed bottom-[92px] right-6 z-[1100] inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm font-semibold shadow-lg transition-colors"
       >
         <Gauge className="size-5" />
         <span className="hidden sm:inline">{t.launch}</span>
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setOpen(false)}>
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/50 p-4" onClick={() => setOpen(false)}>
           <div
             className="bg-card flex max-h-[88vh] w-[440px] max-w-full flex-col overflow-hidden rounded-2xl border shadow-2xl"
             onClick={(e) => e.stopPropagation()}

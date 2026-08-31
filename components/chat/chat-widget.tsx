@@ -74,7 +74,7 @@ export function ChatWidget({
         type="button"
         onClick={() => setOpen(true)}
         aria-label={t.open}
-        className="bg-primary text-primary-foreground hover:bg-primary/90 fixed bottom-6 right-6 z-40 flex size-14 items-center justify-center rounded-full shadow-lg transition-colors"
+        className="bg-primary text-primary-foreground hover:bg-primary/90 fixed bottom-6 right-6 z-[1100] flex size-14 items-center justify-center rounded-full shadow-lg transition-colors"
       >
         <MessageSquare className="size-6" />
       </button>
@@ -83,7 +83,7 @@ export function ChatWidget({
 
   // ---- Panel ----
   return (
-    <div className="bg-card fixed bottom-6 right-6 z-40 flex h-[520px] max-h-[80vh] w-[360px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-xl border shadow-2xl">
+    <div className="bg-card fixed bottom-6 right-6 z-[1100] flex h-[520px] max-h-[80vh] w-[360px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-xl border shadow-2xl">
       {/* Header */}
       <div className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
         {active && (
