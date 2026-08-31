@@ -413,6 +413,22 @@ export type Dictionary = {
     deactivate: string;
     reactivate: string;
   };
+  docsPage: {
+    title: string;
+    description: string;
+    searchPlaceholder: string;
+    allStatuses: string;
+    statusExpired: string;
+    statusExpiring: string;
+    statusValid: string;
+    colPhoto: string;
+    colType: string;
+    colOwner: string;
+    colNumber: string;
+    colExpires: string;
+    empty: string;
+    showing: string;
+  };
   docs: {
     heading: string;
     none: string;
@@ -432,6 +448,11 @@ export type Dictionary = {
     expiresAt: string;
     add: string;
     saving: string;
+    photo: string;
+    photoAdd: string;
+    photoChange: string;
+    photoRemove: string;
+    photoHint: string;
   };
   team: {
     title: string;
@@ -1161,6 +1182,22 @@ const dictionaries: Record<Locale, Dictionary> = {
       deactivate: "Dezactivează",
       reactivate: "Reactivează",
     },
+    docsPage: {
+      title: "Documente",
+      description: "Toate documentele firmei — vehicule, șoferi și firmă — cu poze și stare de expirare.",
+      searchPlaceholder: "Caută după tip, proprietar sau număr",
+      allStatuses: "Toate",
+      statusExpired: "Expirate",
+      statusExpiring: "Expiră curând",
+      statusValid: "În regulă",
+      colPhoto: "Poză",
+      colType: "Tip",
+      colOwner: "Proprietar",
+      colNumber: "Număr",
+      colExpires: "Expiră",
+      empty: "Niciun document.",
+      showing: "{n} documente",
+    },
     docs: {
       heading: "Documente",
       none: "Niciun document înregistrat.",
@@ -1180,6 +1217,11 @@ const dictionaries: Record<Locale, Dictionary> = {
       expiresAt: "Data expirării",
       add: "Adaugă documentul",
       saving: "Se salvează...",
+      photo: "Poză",
+      photoAdd: "Adaugă poză",
+      photoChange: "Schimbă",
+      photoRemove: "Elimină",
+      photoHint: "O poză a documentului (opțional). Se face automat mai mică.",
     },
     team: {
       title: "Echipă",
@@ -1909,6 +1951,22 @@ const dictionaries: Record<Locale, Dictionary> = {
       deactivate: "Deactivate",
       reactivate: "Reactivate",
     },
+    docsPage: {
+      title: "Documents",
+      description: "All company documents — vehicles, drivers and company — with photos and expiry status.",
+      searchPlaceholder: "Search by type, owner or number",
+      allStatuses: "All",
+      statusExpired: "Expired",
+      statusExpiring: "Expiring soon",
+      statusValid: "Valid",
+      colPhoto: "Photo",
+      colType: "Type",
+      colOwner: "Owner",
+      colNumber: "Number",
+      colExpires: "Expires",
+      empty: "No documents.",
+      showing: "{n} documents",
+    },
     docs: {
       heading: "Documents",
       none: "No documents recorded.",
@@ -1928,6 +1986,11 @@ const dictionaries: Record<Locale, Dictionary> = {
       expiresAt: "Expiry date",
       add: "Add document",
       saving: "Saving...",
+      photo: "Photo",
+      photoAdd: "Add photo",
+      photoChange: "Change",
+      photoRemove: "Remove",
+      photoHint: "A photo of the document (optional). Downsized automatically.",
     },
     team: {
       title: "Team",

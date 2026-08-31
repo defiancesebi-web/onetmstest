@@ -40,6 +40,7 @@ export default async function VehicleDetailPage({
     issuedAt: document.issuedAt ? toDateKey(document.issuedAt) : null,
     expiresAt: toDateKey(document.expiresAt),
     status: documentStatus(document.expiresAt),
+    imageData: document.imageData,
   }));
 
   const boundUpdate = updateVehicleAction.bind(null, vehicle.id);

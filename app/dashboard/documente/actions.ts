@@ -43,6 +43,15 @@ export async function createDocumentAction(
   const expiresAt = parseDate(formData.get("expiresAt"));
   if (!expiresAt) return { error: "Data de expirare este obligatorie." };
 
+  // Photo: a client-resized image data URL, optional. Validate + cap the size.
+  const imageRaw = ((formData.get("imageData") as string | null) ?? "").trim();
+  let imageData: string | null = null;
+  if (imageRaw) {
+    if (!imageRaw.startsWith("data:image/")) return { error: "Poză invalidă." };
+    if (imageRaw.length > 1_500_000) return { error: "Poza este prea mare. Alege o imagine mai mică." };
+    imageData = imageRaw;
+  }
+
   try {
     await createDocument(
       { role: session.user.role, companyId: session.user.companyId },
@@ -54,6 +63,7 @@ export async function createDocumentAction(
         issuedAt: parseDate(formData.get("issuedAt")),
         expiresAt,
         notes: (formData.get("notes") as string) || null,
+        imageData,
       }
     );
   } catch (error) {
@@ -65,6 +75,7 @@ export async function createDocumentAction(
   }
 
   revalidatePath(ownerPath(formData));
+  revalidatePath("/dashboard/documente");
   revalidatePath("/dashboard");
   return { error: null };
 }

@@ -329,6 +329,8 @@ model Document {
   issuedAt  DateTime?    @db.Date
   expiresAt DateTime     @db.Date
   notes     String?
+  /// Photo of the document, resized client-side to a data URL (no file storage).
+  imageData String?
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 

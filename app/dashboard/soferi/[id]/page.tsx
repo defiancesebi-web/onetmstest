@@ -39,6 +39,7 @@ export default async function DriverDetailPage({
     issuedAt: document.issuedAt ? toDateKey(document.issuedAt) : null,
     expiresAt: toDateKey(document.expiresAt),
     status: documentStatus(document.expiresAt),
+    imageData: document.imageData,
   }));
 
   const boundUpdate = updateDriverAction.bind(null, driver.id);

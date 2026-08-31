@@ -32,6 +32,7 @@ export type CreateDocumentInput = {
   issuedAt?: Date | null;
   expiresAt: Date;
   notes?: string | null;
+  imageData?: string | null;
 };
 
 export type UpdateDocumentInput = {
@@ -40,6 +41,7 @@ export type UpdateDocumentInput = {
   issuedAt?: Date | null;
   expiresAt?: Date;
   notes?: string | null;
+  imageData?: string | null;
 };
 
 export type ExpiringDocument = {
@@ -98,6 +100,7 @@ export async function createDocument(session: SessionUser, input: CreateDocument
       issuedAt: input.issuedAt ?? null,
       expiresAt: input.expiresAt,
       notes: input.notes ?? null,
+      imageData: input.imageData ?? null,
     },
   });
 }
@@ -135,6 +138,63 @@ export async function listDocumentsForDriver(session: SessionUser, driverId: str
   return prisma.document.findMany({
     where: { driverId },
     orderBy: { expiresAt: "asc" },
+  });
+}
+
+export type DocumentListItem = {
+  id: string;
+  type: DocumentType;
+  number: string | null;
+  issuedAt: Date | null;
+  expiresAt: Date;
+  status: DocumentStatus;
+  ownerKind: "vehicle" | "driver" | "company";
+  ownerLabel: string;
+  ownerHref: string | null;
+  imageData: string | null;
+};
+
+/** Every document for the company — vehicle, driver and company-level — with
+ *  owner labels, computed expiry status and the photo (for the Documents page). */
+export async function listAllDocuments(
+  session: SessionUser,
+  companyId: string
+): Promise<DocumentListItem[]> {
+  assertCompanyAccess(session, companyId);
+  const docs = await prisma.document.findMany({
+    where: { companyId },
+    include: {
+      vehicle: { select: { id: true, registrationNumber: true } },
+      driver: { select: { id: true, firstName: true, lastName: true } },
+    },
+    orderBy: { expiresAt: "asc" },
+  });
+  return docs.map((d) => {
+    const ownerKind: "vehicle" | "driver" | "company" = d.vehicle
+      ? "vehicle"
+      : d.driver
+        ? "driver"
+        : "company";
+    return {
+      id: d.id,
+      type: d.type,
+      number: d.number,
+      issuedAt: d.issuedAt,
+      expiresAt: d.expiresAt,
+      status: documentStatus(d.expiresAt),
+      ownerKind,
+      ownerLabel: d.vehicle
+        ? d.vehicle.registrationNumber
+        : d.driver
+          ? `${d.driver.lastName} ${d.driver.firstName}`.trim()
+          : "Firmă",
+      ownerHref: d.vehicle
+        ? `/dashboard/flota/${d.vehicle.id}`
+        : d.driver
+          ? `/dashboard/soferi/${d.driver.id}`
+          : null,
+      imageData: d.imageData,
+    };
   });
 }
 
