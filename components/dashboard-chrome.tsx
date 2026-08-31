@@ -24,7 +24,6 @@ import {
   Search,
   Bell,
   TriangleAlert,
-  MessageSquare,
   ChevronsLeft,
   ChevronsRight,
   LogOut,
@@ -232,14 +231,6 @@ export function DashboardChrome({
             </Link>
 
             <LanguageSwitcher locale={locale} />
-
-            <button
-              type="button"
-              className="text-muted-foreground hover:bg-muted hover:text-foreground grid size-9 place-items-center rounded-lg"
-              aria-label="Mesaje"
-            >
-              <MessageSquare className="size-5" />
-            </button>
 
             <div className="relative">
               <button
