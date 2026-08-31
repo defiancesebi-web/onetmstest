@@ -44,6 +44,35 @@ export type Dictionary = {
     changePassword: string;
   };
   soon: { title: string; body: string };
+  tripWorth: {
+    launch: string;
+    title: string;
+    subtitle: string;
+    fromCity: string;
+    toCity: string;
+    km: string;
+    price: string;
+    rate: string;
+    truck: string;
+    fleetAvg: string;
+    costPerKm: string;
+    noBasis: string;
+    cityUnknown: string;
+    enterData: string;
+    verdictWorth: string;
+    verdictTight: string;
+    verdictNo: string;
+    msgWorth: string;
+    msgTight: string;
+    msgNo: string;
+    estCost: string;
+    profit: string;
+    margin: string;
+    revPerKm: string;
+    breakEven: string;
+    targetPrice: string;
+    close: string;
+  };
   analytics: {
     title: string;
     description: string;
@@ -838,6 +867,35 @@ const dictionaries: Record<Locale, Dictionary> = {
     soon: {
       title: "În curând",
       body: "Acest modul face parte din design și va fi construit într-o etapă următoare.",
+    },
+    tripWorth: {
+      launch: "Merită cursa?",
+      title: "Merită cursa?",
+      subtitle: "Introdu ruta și prețul — vezi pe loc dacă iese pe profit.",
+      fromCity: "De la",
+      toCity: "Până la",
+      km: "Kilometri",
+      price: "Preț client",
+      rate: "Curs EUR→RON",
+      truck: "Camion",
+      fleetAvg: "Media flotei",
+      costPerKm: "Cost / km",
+      noBasis: "Nu am încă date de cost — introdu manual costul/km.",
+      cityUnknown: "Oraș necunoscut — scrie kilometrii manual.",
+      enterData: "Completează ruta și prețul.",
+      verdictWorth: "MERITĂ",
+      verdictTight: "LA LIMITĂ",
+      verdictNo: "NU MERITĂ",
+      msgWorth: "Marjă bună. Poți accepta liniștit.",
+      msgTight: "Marjă subțire. Încearcă să obții un preț mai bun.",
+      msgNo: "Ieși în pierdere la prețul ăsta.",
+      estCost: "Cost estimat",
+      profit: "Profit",
+      margin: "Marjă",
+      revPerKm: "Venit / km",
+      breakEven: "Preț minim (pe zero)",
+      targetPrice: "Preț pentru 15% marjă",
+      close: "Închide",
     },
     analytics: {
       title: "Analiză",
@@ -1635,6 +1693,35 @@ const dictionaries: Record<Locale, Dictionary> = {
     soon: {
       title: "Coming soon",
       body: "This screen is part of the design and will be built in a later stage.",
+    },
+    tripWorth: {
+      launch: "Worth the trip?",
+      title: "Worth the trip?",
+      subtitle: "Enter the route and price — see instantly if it turns a profit.",
+      fromCity: "From",
+      toCity: "To",
+      km: "Kilometers",
+      price: "Customer price",
+      rate: "EUR→RON rate",
+      truck: "Truck",
+      fleetAvg: "Fleet average",
+      costPerKm: "Cost / km",
+      noBasis: "No cost data yet — enter cost/km manually.",
+      cityUnknown: "Unknown city — type the kilometers manually.",
+      enterData: "Fill in the route and price.",
+      verdictWorth: "WORTH IT",
+      verdictTight: "TIGHT",
+      verdictNo: "NOT WORTH IT",
+      msgWorth: "Healthy margin. Safe to accept.",
+      msgTight: "Thin margin. Try to get a better price.",
+      msgNo: "You'd lose money at this price.",
+      estCost: "Estimated cost",
+      profit: "Profit",
+      margin: "Margin",
+      revPerKm: "Revenue / km",
+      breakEven: "Break-even price",
+      targetPrice: "Price for 15% margin",
+      close: "Close",
     },
     analytics: {
       title: "Analytics",

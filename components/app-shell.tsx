@@ -10,6 +10,7 @@ import {
   type ChromeNotification,
 } from "@/components/dashboard-chrome";
 import { ChatWidget } from "@/components/chat/chat-widget";
+import { TripWorth } from "@/components/trip-worth/trip-worth";
 import type { UserRole } from "@/lib/generated/prisma/enums";
 
 type NavKey = keyof Dictionary["nav"];
@@ -117,6 +118,7 @@ export async function AppShell({
         {children}
       </DashboardChrome>
       {area === "company" && <ChatWidget drivers={chatDrivers} t={dict.chat} locale={locale} />}
+      {area === "company" && <TripWorth t={dict.tripWorth} locale={locale} />}
     </>
   );
 }
