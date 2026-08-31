@@ -72,11 +72,11 @@ export function CompanySettingsForm({
   const initial = values.name.trim().charAt(0).toUpperCase() || "O";
 
   return (
-    <form action={formAction} className="space-y-8">
+    <form action={formAction} className="space-y-4">
       <input type="hidden" name="logo" value={logo ?? ""} />
 
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium">{t.sectionLogo}</h2>
+      <section className="bg-card space-y-4 rounded-xl border p-5 shadow-sm">
+        <h2 className="text-sm font-semibold">{t.sectionLogo}</h2>
         <div className="flex items-center gap-4">
           <span className="bg-muted grid size-16 shrink-0 place-items-center overflow-hidden rounded-lg border">
             {logo ? (
@@ -111,8 +111,9 @@ export function CompanySettingsForm({
         </div>
       </section>
 
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium">{t.sectionIdentity}</h2>
+      <div className="grid gap-4 lg:grid-cols-2">
+      <section className="bg-card space-y-4 rounded-xl border p-5 shadow-sm">
+        <h2 className="text-sm font-semibold">{t.sectionIdentity}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label>{t.name}</Label>
@@ -134,8 +135,8 @@ export function CompanySettingsForm({
         </div>
       </section>
 
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium">{t.sectionAddress}</h2>
+      <section className="bg-card space-y-4 rounded-xl border p-5 shadow-sm">
+        <h2 className="text-sm font-semibold">{t.sectionAddress}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="address">{t.address}</Label>
@@ -156,8 +157,8 @@ export function CompanySettingsForm({
         </div>
       </section>
 
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium">{t.sectionContact}</h2>
+      <section className="bg-card space-y-4 rounded-xl border p-5 shadow-sm">
+        <h2 className="text-sm font-semibold">{t.sectionContact}</h2>
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-1.5">
             <Label htmlFor="phone">{t.phone}</Label>
@@ -174,8 +175,8 @@ export function CompanySettingsForm({
         </div>
       </section>
 
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium">{t.sectionBank}</h2>
+      <section className="bg-card space-y-4 rounded-xl border p-5 shadow-sm">
+        <h2 className="text-sm font-semibold">{t.sectionBank}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="iban">{t.iban}</Label>
@@ -188,8 +189,8 @@ export function CompanySettingsForm({
         </div>
       </section>
 
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium">{t.sectionInvoicing}</h2>
+      <section className="bg-card space-y-4 rounded-xl border p-5 shadow-sm">
+        <h2 className="text-sm font-semibold">{t.sectionInvoicing}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="invoiceSeries">{t.series}</Label>
@@ -211,6 +212,7 @@ export function CompanySettingsForm({
           </div>
         </div>
       </section>
+      </div>
 
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}
       {state.saved && !state.error && (
