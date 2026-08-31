@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { EMAIL_FROM, renderEmail } from "./config";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -14,10 +15,15 @@ export async function sendInviteEmail(to: string, companyName: string, token: st
   // The Resend SDK reports failures in the response rather than throwing, so
   // an unchecked call silently "succeeds" while no email is ever delivered.
   const { error } = await resend.emails.send({
-    from: "ONE x TMS <onboarding@resend.dev>",
+    from: EMAIL_FROM,
     to,
     subject: `Ai fost invitat în ${companyName} pe ONE x TMS`,
-    html: `<p>Ai fost invitat să te alături firmei <strong>${companyName}</strong> pe ONE x TMS.</p><p><a href="${url}">Acceptă invitația</a></p>`,
+    html: renderEmail({
+      heading: "Ai o invitație",
+      intro: `Ai fost invitat să te alături firmei <strong>${companyName}</strong> pe ONE x TMS.`,
+      ctaLabel: "Acceptă invitația",
+      ctaUrl: url,
+    }),
   });
 
   if (error) {
