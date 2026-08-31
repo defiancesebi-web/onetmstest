@@ -50,7 +50,7 @@ export default async function ReportsPage({
     .map((s) => ({ label: orderStatusLabel(s.status, locale), value: s.count, color: STATUS_HEX[s.status] }));
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold tracking-tight">{t.title}</h2>

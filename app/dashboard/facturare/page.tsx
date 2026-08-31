@@ -47,7 +47,7 @@ export default async function InvoicesPage({
   });
 
   return (
-    <div className="max-w-5xl">
+    <div className="space-y-4">
       <PageHeader
         title={t.title}
         description={t.description}

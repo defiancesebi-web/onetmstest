@@ -29,7 +29,7 @@ export default async function FlotaPage({
   ]);
 
   return (
-    <div className="max-w-4xl">
+    <div className="space-y-4">
       <PageHeader
         title={d.title}
         description={d.description}

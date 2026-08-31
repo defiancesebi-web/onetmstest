@@ -15,7 +15,7 @@ export default async function EchipaPage() {
   );
 
   return (
-    <div className="max-w-3xl">
+    <div className="space-y-4">
       <PageHeader title={t.title} description={t.description} />
 
       <div className="overflow-x-auto rounded-lg border">
