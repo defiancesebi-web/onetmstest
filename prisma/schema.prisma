@@ -93,6 +93,9 @@ model User {
   role         UserRole
   companyId    String?
   jobTitle     String?
+  /// Personal phone + avatar (a small square image data URL), self-editable.
+  phone        String?
+  avatar       String?
   status       UserStatus @default(ACTIVE)
   createdAt    DateTime   @default(now())
 

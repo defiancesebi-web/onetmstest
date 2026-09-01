@@ -4,11 +4,13 @@ import { getDictionary } from "@/lib/i18n-server";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { InviteForm } from "./invite-form";
+import { MemberFunction } from "./member-function";
 
 export default async function EchipaPage() {
   const session = await auth();
   const dict = await getDictionary();
   const t = dict.team;
+  const isAdmin = session!.user.role === "COMPANY_ADMIN";
   const users = await getUsersForCompany(
     { role: session!.user.role, companyId: session!.user.companyId },
     session!.user.companyId!
@@ -24,6 +26,7 @@ export default async function EchipaPage() {
             <tr className="border-b">
               <th className="px-4 py-2 font-medium">{t.colName}</th>
               <th className="px-4 py-2 font-medium">{t.colEmail}</th>
+              <th className="px-4 py-2 font-medium">{t.colFunction}</th>
               <th className="px-4 py-2 font-medium">{t.colRole}</th>
               <th className="px-4 py-2 font-medium">{t.colStatus}</th>
             </tr>
@@ -33,6 +36,19 @@ export default async function EchipaPage() {
               <tr key={u.id} className="border-b last:border-0">
                 <td className="px-4 py-2">{u.name}</td>
                 <td className="text-muted-foreground px-4 py-2">{u.email}</td>
+                <td className="px-4 py-2">
+                  {isAdmin ? (
+                    <MemberFunction
+                      userId={u.id}
+                      jobTitle={u.jobTitle}
+                      labels={{ placeholder: t.functionPlaceholder, save: t.functionSave }}
+                    />
+                  ) : (
+                    <span className={u.jobTitle ? "" : "text-muted-foreground"}>
+                      {u.jobTitle || "—"}
+                    </span>
+                  )}
+                </td>
                 <td className="px-4 py-2">
                   {u.role === "COMPANY_ADMIN" ? t.roleAdmin : t.roleUser}
                 </td>

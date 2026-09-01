@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { getCompanyForSession } from "@/lib/data/companies";
 import { getNotifications } from "@/lib/data/notifications";
 import { listChatDrivers } from "@/lib/data/messages";
+import { getMyProfile } from "@/lib/data/users";
 import { type Dictionary } from "@/lib/i18n";
 import { getDictionary, getLocale } from "@/lib/i18n-server";
 import {
@@ -60,6 +61,7 @@ export async function AppShell({
     area === "company" && session!.user.companyId
       ? await listChatDrivers(sessionUser, session!.user.companyId)
       : [];
+  const me = session!.user.id ? await getMyProfile(session!.user.id) : null;
 
   // Live, action-oriented notifications for the bell (company area only).
   const money = new Intl.NumberFormat(locale === "ro" ? "ro-RO" : "en-US", {
@@ -101,7 +103,12 @@ export async function AppShell({
         items={items}
         brandSub={area === "admin" ? dict.topbar.platform : (company?.name ?? "")}
         brandLogo={area === "admin" ? null : (company?.logo ?? null)}
-        user={{ name: session!.user.name ?? "", roleLabel: ROLE_LABELS[role][locale] }}
+        user={{
+          name: me?.name ?? session!.user.name ?? "",
+          roleLabel: (area === "company" && me?.jobTitle) || ROLE_LABELS[role][locale],
+          avatar: me?.avatar ?? null,
+        }}
+        profileHref={area === "company" ? "/dashboard/profil" : undefined}
         locale={locale}
         notifications={notifications}
         labels={{

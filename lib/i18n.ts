@@ -44,6 +44,24 @@ export type Dictionary = {
     changePassword: string;
   };
   soon: { title: string; body: string };
+  profile: {
+    title: string;
+    subtitle: string;
+    name: string;
+    phone: string;
+    email: string;
+    jobTitle: string;
+    jobTitleNone: string;
+    jobTitleHint: string;
+    photo: string;
+    photoAdd: string;
+    photoChange: string;
+    photoRemove: string;
+    save: string;
+    saving: string;
+    saved: string;
+    open: string;
+  };
   tripWorth: {
     launch: string;
     title: string;
@@ -520,6 +538,9 @@ export type Dictionary = {
     colStatus: string;
     roleAdmin: string;
     roleUser: string;
+    colFunction: string;
+    functionPlaceholder: string;
+    functionSave: string;
     inviteHeading: string;
     emailPlaceholder: string;
     invite: string;
@@ -867,6 +888,24 @@ const dictionaries: Record<Locale, Dictionary> = {
     soon: {
       title: "În curând",
       body: "Acest modul face parte din design și va fi construit într-o etapă următoare.",
+    },
+    profile: {
+      title: "Profilul meu",
+      subtitle: "Datele tale personale, vizibile colegilor din firmă.",
+      name: "Nume",
+      phone: "Telefon",
+      email: "Email",
+      jobTitle: "Funcție în firmă",
+      jobTitleNone: "Nesetată",
+      jobTitleHint: "Setată de administratorul firmei.",
+      photo: "Poză de profil",
+      photoAdd: "Adaugă poză",
+      photoChange: "Schimbă",
+      photoRemove: "Elimină",
+      save: "Salvează",
+      saving: "Se salvează...",
+      saved: "Datele au fost salvate.",
+      open: "Profilul meu",
     },
     tripWorth: {
       launch: "Merită cursa?",
@@ -1346,6 +1385,9 @@ const dictionaries: Record<Locale, Dictionary> = {
       colStatus: "Status",
       roleAdmin: "Admin firmă",
       roleUser: "Utilizator",
+      colFunction: "Funcție",
+      functionPlaceholder: "ex. Dispecer principal",
+      functionSave: "Salvează",
       inviteHeading: "Invită un coleg",
       emailPlaceholder: "Email coleg",
       invite: "Invită",
@@ -1693,6 +1735,24 @@ const dictionaries: Record<Locale, Dictionary> = {
     soon: {
       title: "Coming soon",
       body: "This screen is part of the design and will be built in a later stage.",
+    },
+    profile: {
+      title: "My profile",
+      subtitle: "Your personal details, visible to your colleagues.",
+      name: "Name",
+      phone: "Phone",
+      email: "Email",
+      jobTitle: "Function in the company",
+      jobTitleNone: "Not set",
+      jobTitleHint: "Set by the company administrator.",
+      photo: "Profile photo",
+      photoAdd: "Add photo",
+      photoChange: "Change",
+      photoRemove: "Remove",
+      save: "Save",
+      saving: "Saving...",
+      saved: "Your details have been saved.",
+      open: "My profile",
     },
     tripWorth: {
       launch: "Worth the trip?",
@@ -2172,6 +2232,9 @@ const dictionaries: Record<Locale, Dictionary> = {
       colStatus: "Status",
       roleAdmin: "Company admin",
       roleUser: "User",
+      colFunction: "Function",
+      functionPlaceholder: "e.g. Lead dispatcher",
+      functionSave: "Save",
       inviteHeading: "Invite a colleague",
       emailPlaceholder: "Colleague email",
       invite: "Invite",

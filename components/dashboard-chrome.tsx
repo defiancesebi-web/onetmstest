@@ -87,6 +87,7 @@ export function DashboardChrome({
   brandSub,
   brandLogo = null,
   user,
+  profileHref,
   locale,
   notifications = [],
   labels,
@@ -95,7 +96,8 @@ export function DashboardChrome({
   items: ChromeNavItem[];
   brandSub: string;
   brandLogo?: string | null;
-  user: { name: string; roleLabel: string };
+  user: { name: string; roleLabel: string; avatar?: string | null };
+  profileHref?: string;
   locale: Locale;
   notifications?: ChromeNotification[];
   labels: {
@@ -324,14 +326,35 @@ export function DashboardChrome({
               </button>
             </form>
 
-            {/* Avatar */}
-            <span
-              className="grid size-9 shrink-0 place-items-center rounded-full text-xs font-bold text-white"
-              style={{ background: "#111318" }}
-              title={`${user.name} · ${user.roleLabel}`}
-            >
-              {initials(user.name)}
-            </span>
+            {/* Avatar → profile */}
+            {profileHref ? (
+              <Link
+                href={profileHref}
+                title={`${user.name} · ${user.roleLabel}`}
+                className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-full text-xs font-bold text-white hover:ring-2 hover:ring-primary/40"
+                style={{ background: "#111318" }}
+              >
+                {user.avatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={user.avatar} alt="" className="size-full object-cover" />
+                ) : (
+                  initials(user.name)
+                )}
+              </Link>
+            ) : (
+              <span
+                className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-full text-xs font-bold text-white"
+                style={{ background: "#111318" }}
+                title={`${user.name} · ${user.roleLabel}`}
+              >
+                {user.avatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={user.avatar} alt="" className="size-full object-cover" />
+                ) : (
+                  initials(user.name)
+                )}
+              </span>
+            )}
           </div>
         </header>
 
