@@ -27,7 +27,7 @@ export function ChangePasswordForm() {
   }, [state]);
 
   return (
-    <form action={formAction} className="max-w-sm space-y-4">
+    <form action={formAction} className="space-y-4">
       <div className="space-y-1.5">
         <Label htmlFor="currentPassword">Parola actuală</Label>
         <Input
@@ -71,7 +71,7 @@ export function ChangePasswordForm() {
         </p>
       )}
 
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending} className="w-full">
         {pending ? "Se salvează..." : "Schimbă parola"}
       </Button>
     </form>
