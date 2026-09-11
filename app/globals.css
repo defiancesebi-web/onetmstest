@@ -2,10 +2,12 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* Design converted from the ONE TMS mockup: grey rail, green action accent,
-   light-grey canvas, white rounded cards. Every component reads these tokens,
+/* Design from the ONE TMS "Speedline" handoff: navy sidebar, blue action accent,
+   light canvas, white rounded cards (16px). Every component reads these tokens,
    so replacing this one file re-skins the whole app. Inter is loaded via
-   next/font in app/layout.tsx (variable --font-inter); Helvetica is fallback. */
+   next/font in app/layout.tsx (variable --font-inter). Semantic greens/ambers/reds
+   (success/attention/problem) stay as their own utility classes — only the
+   brand/primary accent is blue. */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -54,77 +56,79 @@
 }
 
 :root {
-  /* ONE TMS — light. Dark-grey rail, green action accent, light-grey canvas,
-     white rounded cards with soft shadows. */
-  --background: #f6f7f8;
-  --foreground: #1a1d23;
+  /* ONE TMS — light (Speedline handoff). Navy sidebar, blue action accent,
+     light canvas, white rounded cards with soft shadows. Values map 1:1 to
+     tokens.css from the handoff. */
+  --background: #f9fafb;        /* --tms-bg */
+  --foreground: #111827;        /* --tms-text */
   --card: #ffffff;
-  --card-foreground: #1a1d23;
+  --card-foreground: #111827;
   --popover: #ffffff;
-  --popover-foreground: #1a1d23;
-  --primary: #16a34a;
+  --popover-foreground: #111827;
+  --primary: #2563eb;           /* --tms-accent (blue) */
   --primary-foreground: #ffffff;
-  --secondary: #eef2f5;
-  --secondary-foreground: #1a1d23;
-  --muted: #f1f4f6;
-  --muted-foreground: #6b7280;
-  --accent: #ecfdf3;
-  --accent-foreground: #15803d;
-  --destructive: #e5484d;
-  --border: #e8eaed;
-  --input: #e8eaed;
-  --ring: #16a34a;
-  /* Chart series: green / blue / amber / red / violet. */
-  --chart-1: #16a34a;
-  --chart-2: #2563eb;
-  --chart-3: #f59e0b;
-  --chart-4: #e5484d;
+  --secondary: #f3f4f6;         /* segmented track / neutral surface */
+  --secondary-foreground: #111827;
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;  /* subtitles, meta */
+  --accent: #eff6ff;            /* subtle blue hover surface */
+  --accent-foreground: #1e40af;
+  --destructive: #dc2626;       /* --tms-danger */
+  --border: #eef1f6;            /* --tms-border (cards/header/inputs) */
+  --input: #e5e7eb;             /* --tms-border-strong (content inputs) */
+  --ring: #2563eb;
+  /* Chart series: accent blue first, then the status ramp. */
+  --chart-1: #2563eb;
+  --chart-2: #15803d;
+  --chart-3: #b45309;
+  --chart-4: #dc2626;
   --chart-5: #8b5cf6;
+  /* Base 0.75rem: controls land ~10px (rounded-md), cards ~16px (rounded-xl),
+     matching the handoff's --tms-r-ctl / --tms-r-card. */
   --radius: 0.75rem;
-  /* The dark-grey rail. The gradient below overrides the hardcoded navy
-     gradient in dashboard-chrome.tsx so you don't have to touch that file. */
-  --sidebar: #1c1e22;
-  --sidebar-foreground: #949aa4;
-  --sidebar-primary: #16a34a;
+  /* Navy sidebar (--tms-sidebar). */
+  --sidebar: #16202e;
+  --sidebar-foreground: #cbd5e1;               /* inactive nav item */
+  --sidebar-primary: #2563eb;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(255, 255, 255, 0.06);
+  --sidebar-accent: rgba(148, 163, 184, 0.18); /* active nav bg */
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #16a34a;
+  --sidebar-border: rgba(148, 163, 184, 0.15);
+  --sidebar-ring: #2563eb;
 }
 
 .dark {
-  --background: #0f1114;
-  --foreground: #e7e9ec;
-  --card: #17191e;
-  --card-foreground: #e7e9ec;
-  --popover: #17191e;
-  --popover-foreground: #e7e9ec;
-  --primary: #22c55e;
-  --primary-foreground: #04120a;
-  --secondary: #232730;
-  --secondary-foreground: #e7e9ec;
-  --muted: #1d2027;
-  --muted-foreground: #969ba5;
-  --accent: #14311f;
-  --accent-foreground: #86efac;
+  --background: #0b1220;
+  --foreground: #e8ecf3;
+  --card: #111a2b;
+  --card-foreground: #e8ecf3;
+  --popover: #111a2b;
+  --popover-foreground: #e8ecf3;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #1c2740;
+  --secondary-foreground: #e8ecf3;
+  --muted: #17223a;
+  --muted-foreground: #94a3b8;
+  --accent: #172554;
+  --accent-foreground: #93c5fd;
   --destructive: #f87171;
-  --border: rgba(255, 255, 255, 0.10);
-  --input: rgba(255, 255, 255, 0.14);
-  --ring: #22c55e;
-  --chart-1: #22c55e;
-  --chart-2: #3b82f6;
+  --border: rgba(148, 163, 184, 0.14);
+  --input: rgba(148, 163, 184, 0.18);
+  --ring: #3b82f6;
+  --chart-1: #3b82f6;
+  --chart-2: #4ade80;
   --chart-3: #fbbf24;
   --chart-4: #f87171;
   --chart-5: #a78bfa;
-  --sidebar: #131418;
-  --sidebar-foreground: #949aa4;
-  --sidebar-primary: #22c55e;
-  --sidebar-primary-foreground: #04120a;
-  --sidebar-accent: rgba(255, 255, 255, 0.06);
+  --sidebar: #0e1726;
+  --sidebar-foreground: #cbd5e1;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(148, 163, 184, 0.16);
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #22c55e;
+  --sidebar-border: rgba(148, 163, 184, 0.14);
+  --sidebar-ring: #3b82f6;
 }
 
 @layer base {

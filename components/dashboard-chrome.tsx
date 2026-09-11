@@ -137,23 +137,21 @@ export function DashboardChrome({
           <Link
             href={homeHref}
             aria-label={brandSub || "ONE TMS"}
-            className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-md bg-white/10 text-sm font-bold text-white"
+            className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-[9px] bg-white text-sm font-bold text-[#16202e]"
           >
             {brandLogo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={brandLogo} alt="" className="size-full object-cover" />
+              <img src={brandLogo} alt="" className="size-full object-contain" />
             ) : (
               (brandSub.trim().charAt(0).toUpperCase() || "O")
             )}
           </Link>
           {!collapsed && (
-            <Link
-              href={homeHref}
-              className="min-w-0 truncate text-[15px] font-bold leading-tight tracking-[-0.005em] text-white"
-              style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}
-              title={brandSub}
-            >
-              {brandSub || "ONE TMS"}
+            <Link href={homeHref} className="grid min-w-0 leading-tight" title={brandSub}>
+              <span className="truncate text-[15px] font-semibold leading-[1.15] text-white">
+                {brandSub || "ONE TMS"}
+              </span>
+              <span className="text-[11px] tracking-[0.03em] text-[#64748b]">ONE TMS</span>
             </Link>
           )}
         </div>
@@ -170,8 +168,8 @@ export function DashboardChrome({
                 aria-current={on ? "page" : undefined}
                 className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-[13.5px] font-medium transition-colors ${
                   on
-                    ? "bg-white/10 text-white font-semibold"
-                    : "hover:bg-white/6 hover:text-white"
+                    ? "bg-white/[.18] text-white font-semibold"
+                    : "hover:bg-white/[.12] hover:text-white"
                 } ${collapsed ? "justify-center px-0" : ""}`}
               >
                 <Icon className="size-[18px] shrink-0" strokeWidth={1.9} />
@@ -192,7 +190,7 @@ export function DashboardChrome({
           <button
             type="button"
             onClick={() => setCollapsed((c) => !c)}
-            className="hover:bg-white/6 mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13.5px] font-medium hover:text-white"
+            className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13.5px] font-medium hover:bg-white/[.12] hover:text-white"
             title={collapsed ? labels.expand : labels.collapse}
           >
             {collapsed ? (
